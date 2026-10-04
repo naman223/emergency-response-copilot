@@ -1,0 +1,16 @@
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+*.log
+.idea/
+.superpowers/
+.firebase/
+.playwright/
+test-results/
+playwright-report/
+coverage/
+local-data/
+*-credentials.json
+*service-account*.json
