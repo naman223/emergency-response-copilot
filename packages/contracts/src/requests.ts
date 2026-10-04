@@ -16,6 +16,7 @@ export const editSchema = z.strictObject({
 });
 export const intakeSchema = z.strictObject({
   sampleId: z.string().max(100).optional(),
+  reportText: z.string().trim().min(1).max(2000).optional(),
   sourceLocation: sourceLocationSchema.optional(),
   locationDescription: z.string().max(500).optional(),
 });

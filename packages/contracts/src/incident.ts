@@ -1,3 +1,4 @@
+import { conversationAssessmentSchema } from './conversation';
 import { z } from "zod";
 import { analysisSchema, routingSchema, urgencySchema } from "./analysis";
 export const sourceLocationSchema = z.strictObject({
@@ -35,6 +36,10 @@ export const incidentSchema = z.strictObject({
   sourceLocation: sourceLocationSchema.optional(),
   locationDescription: z.string().max(500).optional(),
   brief: analysisSchema.optional(),
+  assessment: conversationAssessmentSchema.optional(),
+  sourceTranscript: z.string().max(12000).optional(),
+  contextVersion: z.number().int().nonnegative().optional(),
+  reviewContextVersion: z.number().int().nonnegative().optional(),
   reviewDraft: reviewDraftSchema.optional(),
   failureCode: z.string().optional(),
   dispatchReceipt: receiptSchema.optional(),
