@@ -1,3 +1,4 @@
+import { recoverConversation } from '../conversation/recovery';
 import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
@@ -24,7 +25,10 @@ export type Event = {
 export type IncidentRecord = {
   incident: Incident;
   ownerUid: string;
-  audioKey: string;
+  audioKey?: string;
+  reportText?: string;
+  turnIds?: string[];
+  activeTurnId?: string;
   attempts: number;
   sampleId?: string;
   lease?: { token: string; until: number };
@@ -57,7 +61,8 @@ export class IncidentService {
   ) {}
   async create(session: Session, metadata: IntakeRequest, input?: Uint8Array) {
     const { db, audio, config } = this.deps;
-    let wav: Uint8Array;
+    requireCondition(Number(!!metadata.sampleId)+Number(!!metadata.reportText)+Number(!!input)===1,400,"INVALID_INPUT","Choose one report: text, sample or audio.");
+    let wav: Uint8Array | undefined;
     if (metadata.sampleId) {
       requireCondition(
         !input,
@@ -74,7 +79,7 @@ export class IncidentService {
       wav = await readFile(
         resolve(fixtureRoot(), "audio", metadata.sampleId + ".wav"),
       );
-    } else {
+    } else if (!metadata.reportText) {
       requireCondition(input, 400, "AUDIO_REQUIRED", "Add a recording first.");
       wav = (await validateAudio(input)).wav;
     }
@@ -113,13 +118,14 @@ export class IncidentService {
       };
     });
     try {
-      await audio.put(audioKey, wav);
+      if(wav) await audio.put(audioKey, wav);
       return await db.transact([sk, key], (docs) => {
         assertSession(docs[sk]);
         const record: IncidentRecord = {
           incident,
           ownerUid: session.uid,
-          audioKey,
+          ...(wav ? {audioKey} : {}),
+          ...(metadata.reportText ? {reportText:metadata.reportText} : {}),
           attempts: 0,
           history: [],
           decisions: {},
@@ -154,6 +160,7 @@ export class IncidentService {
     );
   }
   async get(session: Session, id: string) {
+    await recoverConversation(this.deps.db,session,id);
     const key = incidentKey(id),
       sk = sessionKey(session.uid);
     return this.deps.db.transact([key, sk], (docs) => {
@@ -202,7 +209,9 @@ export class IncidentService {
     ).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }
   async audio(session: Session, id: string) {
-    return this.deps.audio.get((await this.record(session, id)).audioKey);
+    const r=await this.record(session,id);
+    requireCondition(r.audioKey,404,"NO_AUDIO","This is a text report.");
+    return this.deps.audio.get(r.audioKey);
   }
   async history(session: Session, id: string) {
     return (await this.record(session, id)).history.map(

@@ -1,3 +1,4 @@
+import {reserveInference} from './budget';
 import { randomUUID } from "node:crypto";
 import { parseModelBrief, type Incident } from "@copilot/contracts";
 import { AppError, requireCondition } from "../errors";
@@ -27,6 +28,8 @@ export class AnalysisService {
     const record = await this.d.db.transact([key, sk, gk], (docs) => {
       const s = assertSession(docs[sk]),
         r = own(docs[key], s);
+      requireCondition(!r.turnIds?.length,409,"CONVERSATION_STARTED","Continue in the incident conversation.");
+      requireCondition(r.audioKey,400,"NO_AUDIO","This report has no audio.");
       requireCondition(
         !["approved", "closed"].includes(r.incident.reviewState) &&
           !r.incident.reviewDraft,
@@ -52,14 +55,7 @@ export class AnalysisService {
         "ATTEMPT_LIMIT",
         "Three analysis attempts used. Continue with manual review.",
       );
-      const quota = s.quota?.hour === hour ? s.quota : { hour, count: 0 };
-      const global = docs[gk]?.hour === hour ? docs[gk] : { hour, count: 0 };
-      requireCondition(
-        quota.count < 30 && global.count < 100,
-        429,
-        "RATE_LIMIT",
-        "Analysis capacity reached. Try again next hour.",
-      );
+      const budget=reserveInference(docs,sk,now);
       const next: IncidentRecord = {
         ...r,
         attempts: r.attempts + 1,
@@ -78,9 +74,9 @@ export class AnalysisService {
           [sk]: {
             ...s,
             activeLease: { token, until },
-            quota: { hour, count: quota.count + 1 },
+            quota: budget.session.quota,
           },
-          [gk]: { hour, count: global.count + 1 },
+          [gk]: budget.globalQuota,
         },
       };
     });
@@ -90,7 +86,7 @@ export class AnalysisService {
     let timer: NodeJS.Timeout | undefined;
     try {
       const operation = async () => {
-        const wav = await this.d.audio.get(record.audioKey);
+        const wav = await this.d.audio.get(record.audioKey!);
         return this.d.provider.analyze({ wav, signal: controller.signal });
       };
       const output = await Promise.race([
