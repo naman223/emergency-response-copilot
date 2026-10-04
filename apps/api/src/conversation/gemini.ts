@@ -25,12 +25,17 @@ export class GeminiConversationProvider implements ConversationProvider {
   async *generate(input: ProviderInput): AsyncIterable<ProviderChunk> {
     const parts: any[] = [{ text: buildConversationContext(input) }];
     if (input.report.wav)
-      parts.push({
-        inlineData: {
-          mimeType: "audio/wav",
-          data: Buffer.from(input.report.wav).toString("base64"),
+      parts.push(
+        {
+          text: "The following audio is an original caller recording supplied by the security officer. The caller and officer are different people. Address the officer about what the caller reports; do not assume the officer is the person in danger. Return a transcript. Facts derived from this recording must use source=transcript with exact transcript quotes, not an officer message ID. Empty officer messages contain no evidence.",
         },
-      });
+        {
+          inlineData: {
+            mimeType: "audio/wav",
+            data: Buffer.from(input.report.wav).toString("base64"),
+          },
+        },
+      );
     const stream = await this.client.models.generateContentStream({
       model: this.config.model,
       contents: [{ role: "user", parts }],

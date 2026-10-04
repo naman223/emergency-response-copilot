@@ -1,5 +1,15 @@
 # Local milestone — 2026-10-04
 
+## Live connection update — 2026-10-04
+
+The user-selected billing-enabled project is now authenticated for local Gemini inference. The Vertex AI API was already enabled. The app runs with `npm run dev:live`; Firebase Auth, Firestore and Storage remain emulated, and no public deployment was made.
+
+Gemini 3.5 Flash streamed a fictional free-form text report, accepted a location/status correction, and transcribed a fictional caller recording. The first audio check exposed caller/officer confusion and incorrect evidence attribution; an explicit recording-provenance instruction corrected the repeated sample, whose facts matched transcript quotes. A real Chrome walkthrough then verified custom text, a correction, human-review access and conversation persistence after reload. The live-mode screen was visually inspected. These are small connectivity and behavior checks, not a representative safety or accuracy evaluation.
+
+After the live prompt and mode-label changes: 53 unit tests, typecheck and production builds pass. The earlier 11 emulator and 12 scripted-browser results below belong to the preceding milestone; they were not rerun as live tests. The local settings file is ignored by Git and credentials remain outside the repository. Starting with plain `npm run dev` still uses scripted mode.
+
+The sections below retain the earlier local milestone record; statements that live inference was unverified describe that earlier state.
+
 User scope: build locally first; the Google Cloud project will be supplied later.
 
 ## Delivered

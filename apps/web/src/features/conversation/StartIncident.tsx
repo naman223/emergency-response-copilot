@@ -12,10 +12,12 @@ import { AudioInput } from "../caller/AudioInput";
 import type { Sample } from "../caller/CallerView";
 import { ensureUser } from "../../firebase";
 export function StartIncident({
+  mode,
   samples,
   busy,
   onStart,
 }: {
+  mode: string;
   samples: Sample[];
   busy: boolean;
   onStart: (m: IntakeRequest, file?: File) => Promise<void>;
@@ -145,8 +147,9 @@ export function StartIncident({
             <ArrowUpRight size={17} />
           </button>
           <p className="local-note">
-            Local mode: personal reports are saved for manual review. Try a
-            sample below for a guided coordinator conversation.
+            {mode === "live"
+              ? "Live Gemini: reports and recordings are sent to Google for AI analysis. You review every recommendation."
+              : "Local mode: personal reports are saved for manual review. Try a sample below for a guided coordinator conversation."}
           </p>
         </section>
         <aside className="getting-started">
@@ -188,7 +191,11 @@ export function StartIncident({
             <span className="caps">GUIDED DEMONSTRATIONS</span>
             <h2>Try a sample conversation</h2>
           </div>
-          <span className="mode-pill">Scripted sample mode</span>
+          <span className="mode-pill">
+            {mode === "live"
+              ? "Live Gemini · Fictional recordings"
+              : "Scripted sample mode"}
+          </span>
         </div>
         <div className="scenario-cards">
           {samples.map((s, i) => (

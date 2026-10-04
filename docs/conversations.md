@@ -26,4 +26,6 @@ Limits: twenty turns per incident, one active generation per session, three atte
 
 ## Live boundary
 
-A Vertex AI streaming conversation adapter is implemented but remains unverified against a live project/model. Configure the user-selected Google Cloud project later and evaluate free-form conversations, corrections and source fidelity before claiming AI quality. No cloud resources were created by this milestone.
+A Vertex AI streaming conversation adapter is implemented. Local live checks with Gemini 3.5 Flash have exercised a fictional free-form text report, a location/status correction, and a caller recording. An audio attribution issue found during those checks was corrected by explicitly distinguishing the caller recording from the officer's messages; the repeated sample returned transcript-sourced facts with matching quotes. These few checks establish connectivity and basic behavior, not emergency-response accuracy or general model quality.
+
+Use `npm run dev:live` after configuring the ignored `.env.live` file and Google authentication; see [local setup](development.md#local-app-with-live-gemini). Plain `npm run dev` still selects scripted mode. The app and Firebase remain local in both modes. Live mode sends report content to Google for inference and uses the configured cloud project's billing. No public deployment has been made.

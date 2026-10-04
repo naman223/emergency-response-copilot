@@ -259,7 +259,9 @@ export default function App() {
               {busy ? "Starting…" : "Start demo session"}
             </button>
             <small>
-              Five fictional scenarios · Scripted local demonstration
+              {mode === "live"
+                ? "Live Gemini · Human-reviewed simulation"
+                : "Five fictional scenarios · Scripted local demonstration"}
             </small>
           </div>
         ) : selected ? (
@@ -271,7 +273,12 @@ export default function App() {
             onUpdate={update}
           />
         ) : (
-          <StartIncident samples={samples} busy={busy} onStart={submit} />
+          <StartIncident
+            mode={mode}
+            samples={samples}
+            busy={busy}
+            onStart={submit}
+          />
         )}
       </main>
     </div>
