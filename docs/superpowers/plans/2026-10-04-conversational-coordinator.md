@@ -10,7 +10,7 @@
 
 **Spec:** `docs/superpowers/specs/2026-10-04-conversational-coordinator-design.md` (approved).
 
-**Execution:** Preserve the previously selected native execution method, with one independent final review. This plan awaits user review before implementation.
+**Execution:** Preserve the previously selected native execution method, with one independent final review. User confirmed implementation. Local execution is complete; final evidence and deviations are recorded in `.superpowers/sdd/2026-10-04-conversational-coordinator/progress.md` and `docs/implementation-status.md`.
 
 ## Global Constraints
 
@@ -154,4 +154,4 @@ Coverage: user conversation/visual requirements (6), richer contextual clarifica
 
 Initial transcript fields and validation are defined in Task 1 and consumed consistently by Task 3; completed source evidence remains separate from evolving assessments. No assumed real model ID or new dependency is required. Native execution remains the preserved choice. No implementation or test-pass claims are made by this plan.
 
-Next: user review of this implementation plan, then execute with `superpowers:executing-plans`.
+Execution record: implemented locally with `superpowers:executing-plans`. This original checklist is retained as the planning record; consult the ledger and implementation status for actual evidence, consolidated commits, and deferred cloud/live validation.

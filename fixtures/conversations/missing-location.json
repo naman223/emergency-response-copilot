@@ -27,5 +27,6 @@
     "urgency": "urgent_review",
     "routing": "medical",
     "locationDescription": ""
-  }
+  },
+  "summaryBase": "The caller reports a fall. Medical routing is suggested for human review."
 }

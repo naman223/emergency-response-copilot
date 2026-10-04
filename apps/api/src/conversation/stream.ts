@@ -2,12 +2,15 @@ import type { OutgoingHttpHeaders } from "node:http";
 import type { FastifyReply } from "fastify";
 import type { ConversationEvent } from "@copilot/contracts";
 export function eventWriter(reply: FastifyReply) {
+  const disconnect = new AbortController();
   let started = false,
     closed = false;
   reply.raw.on("close", () => {
     closed = true;
+    if (!reply.raw.writableEnded) disconnect.abort();
   });
   return {
+    signal: disconnect.signal,
     get started() {
       return started;
     },

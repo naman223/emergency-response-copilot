@@ -97,12 +97,19 @@ export function ConversationThread({
               <div className="turn-failure" role="status">
                 <strong>Response interrupted</strong>
                 <p>Your report is saved. Continue manually or retry.</p>
-                <button
-                  disabled={busy || t.attempts >= 3}
-                  onClick={() => onRetry(t)}
-                >
-                  Retry response
-                </button>
+                {index < turns.length - 1 ? (
+                  <p>
+                    A later message superseded this reply. Continue from the
+                    latest message.
+                  </p>
+                ) : (
+                  <button
+                    disabled={busy || t.attempts >= 3}
+                    onClick={() => onRetry(t)}
+                  >
+                    Retry response
+                  </button>
+                )}
               </div>
             )}
           </div>

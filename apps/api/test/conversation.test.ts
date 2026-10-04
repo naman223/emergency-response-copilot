@@ -312,3 +312,86 @@ it("coalesces rapid provider deltas into bounded delivery batches", async () => 
   );
   expect(events.filter((e) => e.type === "delta").length).toBeLessThan(10);
 });
+it("rejects retry of a failed turn superseded by a later message", async () => {
+  const s = await setup();
+  const service = new ConversationService({
+    ...s,
+    provider: {
+      async *generate(input) {
+        if (input.turns.at(-1)?.officerText === "Unknown")
+          throw Error("provider failed");
+        yield { type: "result" as const, response: result };
+      },
+    },
+  });
+  let snap = await service.run(
+    s.session,
+    s.incident.id,
+    { turnId: randomUUID(), expectedRevision: 1, kind: "initial" },
+    async () => {},
+  );
+  const failedId = randomUUID();
+  snap = await service.run(
+    s.session,
+    s.incident.id,
+    {
+      turnId: failedId,
+      expectedRevision: snap.incident.revision,
+      kind: "message",
+      text: "Unknown",
+    },
+    async () => {},
+  );
+  snap = await service.run(
+    s.session,
+    s.incident.id,
+    {
+      turnId: randomUUID(),
+      expectedRevision: snap.incident.revision,
+      kind: "message",
+      text: "University campus, beside the library",
+    },
+    async () => {},
+  );
+  await expect(
+    service.retry(
+      s.session,
+      s.incident.id,
+      failedId,
+      { attemptId: randomUUID(), expectedRevision: snap.incident.revision },
+      async () => {},
+    ),
+  ).rejects.toMatchObject({ status: 409, code: "TURN_SUPERSEDED" });
+});
+it("propagates disconnect to an idle provider and releases its lease as interrupted", async () => {
+  const s = await setup();
+  const controller = new AbortController();
+  let entered!: () => void;
+  const started = new Promise<void>((r) => (entered = r));
+  let aborted = false;
+  const service = new ConversationService({
+    ...s,
+    provider: {
+      async *generate(input) {
+        input.signal.addEventListener("abort", () => (aborted = true));
+        entered();
+        await new Promise(() => {});
+        yield { type: "result" as const, response: result };
+      },
+    },
+  });
+  const work = (service as any).run(
+    s.session,
+    s.incident.id,
+    { turnId: randomUUID(), expectedRevision: 1, kind: "initial" },
+    async () => {},
+    controller.signal,
+  );
+  await started;
+  controller.abort();
+  const snap = await work;
+  expect(aborted).toBe(true);
+  expect(snap.turns[0].state).toBe("interrupted");
+  expect(snap.turns[0].failureCode).toBe("CONVERSATION_INTERRUPTED");
+  expect(s.docs["session:alice"].activeLease).toBeUndefined();
+});

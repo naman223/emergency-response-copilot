@@ -35,5 +35,6 @@
     "urgency": "standard_review",
     "routing": "other",
     "locationDescription": ""
-  }
+  },
+  "summaryBase": "The caller asks about kitchen equipment. A knife mention alone does not establish a threat."
 }

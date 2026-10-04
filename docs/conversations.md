@@ -8,7 +8,7 @@ The local provider is deterministic, not a language model. It recognizes these d
 
 - **University campus, beside the library** or **North gate of the campus** supplies sample location.
 - **Location: your description** supplies a location explicitly. **Correction: your description** replaces that location, retaining the previous messages.
-- **Unknown** preserves a gap and moves on; it does not mean no injury or no danger.
+- **Unknown** marks the current unanswered field as unknown and moves on. After both questions are answered, it marks the last explicitly changed field unknown, superseding that answer. It does not mean no injury or no danger.
 - **Why this recommendation?** explains the sample's suggestion using the original reported content.
 - Scenario-specific buttons offer injury status, visible smoke versus smell, equipment enquiry versus threat, or whether someone is requesting help.
 
@@ -20,7 +20,7 @@ Open **Review and decide**, check and save the summary, urgency, routing and loc
 
 ## Streaming and recovery
 
-The server streams typed progress and reply events using authenticated fetch. Local chunks are labeled scripted playback; live mode uses Gemini response chunks. Partial replies are provisional. Only a completely validated result updates context. After a disconnect or process interruption, reload retrieves the stored turn; an expired lease becomes interrupted and can be retried up to three attempts. Original reports remain available for manual review.
+The server streams typed progress and reply events using authenticated fetch. Local chunks are labeled scripted playback; live mode uses Gemini response chunks. Partial replies are provisional. Only a completely validated result updates context. After a disconnect or process interruption, reload retrieves the stored turn; an expired lease becomes interrupted and can be retried up to three attempts. Only the latest interrupted turn can be retried; after a later message, continue from that message instead. Original reports remain available for manual review.
 
 Limits: twenty turns per incident, one active generation per session, three attempts per turn, 45-second provider deadline, 30 calls per session/hour and 100 globally/hour. Context and raw model responses are bounded. Reset deletes the incident's turns and audio after revoking the session.
 

@@ -47,10 +47,15 @@ export function registerConversationRoutes(
               z.uuid().parse((r.params as any).turnId),
               body as any,
               (e) => writer.emit(e),
+              writer.signal,
             );
           else
-            await service.run(s, incidentId, body as any, (e) =>
-              writer.emit(e),
+            await service.run(
+              s,
+              incidentId,
+              body as any,
+              (e) => writer.emit(e),
+              writer.signal,
             );
         } catch (e) {
           if (!writer.started) throw e;

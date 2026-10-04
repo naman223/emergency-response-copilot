@@ -26,16 +26,15 @@ One independent final review was followed by one correction pass:
 
 All checks below completed successfully against the final implementation:
 
-| Check | Result |
-| --- | --- |
-| `npm test` | 22 unit tests passed |
-| `npm run test:integration` | 7 authenticated emulator integration tests passed |
-| `npm run test:e2e` | 9 Chrome browser tests passed |
-| `npm run typecheck` | Passed |
-| `npm run build` | Frontend and API production bundles built |
-| `node --import tsx scripts/smoke-build.ts` | Built API health passed |
-| Docker build and loopback container health | Passed; temporary container stopped |
-| `npm run evaluate -- --mode fixture` | Five prepared samples passed schema/wiring checks |
+| Check                                      | Result                                             |
+| ------------------------------------------ | -------------------------------------------------- |
+| `npm test`                                 | 49 unit tests passed                               |
+| `npm run test:integration`                 | 11 authenticated emulator integration tests passed |
+| `npm run test:e2e`                         | 12 Chrome browser tests passed                     |
+| `npm run typecheck`                        | Passed                                             |
+| `npm run build`                            | Frontend and API production bundles built          |
+| `node --import tsx scripts/smoke-build.ts` | Built API health passed                            |
+| Docker build and loopback container health | Passed; temporary container stopped                |
 
 Synthetic fixtures validate wiring, not model accuracy. Desktop and 390-pixel mobile screens were visually inspected. The real Chrome recording test uses Chrome's synthetic microphone device and exercises MediaRecorder/upload/manual review; it does not test a physical microphone or live Gemini. No cloud services were invoked by the container health check.
 
@@ -51,4 +50,13 @@ Synthetic fixtures validate wiring, not model accuracy. Desktop and 390-pixel mo
 
 The approved conversational design replaces the role-switching form workflow with an officer/coordinator chat, streaming updates, targeted scripted clarifications and corrections, an incident context panel, and separately saved human review. The final card now has readable labels and consistent spacing. Original audio, transcript and human edits remain preserved. New context requires rechecking the saved review before approval.
 
-Conversation contract, service, provider, stream, review, real-emulator and browser checks are included. Live Gemini remains unverified; see [conversation guide](conversations.md). Final review and verification results follow after completion.
+Conversation contract, service, provider, stream, review, real-emulator and browser checks are included. Live Gemini remains unverified; see [conversation guide](conversations.md). The final checks above include the conversational upgrade. One independent review of `f86af45..dfc4d23` was followed by one correction pass:
+
+- Current scripted facts now supersede prior answers. Unknown removes the prior active answer, contradictory updates do not accumulate as current facts, and supported answers work out of question order. Location corrections preserve injury/status details and refresh the narrative. Explanation requests retain only the current pending question.
+- Failed older turns cannot be retried after a newer message. The API returns `TURN_SUPERSEDED`, and the UI directs the officer to continue from the latest message.
+- HTTP disconnect aborts unfinished provider work and promptly persists an interrupted turn while releasing the session lease. A real HTTP/emulator regression verifies this before the provider deadline. Test cleanup explicitly closes client keep-alive sockets.
+- Browser coverage confirms new context preserves saved human wording and requires a new review save before approval.
+
+Regression failures were reproduced before the fixes; all 49 unit, 11 emulator integration and 12 Chrome tests now pass. Typecheck, production bundles, built API health, container build and in-container loopback health pass. Desktop conversation, final approved report and mobile layout were visually inspected. The verified local preview is `http://127.0.0.1:5173`.
+
+Review scope rulings: live Gemini/model quality, cloud deployment and real emergency suitability remain outside this local demonstration milestone. No Git push or deployment was performed.

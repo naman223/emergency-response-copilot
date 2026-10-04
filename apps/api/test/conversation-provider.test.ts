@@ -106,3 +106,58 @@ it("rejects duplicate reply fields, oversized and truncated JSON", () => {
     }).toThrow();
   }
 });
+it("replaces a prior injury answer with Unknown and supersedes contradictory answers", async () => {
+  const turns = [
+    turn("", "initial"),
+    turn("University campus, beside the library"),
+    turn("No injuries reported"),
+  ];
+  const known = await generate(turns);
+  const unknown = await generate([...turns, turn("Unknown")], known.assessment);
+  expect(unknown.assessment.unknowns).toContain("Injury status unknown");
+  expect(
+    unknown.assessment.facts.some((f: any) =>
+      f.text.includes("No injuries reported"),
+    ),
+  ).toBe(false);
+  const changed = await generate(
+    [...turns, turn("Injuries reported")],
+    known.assessment,
+  );
+  expect(
+    changed.assessment.facts.filter(
+      (f: any) =>
+        f.source.source === "officer" && f.text.toLowerCase().includes("injur"),
+    ),
+  ).toHaveLength(1);
+  expect(changed.assessment.summary).toContain("Injuries reported");
+});
+it("does not reopen answered questions after explanation or location correction", async () => {
+  const turns = [
+    turn("", "initial"),
+    turn("University campus, beside the library"),
+    turn("No injuries reported"),
+  ];
+  const known = await generate(turns);
+  const why = await generate(
+    [...turns, turn("Why this recommendation?")],
+    known.assessment,
+  );
+  expect(why.question).toBeNull();
+  const corrected = await generate(
+    [...turns, turn("Correction: the south gate, beside the library")],
+    known.assessment,
+  );
+  expect(corrected.question).toBeNull();
+  expect(corrected.assessment.summary).toContain("No injuries reported");
+  expect(corrected.assessment.locationDescription).toContain("south gate");
+});
+it("records a supported injury answer even when supplied before location", async () => {
+  const r = await generate([turn("", "initial"), turn("No injuries reported")]);
+  expect(
+    r.assessment.facts.some((f: any) =>
+      f.text.includes("No injuries reported"),
+    ),
+  ).toBe(true);
+  expect(r.question).toContain("site");
+});

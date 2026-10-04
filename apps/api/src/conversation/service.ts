@@ -48,8 +48,14 @@ export class ConversationService {
         .map((v) => conversationTurnSchema.parse(v.turn)),
     };
   }
-  async run(session: Session, id: string, req: TurnRequest, emit: Emit) {
-    return this.execute(session, id, req.turnId, req, undefined, emit);
+  async run(
+    session: Session,
+    id: string,
+    req: TurnRequest,
+    emit: Emit,
+    signal?: AbortSignal,
+  ) {
+    return this.execute(session, id, req.turnId, req, undefined, emit, signal);
   }
   async retry(
     session: Session,
@@ -57,8 +63,9 @@ export class ConversationService {
     turnId: string,
     req: RetryTurnRequest,
     emit: Emit,
+    signal?: AbortSignal,
   ) {
-    return this.execute(session, id, turnId, undefined, req, emit);
+    return this.execute(session, id, turnId, undefined, req, emit, signal);
   }
   private async execute(
     session: Session,
@@ -67,6 +74,7 @@ export class ConversationService {
     request: TurnRequest | undefined,
     retry: RetryTurnRequest | undefined,
     emit: Emit,
+    signal?: AbortSignal,
   ): Promise<ConversationSnapshot> {
     await recoverConversation(this.d.db, session, id);
     const key = incidentKey(id),
@@ -106,6 +114,12 @@ export class ConversationService {
             prior.attemptIds.includes(retry.attemptId)
           )
             return { result: { replay: true, record: r, stored: prior } };
+          requireCondition(
+            r.turnIds?.at(-1) === tid,
+            409,
+            "TURN_SUPERSEDED",
+            "A later message superseded this reply. Continue from the latest message instead.",
+          );
           requireCondition(
             ["failed", "interrupted"].includes(prior.turn.state),
             409,
@@ -222,6 +236,10 @@ export class ConversationService {
       return snapshot;
     }
     const controller = new AbortController();
+    const disconnect = () => controller.abort();
+    signal?.addEventListener("abort", disconnect, { once: true });
+    if (signal?.aborted) controller.abort();
+    let abortListener: (() => void) | undefined;
     let timer: ReturnType<typeof setTimeout> | undefined;
     let response: ReturnType<typeof validateCoordinatorResponse> | undefined;
     let failure: string | undefined;
@@ -315,11 +333,25 @@ export class ConversationService {
         return parsed;
       };
       await send({ type: "status", stage: "receiving_response" });
+      const aborted = new Promise<never>((_, reject) => {
+        abortListener = () =>
+          reject(
+            new AppError(
+              499,
+              "CONVERSATION_INTERRUPTED",
+              "The connection closed.",
+            ),
+          );
+        controller.signal.addEventListener("abort", abortListener, {
+          once: true,
+        });
+        if (controller.signal.aborted) abortListener();
+      });
       response = await Promise.race([
+        aborted,
         operation(),
         new Promise<never>((_, reject) => {
           timer = setTimeout(() => {
-            controller.abort();
             reject(
               new AppError(
                 504,
@@ -327,15 +359,24 @@ export class ConversationService {
                 "Coordinator response timed out.",
               ),
             );
+            controller.abort();
           }, this.d.config.analysisTimeout);
         }),
       ]);
       await send({ type: "status", stage: "updating_context" });
     } catch (e) {
-      failure = e instanceof AppError ? e.code : "CONVERSATION_FAILED";
+      if (!response)
+        failure = signal?.aborted
+          ? "CONVERSATION_INTERRUPTED"
+          : e instanceof AppError
+            ? e.code
+            : "CONVERSATION_FAILED";
       controller.abort();
     } finally {
       if (timer) clearTimeout(timer);
+      signal?.removeEventListener("abort", disconnect);
+      if (abortListener)
+        controller.signal.removeEventListener("abort", abortListener);
     }
     await this.d.db.transact([key, sk, tk], (docs) => {
       const s = assertSession(docs[sk]),
@@ -365,7 +406,11 @@ export class ConversationService {
         incident.sourceTranscript = response.transcript;
       stored.turn = {
         ...stored.turn,
-        state: response ? "completed" : "failed",
+        state: response
+          ? "completed"
+          : failure === "CONVERSATION_INTERRUPTED"
+            ? "interrupted"
+            : "failed",
         updatedAt: new Date().toISOString(),
         ...(response
           ? {

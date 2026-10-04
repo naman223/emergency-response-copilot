@@ -35,5 +35,6 @@
     "urgency": "urgent_review",
     "routing": "fire",
     "locationDescription": ""
-  }
+  },
+  "summaryBase": "The caller reports smoke while speaking calmly. The reported smoke warrants urgent human review."
 }

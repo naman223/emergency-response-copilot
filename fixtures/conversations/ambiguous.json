@@ -27,5 +27,6 @@
     "urgency": "unclear",
     "routing": "unclear",
     "locationDescription": ""
-  }
+  },
+  "summaryBase": "The caller reports an unclear noise outside. Its cause and immediate danger remain unconfirmed."
 }

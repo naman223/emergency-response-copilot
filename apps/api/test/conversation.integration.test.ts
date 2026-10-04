@@ -224,3 +224,63 @@ it("reset while a streamed response is pending prevents persistence after revoca
     await controlled.close();
   }
 }, 30000);
+it("HTTP disconnect cancels an idle provider before its deadline", async () => {
+  let entered!: () => void;
+  const started = new Promise<void>((r) => (entered = r));
+  let providerAborted = false;
+  const controlled = await buildApp({
+    config: { ...config, analysisTimeout: 5000 },
+    ...firebase,
+    provider: new FixtureProvider(),
+    conversationProvider: {
+      async *generate(input) {
+        input.signal.addEventListener("abort", () => (providerAborted = true));
+        entered();
+        await new Promise(() => {});
+        yield { type: "result", response: {} };
+      },
+    },
+  });
+  const h = await session();
+  const i = (
+    await controlled.inject({
+      method: "POST",
+      url: "/api/incidents",
+      headers: h,
+      payload: { reportText: "Disconnect test report" },
+    })
+  ).json();
+  const tid = randomUUID(),
+    controller = new AbortController();
+  try {
+    const address = await controlled.listen({ host: "127.0.0.1", port: 0 });
+    const response = await fetch(address + `/api/incidents/${i.id}/turns`, {
+      method: "POST",
+      headers: { ...h, "content-type": "application/json" },
+      body: JSON.stringify({
+        turnId: tid,
+        expectedRevision: 1,
+        kind: "initial",
+      }),
+      signal: controller.signal,
+    });
+    expect(response.status).toBe(200);
+    await started;
+    controller.abort();
+    await response.body?.cancel().catch(() => {});
+    await expect
+      .poll(
+        async () => {
+          const r = await firebase.db.get<any>(`turn:${i.id}:${tid}`);
+          return r?.turn.state;
+        },
+        { timeout: 1500 },
+      )
+      .toBe("interrupted");
+    expect(providerAborted).toBe(true);
+  } finally {
+    controller.abort();
+    controlled.server.closeAllConnections();
+    await controlled.close();
+  }
+}, 15000);
