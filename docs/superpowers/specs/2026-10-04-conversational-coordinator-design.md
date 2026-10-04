@@ -1,6 +1,6 @@
 # Conversational Emergency Coordinator
 
-Status: Proposed written design for user review. Supersedes the form-first responder experience in the original MVP design when approved. No implementation of this change is claimed.
+Status: Written design approved by the user on 2026-10-04. Supersedes the form-first responder experience in the original MVP design. Implementation remains pending implementation-plan review.
 
 ## User intent
 
@@ -88,4 +88,4 @@ An unavailable model, invalid assessment, transport failure or timeout must pres
 
 ## Next gate
 
-Review this written design, then prepare its implementation plan and choose execution method. This document records the conversational direction agreed in chat; it does not claim approval of the written specification or implementation plan.
+Written design approved. Next: review the implementation plan. Preserve the previously selected native execution method unless the user changes it. No implementation-plan approval or completed implementation is claimed.
