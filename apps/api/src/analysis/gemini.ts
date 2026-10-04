@@ -8,7 +8,7 @@ export class GeminiProvider implements AnalysisProvider {
   constructor(private config: Config) {
     this.client = new GoogleGenAI({
       vertexai: true,
-      project: config.projectId,
+      project: config.geminiProjectId,
       location: config.location,
       httpOptions: {
         timeout: config.analysisTimeout,

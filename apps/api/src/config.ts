@@ -19,6 +19,7 @@ export function createConfig(env: NodeJS.ProcessEnv = process.env) {
     cloud,
     mode: mode as "fixture" | "live",
     projectId,
+    geminiProjectId: env.GEMINI_PROJECT_ID ?? projectId,
     bucket: env.STORAGE_BUCKET ?? `${projectId}.appspot.com`,
     location: env.GOOGLE_CLOUD_LOCATION ?? "global",
     model: env.GEMINI_MODEL ?? "",

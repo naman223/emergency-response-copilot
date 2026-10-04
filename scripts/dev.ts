@@ -1,4 +1,6 @@
 import { spawn } from "node:child_process";
+import { localEnvironment } from "./local-env";
+const env = localEnvironment(process.env, process.argv.includes("--live"));
 const child = spawn(
   "node_modules/.bin/firebase",
   [
@@ -11,12 +13,7 @@ const child = spawn(
   ],
   {
     stdio: "inherit",
-    env: {
-      ...process.env,
-      ANALYSIS_MODE: "fixture",
-      GOOGLE_CLOUD_PROJECT: "demo-emergency-copilot",
-      GCLOUD_PROJECT: "demo-emergency-copilot",
-    },
+    env,
   },
 );
 for (const s of ["SIGINT", "SIGTERM"] as const)

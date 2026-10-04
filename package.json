@@ -14,6 +14,7 @@
     "typecheck": "tsc --noEmit",
     "build": "npm run build --workspace @copilot/web && npm run build --workspace @copilot/api",
     "dev": "node --import tsx scripts/dev.ts",
+    "dev:live": "node --env-file=.env.live --import tsx scripts/dev.ts --live",
     "test:integration": "node --import tsx scripts/integration.ts",
     "test:e2e": "playwright test",
     "evaluate": "tsx scripts/evaluate.ts"
