@@ -19,14 +19,13 @@ test("Chrome recordings reach manual review in fixture mode", async ({
     .waitFor();
   await page.getByRole("button", { name: "Stop recording" }).click();
   await page.getByText("Recording ready to submit.").waitFor();
-  await page.getByRole("button", { name: "Submit report" }).click();
+  await page
+    .getByRole("button", { name: "Start conversation", exact: true })
+    .click();
   await expect(
-    page.getByRole("heading", { name: "Incident brief" }),
+    page.getByRole("heading", { name: "AI emergency coordinator" }),
   ).toBeVisible();
   await expect(
-    page.getByText("Analysis unavailable", { exact: true }),
-  ).toBeVisible();
-  await expect(
-    page.getByText(/local mode analyzes the provided samples only/),
+    page.getByText(/cannot interpret this report with AI yet/),
   ).toBeVisible();
 });

@@ -21,10 +21,16 @@ export function ReviewForm({
 }) {
   const [draft, setDraft] = useState<ReviewDraft>(
     incident.reviewDraft ?? {
-      summary: incident.brief?.explanation ?? "",
-      urgency: incident.brief?.urgency ?? "unclear",
-      routing: incident.brief?.routing ?? "unclear",
-      locationDescription: incident.locationDescription ?? "",
+      summary:
+        incident.assessment?.summary ?? incident.brief?.explanation ?? "",
+      urgency:
+        incident.assessment?.urgency ?? incident.brief?.urgency ?? "unclear",
+      routing:
+        incident.assessment?.routing ?? incident.brief?.routing ?? "unclear",
+      locationDescription:
+        incident.assessment?.locationDescription ??
+        incident.locationDescription ??
+        "",
       confirmedFields: [],
     },
   );
@@ -126,7 +132,12 @@ export function ReviewForm({
         <div className="decision-actions">
           <button
             className="primary"
-            disabled={dirty || !incident.reviewDraft || !reason.trim()}
+            disabled={
+              dirty ||
+              !incident.reviewDraft ||
+              !reason.trim() ||
+              incident.contextVersion !== incident.reviewContextVersion
+            }
             onClick={() => onDecide("approve", reason)}
           >
             <Check size={16} />

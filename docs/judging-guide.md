@@ -1,11 +1,11 @@
-# Prototype walkthrough
+# Local conversation walkthrough
 
-For local review, open http://127.0.0.1:5173 after `npm run dev`. No cloud account is required. A deployed public URL will be added after cloud setup and validation.
+This is a local prototype, not a public judging URL. Start it using the README, open http://127.0.0.1:5173, and choose **Start demo session**.
 
-1. Start a session and choose **Followed near the north gate**. Submit it, listen to the recording, inspect the quoted evidence and unknown location, then edit/save the review and approve with a reason. Verify that the receipt explicitly says simulated and no service was contacted.
-2. Choose **Kitchen equipment enquiry**. Inspect why a benign mention of a knife does not receive the urgent-threat sample classification. These are prepared fixture results locally, not evidence of Gemini accuracy.
-3. Choose **Unclear noise outside** or **Fall with unknown address**. Check that the unknowns remain visible. A reviewer can request clarification or close with a reason.
+1. Choose **Start conversation** on **Followed near the north gate**. Play the original recording in the conversation. Observe the clearly labeled scripted coordinator reply.
+2. Answer **University campus, beside the library**, then **Unknown** for injury status. Inspect the incident panel: officer-reported location, original source quotes, and unresolved injury status remain distinct.
+3. Ask **Why this recommendation?**, or type **Correction: the south gate, beside the library**. Earlier messages remain available.
+4. Open **Review and decide**. Edit and save the summary, enter a reason and approve the simulation. The final report retains the human's corrections and explicitly states that no emergency service was contacted.
+5. Reload to verify persistence, try the mobile context panel, and reset the session to remove its data.
 
-Additional checks: upload your own recording in fixture mode (analysis is explicitly unsupported and manual review stays available), deny microphone/location permissions, reload the page, try an independent private browser session, and reset the session.
-
-All five recordings are fictional and synthesized. Local prepared results are labeled on screen. No numerical confidence claims are made. Real Gemini output will need a separate evaluated run before submission.
+Try **Kitchen equipment enquiry** to contrast a benign weapon mention, and **Unclear noise outside** to see uncertainty. Unexpected free-form replies in local mode receive a transparent limitation message. Real Gemini interpretation, deployment access and model-quality evidence await the selected cloud project.

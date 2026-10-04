@@ -39,8 +39,14 @@ test("late microphone permission is released after leaving caller intake", async
   await page.getByRole("button", { name: "Start demo session" }).click();
   await page.getByRole("button", { name: "Record audio", exact: true }).click();
   await page
-    .getByRole("button", { name: "Responder desk", exact: true })
+    .getByRole("button", {
+      name: "Start sample conversation: Followed near the north gate",
+      exact: true,
+    })
     .click();
+  await page
+    .getByRole("heading", { name: "AI emergency coordinator" })
+    .waitFor();
   await page.evaluate(() => (window as any).grantPermission());
   await expect
     .poll(() => page.evaluate(() => (window as any).mediaStops))
@@ -77,16 +83,22 @@ test("reload recovers an interrupted final attempt into manual review", async ({
 }) => {
   await page.goto("/");
   await page.getByRole("button", { name: "Start demo session" }).click();
-  await page
-    .getByRole("button", { name: /Followed near the north gate/ })
-    .click();
   const created = page.waitForResponse(
     (r) =>
       r.url().endsWith("/api/incidents") && r.request().method() === "POST",
   );
-  await page.getByRole("button", { name: "Submit report" }).click();
+  await page
+    .getByRole("button", {
+      name: "Start sample conversation: Followed near the north gate",
+    })
+    .click();
   const i = await (await created).json();
-  await page.getByText("Weapon reported", { exact: true }).waitFor();
+  await page
+    .getByRole("button", {
+      name: "University campus, beside the library",
+      exact: true,
+    })
+    .waitFor();
   await promisify(execFile)(process.execPath, [
     "--import",
     "tsx",
@@ -95,8 +107,11 @@ test("reload recovers an interrupted final attempt into manual review", async ({
   ]);
   await page.reload();
   await expect(
-    page.getByText("Analysis unavailable", { exact: true }),
+    page.getByText("Response interrupted", { exact: true }),
   ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Review and decide", exact: true })
+    .click();
   await page
     .getByLabel("Reviewer summary")
     .fill("Manual review after interrupted analysis");

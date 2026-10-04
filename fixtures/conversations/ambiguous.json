@@ -1,0 +1,31 @@
+{
+  "opening": "The recording is unclear and reports a noise outside. I cannot establish what caused it or whether anyone is in danger from that information alone. I will retain the uncertainty and ask for more context.",
+  "question": "Which site is the report from?",
+  "followup": "Can you confirm whether someone is asking for help?",
+  "answers": [
+    "Someone is asking for help",
+    "I cannot confirm",
+    "Unknown"
+  ],
+  "transcript": "I heard a loud noise outside. I cannot tell what happened. I am inside my room.",
+  "assessment": {
+    "summary": "The recording is unclear and reports a noise outside. I cannot establish what caused it or whether anyone is in danger from that information alone. I will retain the uncertainty and ask for more context.",
+    "facts": [
+      {
+        "text": "Unidentified noise",
+        "source": {
+          "source": "transcript",
+          "quote": "a loud noise outside"
+        },
+        "evidenceStatus": "unverified"
+      }
+    ],
+    "unknowns": [
+      "Exact location unknown",
+      "Further context unknown"
+    ],
+    "urgency": "unclear",
+    "routing": "unclear",
+    "locationDescription": ""
+  }
+}

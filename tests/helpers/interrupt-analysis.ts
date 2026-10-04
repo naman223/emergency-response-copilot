@@ -10,12 +10,19 @@ try {
   const key = `incident:${process.argv[2]}`;
   const r: any = await f.db.get(key);
   const sk = `session:${r.ownerUid}`;
-  await f.db.transact([key, sk], (d) => ({
+  const tid = r.turnIds.at(-1),
+    tk = `turn:${r.incident.id}:${tid}`;
+  await f.db.transact([key, sk, tk], (d) => ({
     result: null,
     put: {
+      [tk]: {
+        ...d[tk],
+        turn: { ...d[tk].turn, state: "processing", attempts: 3 },
+      },
       [key]: {
         ...d[key],
         attempts: 3,
+        activeTurnId: tid,
         lease: { token: "interrupted", until: Date.now() - 1000 },
         incident: {
           ...d[key].incident,

@@ -1,4 +1,4 @@
-import { recoverConversation } from '../conversation/recovery';
+import { recoverConversation } from "../conversation/recovery";
 import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
@@ -61,7 +61,15 @@ export class IncidentService {
   ) {}
   async create(session: Session, metadata: IntakeRequest, input?: Uint8Array) {
     const { db, audio, config } = this.deps;
-    requireCondition(Number(!!metadata.sampleId)+Number(!!metadata.reportText)+Number(!!input)===1,400,"INVALID_INPUT","Choose one report: text, sample or audio.");
+    requireCondition(
+      Number(!!metadata.sampleId) +
+        Number(!!metadata.reportText) +
+        Number(!!input) ===
+        1,
+      400,
+      "INVALID_INPUT",
+      "Choose one report: text, sample or audio.",
+    );
     let wav: Uint8Array | undefined;
     if (metadata.sampleId) {
       requireCondition(
@@ -118,14 +126,14 @@ export class IncidentService {
       };
     });
     try {
-      if(wav) await audio.put(audioKey, wav);
+      if (wav) await audio.put(audioKey, wav);
       return await db.transact([sk, key], (docs) => {
         assertSession(docs[sk]);
         const record: IncidentRecord = {
           incident,
           ownerUid: session.uid,
-          ...(wav ? {audioKey} : {}),
-          ...(metadata.reportText ? {reportText:metadata.reportText} : {}),
+          ...(wav ? { audioKey } : {}),
+          ...(metadata.reportText ? { reportText: metadata.reportText } : {}),
           attempts: 0,
           history: [],
           decisions: {},
@@ -160,7 +168,7 @@ export class IncidentService {
     );
   }
   async get(session: Session, id: string) {
-    await recoverConversation(this.deps.db,session,id);
+    await recoverConversation(this.deps.db, session, id);
     const key = incidentKey(id),
       sk = sessionKey(session.uid);
     return this.deps.db.transact([key, sk], (docs) => {
@@ -209,8 +217,8 @@ export class IncidentService {
     ).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   }
   async audio(session: Session, id: string) {
-    const r=await this.record(session,id);
-    requireCondition(r.audioKey,404,"NO_AUDIO","This is a text report.");
+    const r = await this.record(session, id);
+    requireCondition(r.audioKey, 404, "NO_AUDIO", "This is a text report.");
     return this.deps.audio.get(r.audioKey);
   }
   async history(session: Session, id: string) {

@@ -32,6 +32,9 @@ export class ReviewService {
         ...r.incident,
         revision: r.incident.revision + 1,
         reviewDraft: draft,
+        ...(r.incident.contextVersion !== undefined
+          ? { reviewContextVersion: r.incident.contextVersion }
+          : {}),
       };
       return {
         result: incident,
@@ -85,6 +88,14 @@ export class ReviewService {
           409,
           "REVIEW_REQUIRED",
           "Save your review before approving.",
+        );
+      if (request.action === "approve")
+        requireCondition(
+          r.incident.contextVersion === undefined ||
+            r.incident.reviewContextVersion === r.incident.contextVersion,
+          409,
+          "REVIEW_STALE",
+          "New information arrived. Recheck and save your review before approving.",
         );
       const at = new Date().toISOString();
       const incident: Incident = {

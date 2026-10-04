@@ -1,45 +1,36 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Activity,
-  ArrowRight,
-  Headphones,
-  Mic,
-  Radio,
-  RotateCcw,
+  Plus,
+  MessageSquare,
   ShieldCheck,
-  X,
-  BookOpen,
+  RotateCcw,
+  Radio,
 } from "lucide-react";
-import type {
-  Incident,
-  IntakeRequest,
-  ReviewDraft,
-  DecisionRequest,
-} from "@copilot/contracts";
+import type { Incident, IntakeRequest } from "@copilot/contracts";
 import { auth, clearUser } from "./firebase";
 import { apiRequest } from "./api";
-import { CallerView, type Sample } from "./features/caller/CallerView";
-import { ResponderView } from "./features/responder/ResponderView";
+import type { Sample } from "./features/caller/CallerView";
+import { StartIncident } from "./features/conversation/StartIncident";
+import { ConversationWorkspace } from "./features/conversation/ConversationWorkspace";
 export default function App() {
   const [ready, setReady] = useState(false),
     [loading, setLoading] = useState(true),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
     [mode, setMode] = useState("fixture"),
-    [view, setView] = useState<"caller" | "responder">("caller"),
     [samples, setSamples] = useState<Sample[]>([]),
     [incidents, setIncidents] = useState<Incident[]>([]),
-    [selectedId, setSelectedId] = useState(""),
-    [guide, setGuide] = useState(false);
-  const decisionKey = useRef<string>("");
-  const selected = incidents.find((i) => i.id === selectedId);
+    [selected, setSelected] = useState(""),
+    [initial, setInitial] = useState("");
   function select(id: string) {
-    setSelectedId(id);
+    setSelected(id);
+    setInitial("");
     sessionStorage.setItem("copilot-incident", id);
   }
   function update(i: Incident) {
-    setIncidents((rows) =>
-      [i, ...rows.filter((r) => r.id !== i.id)].sort((a, b) =>
+    setIncidents((old) =>
+      [i, ...old.filter((x) => x.id !== i.id)].sort((a, b) =>
         b.createdAt.localeCompare(a.createdAt),
       ),
     );
@@ -48,17 +39,14 @@ export default function App() {
     setBusy(true);
     setError("");
     try {
-      const session = await apiRequest<{ mode: string }>("/session", {
+      const s = await apiRequest<{ mode: string }>("/session", {
         method: "POST",
       });
       const rows = await apiRequest<Incident[]>("/incidents");
-      setMode(session.mode);
+      setMode(s.mode);
       setIncidents(rows);
       const saved = sessionStorage.getItem("copilot-incident");
-      if (saved && rows.some((i) => i.id === saved)) {
-        select(saved);
-        setView("responder");
-      }
+      if (saved && rows.some((i) => i.id === saved)) setSelected(saved);
       setReady(true);
     } catch (e) {
       setError((e as Error).message);
@@ -78,319 +66,214 @@ export default function App() {
           setMode(v.mode);
         }
       })
-      .catch(() => {
-        if (alive)
-          setError(
-            "The local API is unavailable. Check the terminal and retry.",
-          );
-      });
+      .catch(() =>
+        setError(
+          "The local API is unavailable. Please check the development server.",
+        ),
+      );
     auth.authStateReady().then(() => {
-      if (!alive) return;
-      if (auth.currentUser) void start();
-      else setLoading(false);
+      if (alive) {
+        if (auth.currentUser) void start();
+        else setLoading(false);
+      }
     });
     return () => {
       alive = false;
     };
   }, []);
-  useEffect(() => {
-    if (selected?.analysisState !== "processing") return;
-    let active = true,
-      attempts = 0;
-    const timer = setInterval(() => {
-      if (++attempts > 30) {
-        clearInterval(timer);
-        return;
-      }
-      apiRequest<Incident>(`/incidents/${selected.id}`)
-        .then((i) => {
-          if (active) update(i);
-        })
-        .catch(() => {});
-    }, 2000);
-    return () => {
-      active = false;
-      clearInterval(timer);
-    };
-  }, [selectedId, selected?.analysisState]);
-  async function act(fn: () => Promise<void>) {
+  async function submit(metadata: IntakeRequest, file?: File) {
     setBusy(true);
     setError("");
     try {
-      await fn();
-    } catch (e) {
-      setError((e as Error).message);
-    } finally {
-      setBusy(false);
-    }
-  }
-  async function analyze(i: Incident) {
-    update({ ...i, analysisState: "processing" });
-    try {
-      update(
-        await apiRequest<Incident>(`/incidents/${i.id}/analyze`, {
-          method: "POST",
-        }),
-      );
-    } catch (e) {
-      update(await apiRequest<Incident>(`/incidents/${i.id}`));
-      throw e;
-    }
-  }
-  async function submit(metadata: IntakeRequest, file?: File) {
-    await act(async () => {
       let body: BodyInit;
       if (file) {
-        const data = new FormData();
-        data.append("metadata", JSON.stringify(metadata));
-        data.append("audio", file);
-        body = data;
+        const form = new FormData();
+        form.append("metadata", JSON.stringify(metadata));
+        form.append("audio", file);
+        body = form;
       } else body = JSON.stringify(metadata);
       const i = await apiRequest<Incident>("/incidents", {
         method: "POST",
         body,
       });
       update(i);
-      select(i.id);
-      setView("responder");
-      await analyze(i);
-    });
-  }
-  async function save(draft: ReviewDraft) {
-    if (!selected) return;
-    await act(async () => {
-      update(
-        await apiRequest<Incident>(`/incidents/${selected.id}/review`, {
-          method: "PATCH",
-          body: JSON.stringify({ expectedRevision: selected.revision, draft }),
-        }),
-      );
-      decisionKey.current = "";
-    });
-  }
-  async function decide(action: DecisionRequest["action"], reason: string) {
-    if (!selected) return;
-    await act(async () => {
-      decisionKey.current ||= crypto.randomUUID();
-      update(
-        await apiRequest<Incident>(`/incidents/${selected.id}/decision`, {
-          method: "POST",
-          body: JSON.stringify({
-            expectedRevision: selected.revision,
-            action,
-            reason,
-            idempotencyKey: decisionKey.current,
-          }),
-        }),
-      );
-      decisionKey.current = "";
-    });
+      setSelected(i.id);
+      setInitial(i.id);
+      sessionStorage.setItem("copilot-incident", i.id);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
   }
   async function reset() {
-    await act(async () => {
+    setBusy(true);
+    try {
       await apiRequest("/session", { method: "DELETE" });
       await clearUser();
       sessionStorage.removeItem("copilot-incident");
       setReady(false);
+      setSelected("");
+      setInitial("");
       setIncidents([]);
-      setSelectedId("");
-      setView("caller");
-    });
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
   }
   return (
-    <div className="app-shell">
-      <aside className="sidebar">
-        <a className="brand" href="/" aria-label="Response Copilot home">
-          <span className="brand-icon">
+    <div className="officer-app">
+      <aside className="officer-sidebar">
+        <a className="officer-brand" href="/">
+          <span>
             <Activity size={23} />
           </span>
-          <span>
-            response<span className="brand-sub">COPILOT</span>
-          </span>
+          <div>
+            response<small>COPILOT</small>
+          </div>
         </a>
-        <div className="workspace-label">DEMO WORKSPACE</div>
-        <nav aria-label="Workspace">
-          <button
-            className={view === "caller" ? "nav-item active" : "nav-item"}
-            onClick={() => setView("caller")}
-          >
-            <Mic size={18} />
-            Caller intake
-          </button>
-          <button
-            className={view === "responder" ? "nav-item active" : "nav-item"}
-            onClick={() => setView("responder")}
-          >
-            <Headphones size={18} />
-            Responder desk
-            {incidents.length > 0 && (
-              <span className="nav-count">{incidents.length}</span>
-            )}
-          </button>
+        <div className="sidebar-caption">SECURITY OPERATIONS</div>
+        <button
+          className="new-incident"
+          disabled={!ready}
+          onClick={() => select("")}
+        >
+          <Plus size={17} />
+          New incident
+        </button>
+        <div className="sidebar-section-title">
+          CONVERSATIONS <span>{incidents.length}</span>
+        </div>
+        <nav aria-label="Incident conversations">
+          {incidents.map((i) => (
+            <button
+              key={i.id}
+              className={`conversation-nav ${selected === i.id ? "selected" : ""}`}
+              onClick={() => select(i.id)}
+            >
+              <MessageSquare size={16} />
+              <div>
+                <strong>
+                  {i.assessment?.locationDescription ||
+                    `Incident ${i.id.slice(0, 6).toUpperCase()}`}
+                </strong>
+                <span>
+                  {i.reviewState === "approved"
+                    ? "Simulation complete"
+                    : i.reviewState === "closed"
+                      ? "Closed"
+                      : i.assessment?.summary?.slice(0, 60) ||
+                        "Report received"}
+                </span>
+              </div>
+            </button>
+          ))}
+          {!incidents.length && (
+            <p className="sidebar-empty">
+              Your incident conversations
+              <br />
+              will appear here.
+            </p>
+          )}
         </nav>
         <div className="sidebar-bottom">
-          <div className="human-mark">
-            <ShieldCheck size={20} />
+          <div>
+            <span className="coordinator-emblem">
+              <Radio size={18} />
+            </span>
             <div>
-              Human judgment.
-              <br />
-              <span>At every critical step.</span>
+              <strong>AI emergency coordinator</strong>
+              <small>
+                {mode === "fixture"
+                  ? "Local demonstration"
+                  : "Gemini connected"}
+              </small>
             </div>
           </div>
-          <button className="nav-item" onClick={() => setGuide(!guide)}>
-            <BookOpen size={17} />
-            Demo guide
+          <button onClick={reset} disabled={!ready || busy}>
+            <RotateCcw size={14} />
+            Reset session
           </button>
-          {ready && (
-            <button className="nav-item" disabled={busy} onClick={reset}>
-              <RotateCcw size={17} />
-              Reset session
-            </button>
-          )}
-          <span className="sidebar-foot">
-            Emergency intake prototype · v0.1
-          </span>
         </div>
       </aside>
-      <div className="main-shell">
-        <header className="topbar">
-          <div className="breadcrumb">
-            Workspace <span>/</span>{" "}
-            <strong>
-              {view === "caller" ? "Caller intake" : "Responder desk"}
-            </strong>
-          </div>
-          <div className="topbar-right">
-            <span className="mode-badge">
-              <span className="status-dot" />
-              {mode === "fixture" ? "Fixture analysis" : "Live Gemini analysis"}
-            </span>
-            <span className="avatar">DR</span>
-            {ready && (
-              <button
-                className="mobile-reset"
-                aria-label="Reset session"
-                title="Reset session"
-                disabled={busy}
-                onClick={reset}
-              >
-                <RotateCcw size={16} />
-              </button>
-            )}
-          </div>
-        </header>
-        <div className="simulation-banner">
-          <ShieldCheck size={15} />
-          <strong>SIMULATION ONLY</strong>
-          <span>This prototype does not contact emergency services.</span>
+      <main className="officer-main">
+        <div className="simulation-strip">
+          <span>
+            <ShieldCheck size={14} />
+            <strong>SIMULATION</strong> No emergency services are contacted.
+          </span>
+          <button
+            className="mobile-reset"
+            disabled={!ready || busy}
+            onClick={reset}
+          >
+            Reset session
+          </button>
         </div>
-        <main>
-          {error && (
-            <div role="alert" className="error-banner">
-              <span>{error}</span>
-              <button aria-label="Dismiss error" onClick={() => setError("")}>
-                <X size={17} />
-              </button>
-            </div>
-          )}
-          {guide && (
-            <section className="card guide">
-              <h2>Try the complete workflow</h2>
-              <ol>
-                <li>
-                  Start a demo session and choose a fictional audio sample.
-                </li>
-                <li>
-                  Submit it, replay the recording, and inspect the reported
-                  facts.
-                </li>
-                <li>
-                  Edit and save the human review, then enter a decision reason.
-                </li>
-                <li>
-                  Approve the simulation or close with a reason. No real
-                  dispatch occurs.
-                </li>
-              </ol>
-              <p>
-                Local fixture results are prepared examples, not live AI
-                inference. All reports belong to your session.
-              </p>
-              <button className="text-button" onClick={() => setGuide(false)}>
-                Close guide
-              </button>
-            </section>
-          )}
-          {!ready ? (
-            <section className="welcome">
-              <span className="eyebrow">EMERGENCY RESPONSE COPILOT</span>
-              <div className="welcome-wave">
-                <Radio size={60} />
-              </div>
-              <h1>
-                From a distressed voice
-                <br />
-                to an informed response.
-              </h1>
-              <p>
-                A workspace for turning fragmented reports into
-                <br />
-                clear context, with a human always in control.
-              </p>
-              <button
-                className="primary large"
-                disabled={busy || loading}
-                onClick={start}
+        <div className="mobile-nav">
+          <strong>response copilot</strong>
+          {ready && (
+            <>
+              <button onClick={() => select("")}>New incident</button>
+              <select
+                aria-label="Choose incident conversation"
+                value={selected}
+                onChange={(e) => select(e.target.value)}
               >
-                {loading
-                  ? "Connecting…"
-                  : busy
-                    ? "Starting…"
-                    : "Start demo session"}
-                <ArrowRight size={19} />
-              </button>
-              <div className="welcome-pillars">
-                <span>
-                  <Mic size={18} />
-                  Voice-first intake
-                </span>
-                <span>
-                  <Activity size={18} />
-                  Evidence-linked briefs
-                </span>
-                <span>
-                  <ShieldCheck size={18} />
-                  Human verification
-                </span>
-              </div>
-              <p className="welcome-fine">
-                Fictional scenarios · Private demo session · No real dispatch
-              </p>
-            </section>
-          ) : view === "caller" ? (
-            <CallerView
-              samples={samples}
-              mode={mode}
-              busy={busy}
-              onSubmit={submit}
-            />
-          ) : (
-            <ResponderView
-              incidents={incidents}
-              selected={selected}
-              busy={busy}
-              onSelect={select}
-              onSave={save}
-              onDecide={decide}
-              onRetry={() => selected && void act(() => analyze(selected))}
-            />
+                <option value="">New report</option>
+                {incidents.map((i) => (
+                  <option key={i.id} value={i.id}>
+                    {i.id.slice(0, 6).toUpperCase()}
+                  </option>
+                ))}
+              </select>
+            </>
           )}
-          <footer>
-            Designed to support a responder’s judgment.
-            <span>Google Cloud AI Builder Cup · Prototype</span>
-          </footer>
-        </main>
-      </div>
+        </div>
+        {error && (
+          <div className="app-error" role="alert">
+            {error}
+          </div>
+        )}
+        {loading ? (
+          <div className="entry-screen">
+            <p>Opening your workspace…</p>
+          </div>
+        ) : !ready ? (
+          <div className="entry-screen">
+            <span className="entry-emblem">
+              <Radio size={40} />
+            </span>
+            <span className="caps">A CLEARER FIRST RESPONSE</span>
+            <h1>
+              Your report starts
+              <br />a conversation.
+            </h1>
+            <p>
+              Talk through an incident with an AI emergency coordinator. Clarify
+              what’s known, keep track of what isn’t, and stay in control of the
+              decision.
+            </p>
+            <button className="primary" disabled={busy} onClick={start}>
+              {busy ? "Starting…" : "Start demo session"}
+            </button>
+            <small>
+              Five fictional scenarios · Scripted local demonstration
+            </small>
+          </div>
+        ) : selected ? (
+          <ConversationWorkspace
+            key={selected}
+            id={selected}
+            initial={initial === selected}
+            mode={mode}
+            onUpdate={update}
+          />
+        ) : (
+          <StartIncident samples={samples} busy={busy} onStart={submit} />
+        )}
+      </main>
     </div>
   );
 }

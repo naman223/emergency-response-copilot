@@ -17,8 +17,11 @@ export async function resetSession(
     const key = incidentKey(id),
       record = await db.get<IncidentRecord>(key);
     if (record) {
-      if(record.audioKey) await audio.remove(record.audioKey);
-      for(const tid of record.turnIds??[]){const tk=`turn:${id}:${tid}`;await db.transact([tk],()=>({result:null,remove:[tk]}));}
+      if (record.audioKey) await audio.remove(record.audioKey);
+      for (const tid of record.turnIds ?? []) {
+        const tk = `turn:${id}:${tid}`;
+        await db.transact([tk], () => ({ result: null, remove: [tk] }));
+      }
       await db.transact([key], () => ({ result: null, remove: [key] }));
     }
   }

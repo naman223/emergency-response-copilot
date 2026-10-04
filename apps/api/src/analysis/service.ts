@@ -1,4 +1,4 @@
-import {reserveInference} from './budget';
+import { reserveInference } from "./budget";
 import { randomUUID } from "node:crypto";
 import { parseModelBrief, type Incident } from "@copilot/contracts";
 import { AppError, requireCondition } from "../errors";
@@ -28,8 +28,18 @@ export class AnalysisService {
     const record = await this.d.db.transact([key, sk, gk], (docs) => {
       const s = assertSession(docs[sk]),
         r = own(docs[key], s);
-      requireCondition(!r.turnIds?.length,409,"CONVERSATION_STARTED","Continue in the incident conversation.");
-      requireCondition(r.audioKey,400,"NO_AUDIO","This report has no audio.");
+      requireCondition(
+        !r.turnIds?.length,
+        409,
+        "CONVERSATION_STARTED",
+        "Continue in the incident conversation.",
+      );
+      requireCondition(
+        r.audioKey,
+        400,
+        "NO_AUDIO",
+        "This report has no audio.",
+      );
       requireCondition(
         !["approved", "closed"].includes(r.incident.reviewState) &&
           !r.incident.reviewDraft,
@@ -55,7 +65,7 @@ export class AnalysisService {
         "ATTEMPT_LIMIT",
         "Three analysis attempts used. Continue with manual review.",
       );
-      const budget=reserveInference(docs,sk,now);
+      const budget = reserveInference(docs, sk, now);
       const next: IncidentRecord = {
         ...r,
         attempts: r.attempts + 1,

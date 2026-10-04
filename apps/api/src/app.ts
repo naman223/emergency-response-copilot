@@ -1,3 +1,8 @@
+import { registerConversationRoutes } from "./conversation/routes";
+import type { ConversationProvider } from "./conversation/provider";
+import { readFile } from "node:fs/promises";
+import { resolve } from "node:path";
+import { fixtureRoot } from "./incidents/service";
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import multipart from "@fastify/multipart";
@@ -19,6 +24,7 @@ export type AppDependencies = {
   db: Database;
   audio: AudioStore;
   provider: AnalysisProvider;
+  conversationProvider?: ConversationProvider;
   verifyToken: (token: string) => Promise<string>;
 };
 export async function buildApp(d: AppDependencies) {
@@ -78,6 +84,16 @@ export async function buildApp(d: AppDependencies) {
     samples: await samples(),
     mode: d.config.mode,
   }));
+  app.get("/api/samples/:sampleId/audio", async (r, reply) => {
+    await session(r);
+    const sampleId = (r.params as any).sampleId;
+    if (!(await samples()).some((s) => s.id === sampleId))
+      throw new AppError(404, "NOT_FOUND", "Sample not found.");
+    return reply
+      .type("audio/wav")
+      .send(await readFile(resolve(fixtureRoot(), "audio", sampleId + ".wav")));
+  });
+  registerConversationRoutes(app, d);
   app.post("/api/session", async (r) => {
     const s = await startSession(d.db, await uid(r));
     return { expiresAt: s.expiresAt, mode: d.config.mode };

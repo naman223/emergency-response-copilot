@@ -1,4 +1,4 @@
-import { conversationAssessmentSchema } from './conversation';
+import { conversationAssessmentSchema } from "./conversation";
 import { z } from "zod";
 import { analysisSchema, routingSchema, urgencySchema } from "./analysis";
 export const sourceLocationSchema = z.strictObject({

@@ -1,0 +1,31 @@
+{
+  "opening": "The caller reports a fall, but an exact address is missing. I suggest human review with medical routing based on the reported fall. Location and injury details remain important gaps in the handover.",
+  "question": "Which site is the caller at?",
+  "followup": "Do you have any information about injuries?",
+  "answers": [
+    "No injuries reported",
+    "Injuries reported",
+    "Unknown"
+  ],
+  "transcript": "Someone fell down and is not responding to me. I do not know the address. Please help.",
+  "assessment": {
+    "summary": "The caller reports a fall, but an exact address is missing. I suggest human review with medical routing based on the reported fall. Location and injury details remain important gaps in the handover.",
+    "facts": [
+      {
+        "text": "Person reportedly unresponsive",
+        "source": {
+          "source": "transcript",
+          "quote": "is not responding to me"
+        },
+        "evidenceStatus": "unverified"
+      }
+    ],
+    "unknowns": [
+      "Exact location unknown",
+      "Injury status unknown"
+    ],
+    "urgency": "urgent_review",
+    "routing": "medical",
+    "locationDescription": ""
+  }
+}

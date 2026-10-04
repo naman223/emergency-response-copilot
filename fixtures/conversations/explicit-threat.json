@@ -1,0 +1,39 @@
+{
+  "opening": "The caller reports being followed near the north gate and says the person has a knife. I suggest urgent human review because the reported pursuit and weapon occur together. The exact site and injury status remain unconfirmed.",
+  "question": "Which site does the north gate refer to?",
+  "followup": "Do you have any information about injuries?",
+  "answers": [
+    "No injuries reported",
+    "Injuries reported",
+    "Unknown"
+  ],
+  "transcript": "Someone is following me near the north gate. He has a knife. Please send help now.",
+  "assessment": {
+    "summary": "The caller reports being followed near the north gate and says the person has a knife. I suggest urgent human review because the reported pursuit and weapon occur together. The exact site and injury status remain unconfirmed.",
+    "facts": [
+      {
+        "text": "Caller reports being followed",
+        "source": {
+          "source": "transcript",
+          "quote": "Someone is following me"
+        },
+        "evidenceStatus": "unverified"
+      },
+      {
+        "text": "Weapon reported",
+        "source": {
+          "source": "transcript",
+          "quote": "He has a knife"
+        },
+        "evidenceStatus": "unverified"
+      }
+    ],
+    "unknowns": [
+      "Exact location unknown",
+      "Injury status unknown"
+    ],
+    "urgency": "urgent_review",
+    "routing": "police",
+    "locationDescription": ""
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "opening": "The recording appears to describe a kitchen equipment enquiry. Mentioning a knife does not by itself establish a threat. I suggest standard review while we clarify the context and location.",
+  "question": "Which site is the enquiry about?",
+  "followup": "Is this an equipment enquiry, or is someone being threatened?",
+  "answers": [
+    "Equipment enquiry only",
+    "A person is being threatened",
+    "Unknown"
+  ],
+  "transcript": "I am organising a cooking class tomorrow. Can I bring a kitchen knife? Nobody is hurt and there is no emergency.",
+  "assessment": {
+    "summary": "The recording appears to describe a kitchen equipment enquiry. Mentioning a knife does not by itself establish a threat. I suggest standard review while we clarify the context and location.",
+    "facts": [
+      {
+        "text": "Future cooking class",
+        "source": {
+          "source": "transcript",
+          "quote": "cooking class tomorrow"
+        },
+        "evidenceStatus": "unverified"
+      },
+      {
+        "text": "Caller denies an emergency",
+        "source": {
+          "source": "transcript",
+          "quote": "there is no emergency"
+        },
+        "evidenceStatus": "unverified"
+      }
+    ],
+    "unknowns": [
+      "Exact location unknown",
+      "Further context unknown"
+    ],
+    "urgency": "standard_review",
+    "routing": "other",
+    "locationDescription": ""
+  }
+}

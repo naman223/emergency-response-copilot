@@ -11,3 +11,5 @@ Audio is limited to 10 MiB and 60 seconds; FFmpeg normalizes supported uploads t
 `npm test` covers schemas, media validation, provider failures, quotas and cleanup. `npm run test:integration` starts isolated local emulators for authenticated storage/transaction tests. Do not run it while the demo suite already occupies the ports. `npm run test:e2e` runs the browser acceptance flows against the actual app and emulators.
 
 Code is formatted with `npm exec -- prettier --write <files>`. `.env`, credentials, generated logs, editor configuration, and test captures are excluded from Git. Do not record real incidents in this prototype.
+
+Conversation turns use the same session ownership and expiry as incidents. See [conversation guide](conversations.md) for scripted branches, streaming recovery, and the live-model boundary.

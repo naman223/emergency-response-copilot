@@ -11,21 +11,22 @@ npm ci --registry=https://registry.npmjs.org
 npm run dev
 ```
 
-Open **http://127.0.0.1:5173**. Click **Start demo session**, select a sample and submit it. At the responder desk, replay the recording, review the evidence, edit and save the human review, enter a reason and approve the simulation. Reset deletes your demo reports. Stopping the emulator suite clears local emulator state.
+Open **http://127.0.0.1:5173**. Click **Start demo session**, then **Start conversation** on a sample card. You are the security officer; the AI coordinator acknowledges the recording and asks a follow-up. Choose a suggested answer, reply **Unknown**, or correct the location. Open **Review and decide**, save your human review, enter a reason and approve the simulation. Reset deletes your demo reports. Stopping the emulator suite clears local emulator state.
 
 Local ports: web 5173, API 8181, Auth emulator 9099, Firestore 8180, Storage 9199. Development listens on loopback. This URL works on the computer running the application; it is not a public judging URL.
 
 ## What works
 
-- Caller intake: five fictional audio scenarios, recording/upload, optional device location or text description.
-- Responder desk: original audio, draft transcript, reported facts, evidence quotes, unknowns, suggested urgency/routing, editable human review, and decision history.
+- Conversation-first officer workspace: five fictional scenarios, text reports, recording/upload, optional device location and private original audio.
+- Streamed coordinator replies, targeted clarifications, suggested answers, location corrections, and a context panel showing sourced facts, unknowns and suggested routing.
+- Human review remains separate: new context preserves saved edits but requires rechecking before approval.
 - Session ownership checks for data, audio, edits and approvals; private Firestore/Storage rules.
 - Transactional revision checks and idempotent simulated dispatch.
 - Validation of media size/type/duration; bounded processing, retries and request quotas; failed analysis preserves the recording for manual review.
 - Session reset and expiration enforcement, plus a cleanup job entry point.
 - A Vertex AI Gemini adapter and Cloud Run container configuration for later cloud setup.
 
-**Fixture mode is explicit:** the five provided samples use prepared results. They exercise the entire application, storage and approval path, but do not call Gemini. Personal audio can be uploaded and reviewed manually; fixture analysis will report that it is unsupported. The app never silently replaces a failed live analysis with a prepared result.
+**Scripted sample mode is explicit:** the five provided samples use prepared conversation branches. They exercise the entire application, storage and approval path, but do not call Gemini. Personal text/audio reports can be saved and reviewed manually. Unsupported free-form sample messages are saved and get an honest limitation response. Scripted playback is not live Gemini output. The app never silently replaces a failed live analysis with a prepared result.
 
 ## Checks
 
@@ -50,7 +51,7 @@ Stop `npm run dev` before the integration command so it can start its own emulat
 - `fixtures`: fictional synthesized recordings and independently written expected results.
 - `docs`: approved design, implementation plan, local development, evaluation, and later deployment guidance.
 
-See [implementation status](docs/implementation-status.md), [development](docs/development.md), [judge walkthrough](docs/judging-guide.md), [evaluation](docs/evaluation.md), and [cloud setup](docs/deployment.md).
+See [sample conversation guide](docs/conversations.md), [implementation status](docs/implementation-status.md), [development](docs/development.md), [judge walkthrough](docs/judging-guide.md), [evaluation](docs/evaluation.md), and [cloud setup](docs/deployment.md).
 
 ## Current boundary
 

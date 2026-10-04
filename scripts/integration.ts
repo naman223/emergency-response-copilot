@@ -3,6 +3,7 @@ const filters = process.argv.slice(2);
 const command = [
   "node_modules/.bin/vitest",
   "run",
+  "--no-file-parallelism",
   ...(filters.length ? filters : ["apps/api/test/*.integration.test.ts"]),
 ].join(" ");
 const r = spawnSync(

@@ -46,3 +46,9 @@ Synthetic fixtures validate wiring, not model accuracy. Desktop and 390-pixel mo
 - Cloud deployment, hosting URL, scheduled cleanup execution, signed-out access checks and operational review.
 - Public repository/submission links and final PDF/video. Draft outlines are present only.
 - Dependency follow-up: the production npm audit reports zero high/critical and two moderate transitive advisories (`gaxios`/`uuid` via Google Cloud Storage). Reassess dependency updates before a public deployment; no forced incompatible upgrade was applied. The development tooling also has upstream advisories. Local emulator runs emit upstream Java deprecation and SDK listener/metadata warnings; checks still pass.
+
+## Conversational upgrade — 2026-10-04
+
+The approved conversational design replaces the role-switching form workflow with an officer/coordinator chat, streaming updates, targeted scripted clarifications and corrections, an incident context panel, and separately saved human review. The final card now has readable labels and consistent spacing. Original audio, transcript and human edits remain preserved. New context requires rechecking the saved review before approval.
+
+Conversation contract, service, provider, stream, review, real-emulator and browser checks are included. Live Gemini remains unverified; see [conversation guide](conversations.md). Final review and verification results follow after completion.
