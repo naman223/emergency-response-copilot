@@ -47,6 +47,57 @@ async function setup() {
     calls: () => calls,
   };
 }
+it("persists bounded intake and allows a manual finish without reopening on updates", async () => {
+  const s = await setup();
+  let snapshot = await s.service.get(s.session, s.incident.id);
+  for (let n = 0; n < 6; n++)
+    snapshot = await s.service.run(
+      s.session,
+      s.incident.id,
+      {
+        turnId: randomUUID(),
+        expectedRevision: snapshot.incident.revision,
+        kind: n ? "message" : "initial",
+        ...(n ? { text: "Unknown" } : {}),
+      },
+      async () => {},
+    );
+  expect(snapshot.incident.intakeState).toBe("ready");
+  expect(snapshot.turns.filter((t) => t.question)).toHaveLength(5);
+  snapshot = await s.service.run(
+    s.session,
+    s.incident.id,
+    {
+      turnId: randomUUID(),
+      expectedRevision: snapshot.incident.revision,
+      kind: "message",
+      text: "A voluntary update",
+    },
+    async () => {},
+  );
+  expect(snapshot.turns.at(-1)?.question).toBeNull();
+  const other = await s.intake.create(s.session, {
+    reportText: "Another fictional report",
+  });
+  const opened = await s.service.run(
+    s.session,
+    other.id,
+    { turnId: randomUUID(), expectedRevision: 1, kind: "initial" },
+    async () => {},
+  );
+  const done = await s.service.run(
+    s.session,
+    other.id,
+    {
+      turnId: randomUUID(),
+      expectedRevision: opened.incident.revision,
+      kind: "finish",
+    },
+    async () => {},
+  );
+  expect(done.incident.intakeState).toBe("ready");
+  expect(done.turns.at(-1)?.question).toBeNull();
+});
 it("persists text intake and deduplicates completed turns", async () => {
   const s = await setup();
   const req = {
@@ -311,6 +362,40 @@ it("coalesces rapid provider deltas into bounded delivery batches", async () => 
     },
   );
   expect(events.filter((e) => e.type === "delta").length).toBeLessThan(10);
+});
+it("never streams a follow-up question discarded by the urgent stopping rule", async () => {
+  const s = await setup();
+  const events: any[] = [];
+  const service = new ConversationService({
+    ...s,
+    provider: {
+      async *generate() {
+        yield { type: "delta" as const, text: result.reply };
+        yield {
+          type: "result" as const,
+          response: {
+            ...result,
+            assessment: { ...result.assessment, urgency: "urgent_review" },
+          },
+        };
+      },
+    },
+  });
+  const snap = await service.run(
+    s.session,
+    s.incident.id,
+    { turnId: randomUUID(), expectedRevision: 1, kind: "initial" },
+    async (e) => {
+      events.push(e);
+    },
+  );
+  expect(
+    events
+      .filter((e) => e.type === "delta")
+      .map((e) => e.text)
+      .join(""),
+  ).toBe(snap.turns[0].reply);
+  expect(snap.turns[0].reply).not.toContain("Which entrance?");
 });
 it("rejects retry of a failed turn superseded by a later message", async () => {
   const s = await setup();

@@ -1,6 +1,7 @@
 import type { ProviderInput } from "./provider";
 export function buildConversationContext(input: ProviderInput) {
   const context = {
+    intake: input.intake,
     originalReport: input.report.text,
     originalTranscript: input.report.transcript,
     assessment: input.assessment,

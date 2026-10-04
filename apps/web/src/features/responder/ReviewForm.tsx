@@ -41,7 +41,22 @@ export function ReviewForm({
     incident.analysisState === "processing" ||
     ["approved", "closed"].includes(incident.reviewState);
   function change<K extends keyof ReviewDraft>(key: K, value: ReviewDraft[K]) {
-    setDraft((d) => ({ ...d, [key]: value }));
+    setDraft((d) => ({
+      ...d,
+      [key]: value,
+      ...(key === "locationDescription"
+        ? {
+            confirmedFields: d.confirmedFields.filter(
+              (f) => f !== "locationDescription",
+            ),
+            destinationName: "",
+          }
+        : key === "routing" ||
+            (key === "confirmedFields" &&
+              !(value as string[]).includes("locationDescription"))
+          ? { destinationName: "" }
+          : {}),
+    }));
     setDirty(true);
   }
   return (
@@ -112,6 +127,43 @@ export function ReviewForm({
           />
           I verified this location description
         </label>
+        <div className="nearby-services">
+          <h3>Nearby service handoff</h3>
+          {draft.locationDescription.trim() &&
+          draft.confirmedFields.includes("locationDescription") ? (
+            <a
+              className="secondary"
+              target="_blank"
+              rel="noopener noreferrer"
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${draft.routing === "police" ? "police stations" : draft.routing === "fire" ? "fire stations" : draft.routing === "medical" ? "hospital emergency departments" : "emergency services"} near ${draft.locationDescription.trim()}`)}`}
+            >
+              Find nearby services in Google Maps
+            </a>
+          ) : (
+            <p className="hint">
+              Enter the full incident address or coordinates and verify it above
+              to search nearby services.
+            </p>
+          )}
+          <p className="hint">
+            Maps opens real listings. Check suitability and contact details;
+            proximity does not establish availability. No report is sent to a
+            service.
+          </p>
+          <label className="field">
+            Selected service for simulated handoff
+            <input
+              maxLength={300}
+              value={draft.destinationName ?? ""}
+              disabled={
+                !draft.confirmedFields.includes("locationDescription") ||
+                !draft.locationDescription.trim()
+              }
+              onChange={(e) => change("destinationName", e.target.value)}
+              placeholder="Service name chosen by the reviewer"
+            />
+          </label>
+        </div>
         <button
           className="secondary"
           disabled={!draft.summary.trim()}

@@ -38,6 +38,7 @@ export function useConversation(
     text?: string,
     base = current.current,
     retry?: ConversationTurn,
+    finish = false,
   ) {
     if (!base || running.current || !alive.current) return;
     running.current = true;
@@ -47,7 +48,7 @@ export function useConversation(
     const ctrl = new AbortController();
     controller.current = ctrl;
     const turnId = retry?.id ?? crypto.randomUUID();
-    const kind = text ? "message" : "initial";
+    const kind = finish ? "finish" : text ? "message" : "initial";
     const at = new Date().toISOString();
     if (!retry)
       apply({
@@ -58,7 +59,9 @@ export function useConversation(
             id: turnId,
             incidentId: id,
             kind,
-            officerText: text ?? "",
+            officerText: finish
+              ? "Finish assessment now with the available information."
+              : (text ?? ""),
             state: "processing",
             attempts: 1,
             createdAt: at,
@@ -144,6 +147,7 @@ export function useConversation(
     setError,
     send: (text: string) => execute(text),
     start: () => execute(),
+    finish: () => execute(undefined, current.current, undefined, true),
     retry: (turn: ConversationTurn) =>
       execute(undefined, current.current, turn),
     refresh,

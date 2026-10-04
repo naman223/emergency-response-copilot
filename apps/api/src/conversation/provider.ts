@@ -8,6 +8,7 @@ export type ProviderInput = {
   assessment?: ConversationAssessment;
   sampleId?: string;
   signal: AbortSignal;
+  intake?: import("./intake-policy").IntakePolicy;
 };
 export type ProviderChunk =
   { type: "delta"; text: string } | { type: "result"; response: unknown };

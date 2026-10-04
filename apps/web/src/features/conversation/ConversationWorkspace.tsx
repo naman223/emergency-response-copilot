@@ -11,6 +11,7 @@ import { ConversationThread } from "./ConversationThread";
 import { MessageComposer } from "./MessageComposer";
 import { IncidentContext } from "./IncidentContext";
 import { ReviewedIncident } from "./ReviewedIncident";
+import { urgencyLabel } from "./IncidentContext";
 import { ReviewForm } from "../responder/ReviewForm";
 import { apiRequest } from "../../api";
 export function ConversationWorkspace({
@@ -34,6 +35,12 @@ export function ConversationWorkspace({
   const chat = useConversation(id, initial, (s) => onUpdate(s.incident));
   const i = chat.snapshot?.incident;
   const closed = i && ["approved", "closed"].includes(i.reviewState);
+  const intakeReady = i?.intakeState === "ready";
+  useEffect(() => {
+    if (intakeReady) {
+      setShowPanel(true);
+    }
+  }, [intakeReady]);
   useEffect(() => {
     if (i)
       apiRequest<typeof history>(`/incidents/${id}/history`)
@@ -144,6 +151,42 @@ export function ConversationWorkspace({
             </button>
           </div>
         </div>
+        {i && !closed && (
+          <div
+            className={`intake-progress ${intakeReady ? "ready" : ""}`}
+            role="status"
+          >
+            <div>
+              <strong>
+                {intakeReady ? "Assessment ready" : "Essential clarification"}
+              </strong>
+              <p>
+                {intakeReady
+                  ? `${urgencyLabel(i.assessment?.urgency ?? "unclear")} · Suggested responder: ${i.assessment?.routing ?? "not determined"}. Review the handoff below; you can still add corrections.`
+                  : `${i.clarificationCount ?? 0} of up to 10 questions · Target: 5 essential questions. Unknown is accepted.`}
+              </p>
+            </div>
+            {intakeReady ? (
+              <button
+                className="secondary"
+                onClick={() => {
+                  setPanel("review");
+                  setShowPanel(true);
+                }}
+              >
+                Review handoff
+              </button>
+            ) : (
+              <button
+                className="secondary"
+                disabled={chat.busy || saving || !chat.snapshot?.turns.length}
+                onClick={() => void chat.finish()}
+              >
+                Finish assessment now
+              </button>
+            )}
+          </div>
+        )}
         {chat.error && (
           <div className="chat-error" role="alert">
             {chat.error}

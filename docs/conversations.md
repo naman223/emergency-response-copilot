@@ -14,13 +14,25 @@ The local provider is deterministic, not a language model. It recognizes these d
 
 Other messages are retained but do not update the assessment; the coordinator says that free-form interpretation requires the live model. Original input and unverified officer information are separate from a human's saved review.
 
-## Human decision
+## Bounded intake and service handoff
+
+The coordinator targets five essential topics: incident location, what happened, immediate danger, injuries/medical needs, and caller safety/contact. It asks only for missing information. Five clarification questions is the normal target; after that the model must identify a critical reason to continue, and the server enforces a hard ceiling of ten. Urgent assessments and sufficient-information responses finish earlier. **Finish assessment now** also closes intake with the information available.
+
+**Assessment ready** presents urgency, suggested responder and remaining unknowns. New officer updates revise the assessment without restarting clarification. Readiness is separate from human approval; it cannot send a dispatch. Urgency is assessed throughout, so an urgent report does not wait for ten answers.
+
+During generation the app streams progress states. Reply text is published after schema validation and the stopping rule, so a discarded follow-up question cannot appear briefly before the final assessment. This means live text may arrive as one batch after the model finishes.
+
+In **Review handoff**, enter and verify the full incident address or coordinates. **Find nearby services in Google Maps** opens real map search results for police stations, fire stations, hospital emergency departments, or other emergency services near that location. It shares the search location/type with Google Maps, not the incident narrative. Results are not an automatic nearest-available dispatch decision. The reviewer checks suitability/contact details and records a selected service name; saving and approving retains it in the simulated handoff report. No service is contacted. Changing the location/routing or removing location confirmation clears the selected destination.
+
+The existing 20-turn limit includes initial intake, clarifications, finish requests and voluntary updates. Interrupted attempts do not consume additional completed-question count, and retries cannot reopen a ready assessment.
+
+## Saving and approving the human review
 
 Open **Review and decide**, check and save the summary, urgency, routing and location, enter a decision reason, then approve the simulation or close the report. A new assessed clarification invalidates the saved review's context version without deleting its text. Recheck and save it before approval. Unknown information does not prevent a deliberate human decision. A chat message alone never dispatches.
 
 ## Streaming and recovery
 
-The server streams typed progress and reply events using authenticated fetch. Local chunks are labeled scripted playback; live mode uses Gemini response chunks. Partial replies are provisional. Only a completely validated result updates context. After a disconnect or process interruption, reload retrieves the stored turn; an expired lease becomes interrupted and can be retried up to three attempts. Only the latest interrupted turn can be retried; after a later message, continue from that message instead. Original reports remain available for manual review.
+The server streams typed progress and reply events using authenticated fetch. Local mode is labeled scripted playback; live mode receives Gemini response chunks but buffers the text until validation and the stopping rule are applied. Only an accepted result is published and updates context. After a disconnect or process interruption, reload retrieves the stored turn; an expired lease becomes interrupted and can be retried up to three attempts. Only the latest interrupted turn can be retried; after a later message, continue from that message instead. Original reports remain available for manual review.
 
 Limits: twenty turns per incident, one active generation per session, three attempts per turn, 45-second provider deadline, 30 calls per session/hour and 100 globally/hour. Context and raw model responses are bounded. Reset deletes the incident's turns and audio after revoking the session.
 

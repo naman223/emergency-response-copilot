@@ -48,6 +48,15 @@ export function ReviewedIncident({
               </small>
             </div>
           </dl>
+          {d.destinationName && (
+            <>
+              <h3>Simulated handoff destination</h3>
+              <p>{d.destinationName}</p>
+              <small>
+                Selected by the human reviewer. No service was contacted.
+              </small>
+            </>
+          )}
         </>
       )}
       {reason && (

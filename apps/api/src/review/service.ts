@@ -23,6 +23,14 @@ export class ReviewService {
         r = own(docs[key], s);
       this.editable(r.incident, expectedRevision);
       requireCondition(
+        !draft.destinationName?.trim() ||
+          (draft.locationDescription.trim() &&
+            draft.confirmedFields.includes("locationDescription")),
+        400,
+        "LOCATION_UNCONFIRMED",
+        "Confirm the incident location before selecting a handoff destination.",
+      );
+      requireCondition(
         r.history.length < 100,
         429,
         "HISTORY_LIMIT",

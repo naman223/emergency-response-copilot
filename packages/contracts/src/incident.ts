@@ -16,6 +16,7 @@ export const reviewDraftSchema = z.strictObject({
   confirmedFields: z
     .array(z.enum(["summary", "urgency", "routing", "locationDescription"]))
     .max(4),
+  destinationName: z.string().trim().max(300).optional(),
 });
 export const receiptSchema = z.strictObject({
   id: z.uuid(),
@@ -40,6 +41,8 @@ export const incidentSchema = z.strictObject({
   sourceTranscript: z.string().max(12000).optional(),
   contextVersion: z.number().int().nonnegative().optional(),
   reviewContextVersion: z.number().int().nonnegative().optional(),
+  intakeState: z.enum(["clarifying", "ready"]).optional(),
+  clarificationCount: z.number().int().min(0).max(10).optional(),
   reviewDraft: reviewDraftSchema.optional(),
   failureCode: z.string().optional(),
   dispatchReceipt: receiptSchema.optional(),

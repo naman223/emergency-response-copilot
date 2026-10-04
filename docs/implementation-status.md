@@ -1,4 +1,16 @@
-# Local milestone — 2026-10-04
+# Local implementation status
+
+## Bounded intake and handoff — 2026-10-05
+
+Approved intake now targets five essential questions, permits critical-gap clarification up to a server-enforced ceiling of ten, and ends earlier for urgent or sufficiently complete assessments. Officers can choose **Finish assessment now**. Persisted **Assessment ready** status prevents later updates or reloads from restarting the questionnaire; the brief retains unknown information and suggested urgency/routing for human review.
+
+Verified incident locations enable a Google Maps search for nearby services of the reviewed responder type. The reviewer chooses and records a service name for the existing human-approved simulated handoff. This is an external real-listings search, not automated nearest-facility selection or service availability verification. No emergency service is contacted.
+
+One independent review identified two issues, both corrected: raw model follow-up text could appear before the stopping rule discarded it, and removing location confirmation could strand a selected destination. Reply text is now buffered until validation and intake policy acceptance, while progress events continue to stream; removing confirmation clears the destination. Regression checks cover both fixes.
+
+Validation: 58 unit tests, 11 emulator integration tests, typecheck and frontend/API production builds passed. The browser suite passed 13 cases; its remaining recovery case used an obsolete urgent-sample clarification expectation and passed on a targeted rerun after switching to an ambiguous sample. All 14 browser cases are therefore covered across those two runs. A separate live Gemini Chrome check verified manual completion, a later location update without renewed clarification, the confirmed-location Maps handoff, and the mobile composer. Desktop and 390-pixel mobile screens were inspected. These limited live checks verify connectivity and workflow behavior, not emergency-response accuracy. The local live preview remains at `http://127.0.0.1:5173`; no public deployment was made.
+
+The following sections retain earlier milestone results and boundaries.
 
 ## Live connection update — 2026-10-04
 

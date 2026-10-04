@@ -40,7 +40,7 @@ test("late microphone permission is released after leaving caller intake", async
   await page.getByRole("button", { name: "Record audio", exact: true }).click();
   await page
     .getByRole("button", {
-      name: "Start sample conversation: Followed near the north gate",
+      name: "Start sample conversation: Unclear noise outside",
       exact: true,
     })
     .click();
@@ -89,7 +89,7 @@ test("reload recovers an interrupted final attempt into manual review", async ({
   );
   await page
     .getByRole("button", {
-      name: "Start sample conversation: Followed near the north gate",
+      name: "Start sample conversation: Unclear noise outside",
     })
     .click();
   const i = await (await created).json();

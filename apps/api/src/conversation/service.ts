@@ -17,6 +17,7 @@ import type { Config } from "../config";
 import { reserveInference } from "../analysis/budget";
 import { recoverConversation, turnKey } from "./recovery";
 import type { ConversationProvider, ProviderInput } from "./provider";
+import { applyIntakePolicy } from "./intake-policy";
 type StoredTurn = {
   turn: ConversationTurn;
   canonical: string;
@@ -185,7 +186,9 @@ export class ConversationService {
             officerText:
               request!.kind === "initial"
                 ? (r.reportText ?? "")
-                : request!.text!,
+                : request!.kind === "finish"
+                  ? "Finish assessment now with the available information."
+                  : request!.text!,
             state: "pending",
             attempts: 0,
             createdAt: at,
@@ -243,11 +246,24 @@ export class ConversationService {
     let timer: ReturnType<typeof setTimeout> | undefined;
     let response: ReturnType<typeof validateCoordinatorResponse> | undefined;
     let failure: string | undefined;
+    let intakeReady = false;
+    let questionsAsked = reserved.record.incident.clarificationCount ?? 0;
     try {
       await send({ type: "status", stage: "receiving_report" });
       const snapshot = await this.get(session, id),
         r = reserved.record;
+      questionsAsked = snapshot.turns.filter(
+        (t) => t.state === "completed" && !!t.question,
+      ).length;
+      const intake = {
+        questionsAsked,
+        forceFinish:
+          r.incident.intakeState === "ready" ||
+          reserved.stored.turn.kind === "finish" ||
+          questionsAsked >= 10,
+      };
       const input: ProviderInput = {
+        intake,
         report: {
           ...(r.reportText ? { text: r.reportText } : {}),
           transcript:
@@ -277,9 +293,7 @@ export class ConversationService {
       const operation = async () => {
         let output: unknown,
           hasResult = false,
-          received = "",
-          pendingText = "",
-          lastDelivery = 0;
+          received = "";
         for await (const chunk of this.d.provider.generate(input)) {
           if (controller.signal.aborted) throw Error("Interrupted");
           if (chunk.type === "delta") {
@@ -290,12 +304,6 @@ export class ConversationService {
               "INVALID_RESPONSE",
               "Coordinator reply exceeded its limit.",
             );
-            pendingText += chunk.text;
-            if (Date.now() - lastDelivery >= 250) {
-              await send({ type: "delta", text: pendingText });
-              pendingText = "";
-              lastDelivery = Date.now();
-            }
           } else {
             requireCondition(
               !hasResult,
@@ -307,7 +315,6 @@ export class ConversationService {
             hasResult = true;
           }
         }
-        if (pendingText) await send({ type: "delta", text: pendingText });
         requireCondition(
           hasResult,
           502,
@@ -330,7 +337,13 @@ export class ConversationService {
           "INVALID_RESPONSE",
           "The coordinator response changed unexpectedly.",
         );
-        return parsed;
+        const bounded = applyIntakePolicy(
+          parsed,
+          intake,
+          r.incident.assessment,
+        );
+        intakeReady = bounded.ready;
+        return bounded.response;
       };
       await send({ type: "status", stage: "receiving_response" });
       const aborted = new Promise<never>((_, reject) => {
@@ -363,6 +376,9 @@ export class ConversationService {
           }, this.d.config.analysisTimeout);
         }),
       ]);
+      // Only publish text after the stopping rule has accepted it. A discarded
+      // follow-up must not flash on screen during urgent or completed intake.
+      await send({ type: "delta", text: response.reply });
       await send({ type: "status", stage: "updating_context" });
     } catch (e) {
       if (!response)
@@ -398,6 +414,13 @@ export class ConversationService {
       };
       if (failure) incident.failureCode = failure;
       else delete incident.failureCode;
+      if (response) {
+        incident.intakeState = intakeReady ? "ready" : "clarifying";
+        incident.clarificationCount = Math.min(
+          10,
+          questionsAsked + (response.question ? 1 : 0),
+        );
+      }
       if (response?.assessment) {
         incident.assessment = response.assessment;
         incident.contextVersion = (incident.contextVersion ?? 0) + 1;

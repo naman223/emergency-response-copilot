@@ -33,16 +33,17 @@ export const coordinatorResponseSchema = z.strictObject({
   suggestedReplies: z.array(z.string().max(200)).max(4),
   assessment: conversationAssessmentSchema.nullable(),
   transcript: z.string().max(12000).optional(),
+  clarificationReason: z.string().trim().max(300).optional(),
 });
 export const turnRequestSchema = z
   .strictObject({
     turnId: uuid,
     expectedRevision: z.number().int().positive(),
-    kind: z.enum(["initial", "message"]),
+    kind: z.enum(["initial", "message", "finish"]),
     text: z.string().trim().min(1).max(2000).optional(),
   })
   .refine(
-    (v) => (v.kind === "initial" ? !v.text : !!v.text),
+    (v) => (v.kind === "message" ? !!v.text : !v.text),
     "Message requires text; initial uses original report",
   );
 export const retryTurnRequestSchema = z.strictObject({
@@ -52,7 +53,7 @@ export const retryTurnRequestSchema = z.strictObject({
 export const conversationTurnSchema = z.strictObject({
   id: uuid,
   incidentId: uuid,
-  kind: z.enum(["initial", "message"]),
+  kind: z.enum(["initial", "message", "finish"]),
   officerText: z.string().max(2000),
   state: z.enum([
     "pending",

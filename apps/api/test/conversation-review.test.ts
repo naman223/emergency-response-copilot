@@ -34,6 +34,12 @@ it("preserves human edits but rejects approval after new coordinator context unt
     confirmedFields: [],
   };
   const saved = await review.save(session, i.id, snap.incident.revision, draft);
+  await expect(
+    review.save(session, i.id, saved.revision, {
+      ...draft,
+      destinationName: "Example police station",
+    }),
+  ).rejects.toMatchObject({ code: "LOCATION_UNCONFIRMED" });
   snap = await chat.run(
     session,
     i.id,
