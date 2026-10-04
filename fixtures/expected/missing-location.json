@@ -1,0 +1,17 @@
+{
+  "transcript": "Someone fell down and is not responding to me. I do not know the address. Please help.",
+  "facts": [
+    {
+      "text": "Person reportedly unresponsive",
+      "quote": "is not responding to me",
+      "evidenceStatus": "matched"
+    }
+  ],
+  "unknowns": [
+    "Exact location",
+    "Whether the person is breathing"
+  ],
+  "urgency": "urgent_review",
+  "routing": "medical",
+  "explanation": "Fictional demonstration: missing location. Human verification required."
+}

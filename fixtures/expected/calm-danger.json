@@ -1,0 +1,21 @@
+{
+  "transcript": "I am speaking calmly. There is thick smoke coming from the library. Two people are still inside. Please send help.",
+  "facts": [
+    {
+      "text": "Smoke reported",
+      "quote": "thick smoke coming from the library",
+      "evidenceStatus": "matched"
+    },
+    {
+      "text": "People reportedly inside",
+      "quote": "Two people are still inside",
+      "evidenceStatus": "matched"
+    }
+  ],
+  "unknowns": [
+    "Exact library location"
+  ],
+  "urgency": "urgent_review",
+  "routing": "fire",
+  "explanation": "Fictional demonstration: calm speech, urgent content. Human verification required."
+}

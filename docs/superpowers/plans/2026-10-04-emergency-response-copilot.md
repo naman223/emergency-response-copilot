@@ -10,6 +10,10 @@
 
 **Spec:** `docs/superpowers/specs/2026-10-04-emergency-response-copilot-design.md` (approved).
 
+## Execution status — 2026-10-04
+
+The user selected **local first**, with a cloud project to follow. Tasks 1–5 and the local portions of Tasks 6–7 are implemented. The detailed checkboxes below preserve the original execution recipe; current outcomes and deviations are recorded in [implementation status](../../implementation-status.md). Live Gemini evaluation, actual cloud deployment, scheduled cloud cleanup, public URLs and final PDF/video artifacts are deferred. Backend behavior tests were consolidated into a shared emulator workflow suite and focused service tests; related implementation is delivered together on the local feature branch.
+
 ## Global Constraints
 
 - Short audio clips are initially limited to 60 seconds.
@@ -170,4 +174,4 @@ Defaults selected for the MVP: 10 MiB upload limit, 60-second maximum decoded du
 - Review Focus items each map to explicit tests above.
 - Interfaces use one exported Incident/AnalysisBrief/ReviewDraft/DecisionRequest vocabulary; frontend API calls follow the paths above.
 - Credential-dependent checks are visible gates for live verification/deployment, not reasons to stop local implementation.
-- This plan has not been executed. No application checks or deployment outcomes are claimed.
+- Local execution is recorded in the linked implementation status. No live inference or cloud deployment outcomes are claimed.

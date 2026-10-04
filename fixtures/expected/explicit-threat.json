@@ -1,0 +1,22 @@
+{
+  "transcript": "Someone is following me near the north gate. He has a knife. Please send help now.",
+  "facts": [
+    {
+      "text": "Caller reports being followed",
+      "quote": "Someone is following me",
+      "evidenceStatus": "matched"
+    },
+    {
+      "text": "Weapon reported",
+      "quote": "He has a knife",
+      "evidenceStatus": "matched"
+    }
+  ],
+  "unknowns": [
+    "Exact address",
+    "Whether anyone is injured"
+  ],
+  "urgency": "urgent_review",
+  "routing": "police",
+  "explanation": "Fictional demonstration: explicit threat. Human verification required."
+}

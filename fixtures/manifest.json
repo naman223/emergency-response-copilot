@@ -1,0 +1,32 @@
+[
+  {
+    "id": "explicit-threat",
+    "title": "Followed near the north gate",
+    "label": "Explicit threat",
+    "description": "Explicit threat \u00b7 fictional synthesized recording"
+  },
+  {
+    "id": "calm-danger",
+    "title": "Calm report of smoke",
+    "label": "Calm speech, urgent content",
+    "description": "Calm speech, urgent content \u00b7 fictional synthesized recording"
+  },
+  {
+    "id": "benign-mention",
+    "title": "Kitchen equipment enquiry",
+    "label": "Benign weapon mention",
+    "description": "Benign weapon mention \u00b7 fictional synthesized recording"
+  },
+  {
+    "id": "ambiguous",
+    "title": "Unclear noise outside",
+    "label": "Ambiguous recording",
+    "description": "Ambiguous recording \u00b7 fictional synthesized recording"
+  },
+  {
+    "id": "missing-location",
+    "title": "Fall with unknown address",
+    "label": "Missing location",
+    "description": "Missing location \u00b7 fictional synthesized recording"
+  }
+]

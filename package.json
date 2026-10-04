@@ -1,1 +1,34 @@
-{"name":"emergency-response-copilot","private":true,"type":"module","workspaces":["apps/*","packages/*"],"engines":{"node":">=22.12 <23"},"scripts":{"test":"vitest run --exclude '**/*.integration.test.ts' --exclude 'tests/e2e/**'","typecheck":"tsc --noEmit","build":"npm run build --workspace @copilot/web && npm run build --workspace @copilot/api","dev":"node --import tsx scripts/dev.ts","test:integration":"node --import tsx scripts/integration.ts","test:e2e":"playwright test","evaluate":"tsx scripts/evaluate.ts"},"devDependencies":{"typescript":"~5.9.3","tsx":"^4.20.0","vitest":"^3.2.4","@types/node":"^22.0.0","@playwright/test":"^1.55.0","firebase-tools":"^14.0.0","concurrently":"^9.2.0"}}
+{
+  "name": "emergency-response-copilot",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=22.12 <23"
+  },
+  "scripts": {
+    "test": "vitest run --exclude '**/*.integration.test.ts' --exclude 'tests/e2e/**'",
+    "typecheck": "tsc --noEmit",
+    "build": "npm run build --workspace @copilot/web && npm run build --workspace @copilot/api",
+    "dev": "node --import tsx scripts/dev.ts",
+    "test:integration": "node --import tsx scripts/integration.ts",
+    "test:e2e": "playwright test",
+    "evaluate": "tsx scripts/evaluate.ts"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "@types/node": "^22.0.0",
+    "concurrently": "^9.2.0",
+    "firebase-tools": "^14.0.0",
+    "prettier": "^3.9.9",
+    "tsx": "^4.20.0",
+    "typescript": "~5.9.3",
+    "vitest": "^3.2.4"
+  },
+  "overrides": {
+    "@grpc/grpc-js": "1.14.5"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "transcript": "I heard a loud noise outside. I cannot tell what happened. I am inside my room.",
+  "facts": [
+    {
+      "text": "Unidentified noise",
+      "quote": "a loud noise outside",
+      "evidenceStatus": "matched"
+    }
+  ],
+  "unknowns": [
+    "Source of noise",
+    "Whether anyone needs help",
+    "Location"
+  ],
+  "urgency": "unclear",
+  "routing": "unclear",
+  "explanation": "Fictional demonstration: ambiguous recording. Human verification required."
+}
