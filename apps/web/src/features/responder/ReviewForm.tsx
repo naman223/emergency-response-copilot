@@ -1,4 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { prefillReview } from "./review-draft";
+import { LocationPicker } from "./LocationPicker";
+import { ClarificationDetails } from "../conversation/ClarificationDetails";
 import { Save, Check, MessageSquare, X } from "lucide-react";
 import type {
   Incident,
@@ -19,23 +22,35 @@ export function ReviewForm({
     reason: string,
   ) => Promise<void>;
 }) {
-  const [draft, setDraft] = useState<ReviewDraft>(
-    incident.reviewDraft ?? {
-      summary:
-        incident.assessment?.summary ?? incident.brief?.explanation ?? "",
-      urgency:
-        incident.assessment?.urgency ?? incident.brief?.urgency ?? "unclear",
-      routing:
-        incident.assessment?.routing ?? incident.brief?.routing ?? "unclear",
-      locationDescription:
-        incident.assessment?.locationDescription ??
-        incident.locationDescription ??
-        "",
-      confirmedFields: [],
-    },
+  const [draft, setDraft] = useState<ReviewDraft>(() =>
+    prefillReview(incident),
   );
-  const [reason, setReason] = useState("");
-  const [dirty, setDirty] = useState(!incident.reviewDraft);
+  const [reason, setReason] = useState(
+    "Reviewed the available incident report and clarification history for this simulation.",
+  );
+  useEffect(() => {
+    setDraft((current) => prefillReview({ ...incident, reviewDraft: current }));
+  }, [
+    incident.assessment,
+    incident.brief,
+    incident.reportText,
+    incident.sourceTranscript,
+    incident.contextVersion,
+  ]);
+  const comparable = (value: ReviewDraft) =>
+    JSON.stringify([
+      value.summary.trim(),
+      value.urgency,
+      value.routing,
+      value.locationDescription,
+      value.confirmedFields,
+      value.destinationName?.trim() || "",
+      value.editedFields ?? [],
+      value.selectedLocation ?? null,
+    ]);
+  const dirty =
+    !incident.reviewDraft ||
+    comparable(draft) !== comparable(incident.reviewDraft);
   const locked =
     busy ||
     incident.analysisState === "processing" ||
@@ -44,12 +59,23 @@ export function ReviewForm({
     setDraft((d) => ({
       ...d,
       [key]: value,
+      ...(["summary", "urgency", "routing", "locationDescription"].includes(key)
+        ? {
+            editedFields: [
+              ...new Set([
+                ...(d.editedFields ?? []),
+                key as NonNullable<ReviewDraft["editedFields"]>[number],
+              ]),
+            ],
+          }
+        : {}),
       ...(key === "locationDescription"
         ? {
             confirmedFields: d.confirmedFields.filter(
               (f) => f !== "locationDescription",
             ),
             destinationName: "",
+            selectedLocation: undefined,
           }
         : key === "routing" ||
             (key === "confirmedFields" &&
@@ -57,7 +83,6 @@ export function ReviewForm({
           ? { destinationName: "" }
           : {}),
     }));
-    setDirty(true);
   }
   return (
     <section className="card review-card">
@@ -66,13 +91,25 @@ export function ReviewForm({
         <span className="tag">REQUIRED</span>
       </div>
       <p className="hint">
-        Check the original audio. Edit suggestions before approving.
+        Details are filled from the report and clarifications. Send as-is or
+        edit them. Unknown information can stay unknown.
       </p>
       <fieldset disabled={locked}>
+        <button
+          className="primary send-review"
+          disabled={!draft.summary.trim()}
+          onClick={() => onSave(draft)}
+        >
+          <Save size={15} /> Send review
+        </button>
+        <p className="hint">
+          Saves the review for your decision. It does not dispatch a service.
+        </p>
         <label className="field">
           Reviewer summary
           <textarea
             rows={3}
+            maxLength={2000}
             value={draft.summary}
             onChange={(e) => change("summary", e.target.value)}
           />
@@ -111,9 +148,36 @@ export function ReviewForm({
           Reviewed location description
           <input
             value={draft.locationDescription}
+            maxLength={500}
             onChange={(e) => change("locationDescription", e.target.value)}
           />
         </label>
+        <LocationPicker
+          description={draft.locationDescription}
+          selectedLocation={draft.selectedLocation}
+          deviceLocation={incident.sourceLocation}
+          disabled={locked}
+          onSelect={(description, selectedLocation) =>
+            setDraft((d) => ({
+              ...d,
+              locationDescription: description,
+              selectedLocation,
+              destinationName: "",
+              confirmedFields: [
+                ...new Set([
+                  ...d.confirmedFields,
+                  "locationDescription" as const,
+                ]),
+              ],
+              editedFields: [
+                ...new Set([
+                  ...(d.editedFields ?? []),
+                  "locationDescription" as const,
+                ]),
+              ],
+            }))
+          }
+        />
         <label className="check-label">
           <input
             type="checkbox"
@@ -121,7 +185,16 @@ export function ReviewForm({
             onChange={(e) =>
               change(
                 "confirmedFields",
-                e.target.checked ? ["locationDescription"] : [],
+                e.target.checked
+                  ? [
+                      ...new Set([
+                        ...draft.confirmedFields,
+                        "locationDescription" as const,
+                      ]),
+                    ]
+                  : draft.confirmedFields.filter(
+                      (field) => field !== "locationDescription",
+                    ),
               )
             }
           />
@@ -135,7 +208,7 @@ export function ReviewForm({
               className="secondary"
               target="_blank"
               rel="noopener noreferrer"
-              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${draft.routing === "police" ? "police stations" : draft.routing === "fire" ? "fire stations" : draft.routing === "medical" ? "hospital emergency departments" : "emergency services"} near ${draft.locationDescription.trim()}`)}`}
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${draft.routing === "police" ? "police stations" : draft.routing === "fire" ? "fire stations" : draft.routing === "medical" ? "hospital emergency departments" : "emergency services"} near ${draft.selectedLocation ? `${draft.selectedLocation.latitude},${draft.selectedLocation.longitude}` : draft.locationDescription.trim()}`)}`}
             >
               Find nearby services in Google Maps
             </a>
@@ -164,14 +237,53 @@ export function ReviewForm({
             />
           </label>
         </div>
-        <button
-          className="secondary"
-          disabled={!draft.summary.trim()}
-          onClick={() => onSave(draft)}
-        >
-          <Save size={15} />
-          Save review
-        </button>
+        {!!incident.assessment?.unknowns.length && (
+          <div className="context-unknowns">
+            <h3>Remaining unknowns</h3>
+            <ul>
+              {incident.assessment.unknowns.map((item, index) => (
+                <li key={index}>{item}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {!!incident.assessment?.facts.length && (
+          <details className="review-evidence">
+            <summary>
+              Reported facts ({incident.assessment.facts.length})
+            </summary>
+            <ul>
+              {incident.assessment.facts.map((fact, index) => (
+                <li key={index}>
+                  <p>{fact.text}</p>
+                  <blockquote>{fact.source.quote}</blockquote>
+                  <small>
+                    {fact.source.source === "officer"
+                      ? "Officer-reported"
+                      : "Caller-reported"}{" "}
+                    ·{" "}
+                    {fact.evidenceStatus === "matched"
+                      ? "Quote matched to source"
+                      : "Source unverified"}
+                  </small>
+                </li>
+              ))}
+            </ul>
+          </details>
+        )}
+        {incident.reportText && (
+          <details className="review-evidence">
+            <summary>Original submitted report</summary>
+            <p>{incident.reportText}</p>
+          </details>
+        )}
+        {incident.sourceTranscript && (
+          <details className="review-evidence">
+            <summary>Original draft transcript</summary>
+            <p>{incident.sourceTranscript}</p>
+          </details>
+        )}
+        <ClarificationDetails incident={incident} />
         <label className="field decision-reason">
           Decision reason
           <textarea
@@ -212,7 +324,7 @@ export function ReviewForm({
             Close report
           </button>
         </div>
-        {dirty && <p className="hint">Save your review to enable approval.</p>}
+        {dirty && <p className="hint">Send your review to enable approval.</p>}
       </fieldset>
     </section>
   );

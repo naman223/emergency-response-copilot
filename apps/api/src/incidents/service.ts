@@ -102,6 +102,7 @@ export class IncidentService {
       reviewState: "pending",
       simulationState: "not_started",
       analysisMode: config.mode,
+      ...(metadata.reportText ? { reportText: metadata.reportText } : {}),
       ...(metadata.sourceLocation
         ? { sourceLocation: metadata.sourceLocation }
         : {}),

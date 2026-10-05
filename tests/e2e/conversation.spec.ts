@@ -40,7 +40,7 @@ test("urgent intake stops early and records a human-selected simulated destinati
   await page
     .getByLabel("Selected service for simulated handoff")
     .fill("Reviewer-selected example police station");
-  await page.getByRole("button", { name: "Save review", exact: true }).click();
+  await page.getByRole("button", { name: "Send review", exact: true }).click();
   await page.getByText("Review saved", { exact: true }).first().waitFor();
   await page
     .getByLabel("Decision reason")
@@ -125,7 +125,7 @@ test("officer discusses the report, clarifies, reviews and approves a simulation
     .fill(
       "Reviewed caller report and officer-provided campus location. Injury status remains unknown.",
     );
-  await page.getByRole("button", { name: "Save review" }).click();
+  await page.getByRole("button", { name: "Send review" }).click();
   await expect(
     page.getByText("Review saved", { exact: true }).first(),
   ).toBeVisible();
@@ -227,7 +227,7 @@ test("new clarification preserves the saved review and requires rechecking", asy
   await page
     .getByLabel("Reviewer summary")
     .fill("My deliberately saved human summary.");
-  await page.getByRole("button", { name: "Save review", exact: true }).click();
+  await page.getByRole("button", { name: "Send review", exact: true }).click();
   await expect(
     page.getByText("Review saved", { exact: true }).first(),
   ).toBeVisible();
@@ -242,7 +242,7 @@ test("new clarification preserves the saved review and requires rechecking", asy
   await expect(
     page.getByRole("button", { name: "Approve simulation" }),
   ).toBeDisabled();
-  await page.getByRole("button", { name: "Save review", exact: true }).click();
+  await page.getByRole("button", { name: "Send review", exact: true }).click();
   await page.getByLabel("Decision reason").fill("New context checked");
   await expect(
     page.getByRole("button", { name: "Approve simulation" }),

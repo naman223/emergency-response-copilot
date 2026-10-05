@@ -25,7 +25,7 @@ export function ConversationWorkspace({
   mode: string;
   onUpdate: (i: Incident) => void;
 }) {
-  const [panel, setPanel] = useState<"context" | "review">("context"),
+  const [panel, setPanel] = useState<"context" | "review">("review"),
     [showPanel, setShowPanel] = useState(false),
     [saving, setSaving] = useState(false),
     [saved, setSaved] = useState(false),
@@ -290,7 +290,7 @@ export function ConversationWorkspace({
                 </p>
               )}
               <ReviewForm
-                key={`${i.id}-${i.revision}`}
+                key={i.id}
                 incident={i}
                 busy={saving || chat.busy}
                 onSave={save}

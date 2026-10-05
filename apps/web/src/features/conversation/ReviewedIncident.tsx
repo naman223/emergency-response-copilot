@@ -1,6 +1,7 @@
 import type { Incident } from "@copilot/contracts";
 import { CheckCircle2 } from "lucide-react";
 import { urgencyLabel } from "./IncidentContext";
+import { ClarificationDetails } from "./ClarificationDetails";
 export function ReviewedIncident({
   incident,
   reason,
@@ -41,6 +42,12 @@ export function ReviewedIncident({
             <div className="full">
               <dt>Reviewed location</dt>
               <dd>{d.locationDescription || "Unknown"}</dd>
+              {d.selectedLocation && (
+                <p>
+                  Map-selected point: {d.selectedLocation.latitude.toFixed(6)},{" "}
+                  {d.selectedLocation.longitude.toFixed(6)}
+                </p>
+              )}
               <small>
                 {d.confirmedFields.includes("locationDescription")
                   ? "Marked verified by the reviewer"
@@ -81,6 +88,7 @@ export function ReviewedIncident({
           reviewed version {incident.dispatchReceipt.approvedRevision}
         </small>
       )}
+      <ClarificationDetails incident={incident} />
     </section>
   );
 }

@@ -36,7 +36,11 @@ The existing 20-turn limit includes initial intake, clarifications, finish reque
 
 ## Saving and approving the human review
 
-Open **Review and decide**, check and save the summary, urgency, routing and location, enter a decision reason, then approve the simulation or close the report. A new assessed clarification invalidates the saved review's context version without deleting its text. Recheck and save it before approval. Unknown information does not prevent a deliberate human decision. A chat message alone never dispatches.
+The conversation opens with **Human review** selected. Summary, urgency, responder and reported location fill from the available report and latest assessment. **Send review** saves these values without requiring any typing; the editable decision reason has a neutral default. Check the populated review, send it, then separately choose **Approve simulation** or close the report. Sending a review alone never dispatches. Unknown information does not prevent a deliberate human decision and is never converted into a verified fact.
+
+Untouched fields update with the conversation. Fields a human edits are preserved, including unsaved edits while another clarification is being processed. A new officer update invalidates a saved review before inference begins, so even an interrupted response requires the latest information to be reviewed before approval. The incident retains the original submitted text, source transcript, supporting facts, remaining unknowns, and the full ordered **Clarifications and updates** history. Unassessed answers are labeled; corrections remain visible alongside earlier statements and survive approval/reload.
+
+**Select incident location on map** opens Google Maps inside the review when a browser key is configured. Search an address, choose a result or click a point, and press **Confirm this incident location**. The selected description and coordinates populate the review and are saved separately from device GPS. Nearby-service lookup uses that selected point. Editing the location manually clears the old map point, location confirmation and service destination. Location selection is optional; the review can still be sent if a location is unknown or Maps cannot load. A map starts near device GPS when provided, but this center is not automatically selected as the incident location.
 
 ## Streaming and recovery
 

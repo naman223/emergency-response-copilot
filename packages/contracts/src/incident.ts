@@ -17,6 +17,18 @@ export const reviewDraftSchema = z.strictObject({
     .array(z.enum(["summary", "urgency", "routing", "locationDescription"]))
     .max(4),
   destinationName: z.string().trim().max(300).optional(),
+  editedFields: z
+    .array(z.enum(["summary", "urgency", "routing", "locationDescription"]))
+    .max(4)
+    .optional(),
+  selectedLocation: z
+    .strictObject({
+      latitude: z.number().min(-90).max(90),
+      longitude: z.number().min(-180).max(180),
+      source: z.literal("map"),
+      selectedAt: z.iso.datetime(),
+    })
+    .optional(),
 });
 export const receiptSchema = z.strictObject({
   id: z.uuid(),
@@ -36,6 +48,19 @@ export const incidentSchema = z.strictObject({
   analysisMode: z.enum(["fixture", "live"]),
   sourceLocation: sourceLocationSchema.optional(),
   locationDescription: z.string().max(500).optional(),
+  reportText: z.string().max(2000).optional(),
+  clarifications: z
+    .array(
+      z.strictObject({
+        turnId: z.uuid(),
+        question: z.string().max(300).nullable(),
+        answer: z.string().max(2000),
+        createdAt: z.iso.datetime(),
+        assessmentState: z.enum(["included", "unassessed"]),
+      }),
+    )
+    .max(20)
+    .optional(),
   brief: analysisSchema.optional(),
   assessment: conversationAssessmentSchema.optional(),
   sourceTranscript: z.string().max(12000).optional(),

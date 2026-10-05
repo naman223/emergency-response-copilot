@@ -110,8 +110,8 @@ test("reload recovers an interrupted final attempt into manual review", async ({
   await page
     .getByLabel("Reviewer summary")
     .fill("Manual review after interrupted analysis");
-  await page.getByRole("button", { name: "Save review" }).click();
-  await expect(page.getByRole("button", { name: "Save review" })).toBeEnabled();
+  await page.getByRole("button", { name: "Send review" }).click();
+  await expect(page.getByRole("button", { name: "Send review" })).toBeEnabled();
 });
 
 test("recorder initialization failure releases the granted microphone", async ({

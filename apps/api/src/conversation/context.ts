@@ -4,6 +4,8 @@ export function buildConversationContext(input: ProviderInput) {
     intake: input.intake,
     originalReport: input.report.text,
     originalTranscript: input.report.transcript,
+    reportedLocation: input.report.locationDescription,
+    deviceLocation: input.report.sourceLocation,
     assessment: input.assessment,
     messages: input.turns.map((t) => ({
       id: t.id,

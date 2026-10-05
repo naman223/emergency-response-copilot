@@ -25,6 +25,9 @@ export class GeminiConversationProvider implements ConversationProvider {
   async *generate(input: ProviderInput): AsyncIterable<ProviderChunk> {
     const parts: any[] = [{ text: buildConversationContext(input) }];
     parts.unshift({
+      text: "The context's reportedLocation is the incident location supplied during intake; carry it into the assessment unless the officer corrects it or explicitly says it is unknown. deviceLocation is separate device GPS, not a verified incident location. Do not replace a known reported location with Unknown merely because it is absent from the audio. Subsequent clarification answers and corrections must update the current summary, facts, urgency, routing and remaining unknowns.",
+    });
+    parts.unshift({
       text: "Intake has a stopping point. Focus only on five essentials: incident location, what happened, immediate danger, injuries/medical needs, and caller safety/contact. Do not collect identifying detail unless essential. Use supplied information; accept Unknown and never repeat an answered question. Aim to finish within five questions. After five, ask more only if a critical gap changes urgency or routing, with a concise clarificationReason; never exceed ten. If intake.forceFinish is true, return question:null and no suggested replies, summarize available evidence, and retain unknowns. Stop earlier when sufficient information exists or immediate danger requires urgent review. Always include an assessment, urgency and suggested responder. Once ready, voluntary updates revise the assessment without restarting questions. Do not claim dispatch, service availability or a nearest facility.",
     });
     if (input.report.wav)

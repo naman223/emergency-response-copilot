@@ -1,5 +1,15 @@
 # Local implementation status
 
+## Prefilled review, clarification history and map selection — 2026-10-05
+
+Human review opens with all known incident details prefilled and a default review reason. **Send review** saves without requiring new text; **Approve simulation** remains a separate decision. Untouched fields refresh as clarification arrives, while manual edits are preserved. Unknown values remain unknown. The original report and full clarification answers remain part of the incident, including after approval and reload. Answers are persisted before inference starts and invalidate an older review even if processing is interrupted. Initial reported location is now passed explicitly to Gemini.
+
+The optional Google Maps picker supports address search and clicking a point, followed by explicit location confirmation. A selected incident point is stored separately from device GPS. Manual location changes clear the previous map selection and destination. A dedicated localhost-restricted Maps key is configured in the ignored local environment; no credentials were committed. Nearby-service lookup remains a human-selected simulated handoff.
+
+Validation: all 68 unit tests, 25 browser tests, 11 emulator integration tests, typecheck and production builds passed. A live Gemini and real Google Maps walkthrough verified reported-location propagation, prefilled submission without typing, address search, map-click coordinates, separate location provenance, and clarification retention after approval/reload. Mobile layout fits a 390-pixel viewport. These checks establish connectivity and workflow behavior, not emergency-response accuracy.
+
+One independent review found a whitespace-normalization mismatch that kept approval disabled after saving and a map search state that remained busy after closing/reopening. Both were reproduced, fixed and covered by regression tests. The live local preview remains available at `http://127.0.0.1:5173`; no public deployment or Git push was made.
+
 ## Recording preview and reported location — 2026-10-05
 
 Stopping or uploading a recording in live mode now requests an editable Gemini transcript before the conversation starts. An explicit incident location copied from the transcript can populate an empty location field. Typed or corrected reports also have **Suggest location from report**. Existing manual text/location edits are preserved while a preview is in flight; stale or cancelled responses cannot replace the current draft. The original audio remains attached when the transcript is edited, and explicit **Start conversation** saves both. The coordinator is instructed to distinguish the original recording from reviewed officer text. A failed preview offers retry/manual entry without discarding the recording.

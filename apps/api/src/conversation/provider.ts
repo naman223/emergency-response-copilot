@@ -3,7 +3,13 @@ import type {
   ConversationTurn,
 } from "@copilot/contracts";
 export type ProviderInput = {
-  report: { text?: string; transcript?: string; wav?: Uint8Array };
+  report: {
+    text?: string;
+    transcript?: string;
+    wav?: Uint8Array;
+    locationDescription?: string;
+    sourceLocation?: import("@copilot/contracts").SourceLocation;
+  };
   turns: ConversationTurn[];
   assessment?: ConversationAssessment;
   sampleId?: string;

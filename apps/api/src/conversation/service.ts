@@ -214,6 +214,19 @@ export class ConversationService {
           analysisState: "processing",
           revision: r.incident.revision + 1,
         };
+        if (!prior && stored.turn.kind === "message") {
+          r.incident.clarifications = [
+            ...(r.incident.clarifications ?? []),
+            {
+              turnId: stored.turn.id,
+              question: null,
+              answer: stored.turn.officerText,
+              createdAt: stored.turn.createdAt,
+              assessmentState: "unassessed",
+            },
+          ];
+          r.incident.contextVersion = (r.incident.contextVersion ?? 0) + 1;
+        }
         delete r.incident.failureCode;
         return {
           result: { replay: false, record: r, stored },
@@ -247,11 +260,18 @@ export class ConversationService {
     let response: ReturnType<typeof validateCoordinatorResponse> | undefined;
     let failure: string | undefined;
     let intakeReady = false;
+    let answeredQuestion: string | null = null;
     let questionsAsked = reserved.record.incident.clarificationCount ?? 0;
     try {
       await send({ type: "status", stage: "receiving_report" });
       const snapshot = await this.get(session, id),
         r = reserved.record;
+      answeredQuestion =
+        snapshot.turns
+          .filter(
+            (t) => t.id !== reserved.stored.turn.id && t.state === "completed",
+          )
+          .at(-1)?.question ?? null;
       questionsAsked = snapshot.turns.filter(
         (t) => t.state === "completed" && !!t.question,
       ).length;
@@ -265,6 +285,8 @@ export class ConversationService {
       const input: ProviderInput = {
         intake,
         report: {
+          locationDescription: r.incident.locationDescription,
+          sourceLocation: r.incident.sourceLocation,
           ...(r.reportText ? { text: r.reportText } : {}),
           transcript:
             r.incident.sourceTranscript ?? r.incident.brief?.transcript,
@@ -423,7 +445,24 @@ export class ConversationService {
       }
       if (response?.assessment) {
         incident.assessment = response.assessment;
+      }
+      if (response?.assessment || stored.turn.kind === "message") {
         incident.contextVersion = (incident.contextVersion ?? 0) + 1;
+      }
+      if (stored.turn.kind === "message") {
+        const entry = {
+          turnId: stored.turn.id,
+          question: answeredQuestion,
+          answer: stored.turn.officerText,
+          createdAt: stored.turn.createdAt,
+          assessmentState: response?.assessment
+            ? ("included" as const)
+            : ("unassessed" as const),
+        };
+        const entries = incident.clarifications ?? [];
+        incident.clarifications = entries.some((e) => e.turnId === entry.turnId)
+          ? entries.map((e) => (e.turnId === entry.turnId ? entry : e))
+          : [...entries, entry];
       }
       if (response?.transcript !== undefined)
         incident.sourceTranscript = response.transcript;

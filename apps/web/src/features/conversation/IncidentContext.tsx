@@ -1,5 +1,6 @@
 import type { Incident } from "@copilot/contracts";
 import { MapPin, ShieldCheck, HelpCircle } from "lucide-react";
+import { ClarificationDetails } from "./ClarificationDetails";
 export const urgencyLabel = (v?: string) =>
   v === "urgent_review"
     ? "Urgent review"
@@ -101,6 +102,13 @@ export function IncidentContext({
           <small>Check against the original recording.</small>
         </details>
       )}
+      {incident.reportText && (
+        <details className="source-transcript">
+          <summary>Original submitted report</summary>
+          <p>{incident.reportText}</p>
+        </details>
+      )}
+      <ClarificationDetails incident={incident} />
       <button className="primary review-context" onClick={onReview}>
         Open human review
       </button>

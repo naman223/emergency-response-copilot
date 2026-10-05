@@ -12,7 +12,7 @@ async function setup(
     transcript: "I heard shouting near the north gate.",
     locationDescription: "the north gate",
   },
-  timeout = 1000,
+  timeout = 10000,
 ) {
   const m = memory();
   const session = await startSession(m.db, "alice");

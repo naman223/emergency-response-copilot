@@ -321,7 +321,7 @@ export function ResponderView({
               </section>
             ) : (
               <ReviewForm
-                key={`${selected.id}-${selected.revision}`}
+                key={selected.id}
                 incident={selected}
                 busy={busy}
                 onSave={onSave}

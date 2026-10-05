@@ -3045,3 +3045,50 @@ fieldset {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+.send-review {
+  width: 100%;
+}
+.location-picker {
+  margin: 12px 0;
+}
+.location-picker .field {
+  margin-top: 12px;
+}
+.incident-location-map {
+  width: 100%;
+  height: 280px;
+  border-radius: 10px;
+  background: #eaf0ec;
+}
+.map-results {
+  list-style: none;
+  padding: 0;
+}
+.map-results button {
+  width: 100%;
+  text-align: left;
+  white-space: normal;
+  margin-bottom: 8px;
+}
+.map-selection {
+  padding: 12px 0;
+}
+.map-selection p,
+.clarification-details p {
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.clarification-details {
+  margin-top: 20px;
+  border-top: 1px solid #dce3df;
+  padding-top: 12px;
+}
+.clarification-details ol {
+  padding-left: 20px;
+}
+.clarification-details li {
+  margin-bottom: 16px;
+}
+.clarification-details strong {
+  font-size: 13px;
+}
