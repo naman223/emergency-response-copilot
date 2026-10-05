@@ -222,6 +222,42 @@ describe("owned intake and human review", () => {
         .statusCode,
     ).toBe(200);
   });
+  it("atomically saves and approves the submitted draft once under concurrent retries", async () => {
+    const h = await session(),
+      i = await incident(h),
+      url = `/api/incidents/${i.id}`;
+    const payload = {
+      expectedRevision: i.revision,
+      action: "approve",
+      reason: "Current review verified",
+      idempotencyKey: randomUUID(),
+      draft: { ...draft, services: ["police", "medical"] },
+    };
+    const results = await Promise.all(
+      [1, 2].map(() =>
+        app.inject({
+          method: "POST",
+          url: url + "/decision",
+          headers: h,
+          payload,
+        }),
+      ),
+    );
+    expect(results.map((r) => r.statusCode)).toEqual([200, 200]);
+    expect(results[0].json()).toEqual(results[1].json());
+    expect(results[0].json().reviewDraft).toEqual(payload.draft);
+    expect(results[0].json().dispatchReceipt.smsMessages).toHaveLength(2);
+    const history = (
+      await app.inject({ url: url + "/history", headers: h })
+    ).json();
+    expect(history.map((event: any) => event.action)).toEqual([
+      "edit",
+      "approve",
+    ]);
+    expect(history[0].revision).toBe(
+      results[0].json().dispatchReceipt.approvedRevision,
+    );
+  });
   it("reset revokes access and can be repeated", async () => {
     const h = await session(),
       i = await incident(h);

@@ -40,7 +40,7 @@ test("preselects multiple services, previews each SMS, and preserves the approve
   await expect(
     page.getByText("SMS sent (simulation)", { exact: true }),
   ).toHaveCount(0);
-  await page.getByRole("button", { name: "Send review", exact: true }).click();
+  await page.getByRole("button", { name: "Save draft", exact: true }).click();
   await page.reload();
   await page
     .getByRole("button", { name: "Review and decide", exact: true })
@@ -48,7 +48,7 @@ test("preselects multiple services, previews each SMS, and preserves the approve
   await expect(
     review.getByRole("checkbox", { name: "Fire", exact: true }),
   ).toBeChecked();
-  await page.getByRole("button", { name: "Approve simulation" }).click();
+  await page.getByRole("button", { name: "Approve & simulate dispatch" }).click();
   const outbox = page.getByRole("region", { name: "Simulated SMS outbox" });
   await expect(outbox.locator(".sms-card")).toHaveCount(4);
   await expect(outbox).toContainText("No real SMS");
@@ -122,14 +122,14 @@ test("an empty recipient selection blocks dispatch until a service is chosen", a
     .click();
   const selectors = page.locator(".service-selection input");
   for (const input of await selectors.all()) await input.uncheck();
-  await page.getByRole("button", { name: "Send review", exact: true }).click();
+  await page.getByRole("button", { name: "Save draft", exact: true }).click();
   await expect(
-    page.getByRole("button", { name: "Approve simulation" }),
+    page.getByRole("button", { name: "Approve & simulate dispatch" }),
   ).toBeDisabled();
   await expect(page.locator(".sms-card")).toHaveCount(0);
   await page.getByRole("checkbox", { name: "Emergency", exact: true }).check();
-  await page.getByRole("button", { name: "Send review", exact: true }).click();
+  await page.getByRole("button", { name: "Save draft", exact: true }).click();
   await expect(
-    page.getByRole("button", { name: "Approve simulation" }),
+    page.getByRole("button", { name: "Approve & simulate dispatch" }),
   ).toBeEnabled();
 });

@@ -23,12 +23,12 @@ test("sending a review with surrounding whitespace still enables approval", asyn
     .getByRole("button", { name: "Review handoff", exact: true })
     .click();
   await page.getByLabel("Reviewer summary").fill("  Human reviewed wording.  ");
-  await page.getByRole("button", { name: "Send review", exact: true }).click();
+  await page.getByRole("button", { name: "Save draft", exact: true }).click();
   await expect(
     page.getByText("Review saved", { exact: true }).first(),
   ).toBeVisible();
   await expect(
-    page.getByRole("button", { name: "Approve simulation" }),
+    page.getByRole("button", { name: "Approve & simulate dispatch" }),
   ).toBeEnabled();
 });
 
@@ -131,7 +131,7 @@ test("map location selection is saved separately from device GPS and drives near
       response.url().endsWith("/review") &&
       response.request().method() === "PATCH",
   );
-  await page.getByRole("button", { name: "Send review", exact: true }).click();
+  await page.getByRole("button", { name: "Save draft", exact: true }).click();
   const incident = await (await saved).json();
   expect(incident.reviewDraft.selectedLocation).toMatchObject({
     latitude: 28.631,
@@ -216,14 +216,14 @@ test("sends a populated review without typing and retains clarification details 
   await expect(page.locator(".clarification-details")).toContainText("Unknown");
   // Unclear reports have no inferred recipient; the reviewer chooses one.
   await page.getByRole("checkbox", { name: "Emergency", exact: true }).check();
-  await page.getByRole("button", { name: "Send review", exact: true }).click();
+  await page.getByRole("button", { name: "Save draft", exact: true }).click();
   await expect(
     page.getByText("Review saved", { exact: true }).first(),
   ).toBeVisible();
   await expect(
-    page.getByRole("button", { name: "Approve simulation" }),
+    page.getByRole("button", { name: "Approve & simulate dispatch" }),
   ).toBeEnabled();
-  await page.getByRole("button", { name: "Approve simulation" }).click();
+  await page.getByRole("button", { name: "Approve & simulate dispatch" }).click();
   await page.reload();
   await expect(
     page.getByRole("heading", { name: "Simulated dispatch complete" }),
@@ -266,7 +266,7 @@ test("refreshes untouched review fields after clarification without losing unsav
   await expect(page.getByLabel("Reviewer summary")).toHaveValue(
     "My unsaved human wording.",
   );
-  await page.getByRole("button", { name: "Send review", exact: true }).click();
+  await page.getByRole("button", { name: "Save draft", exact: true }).click();
   await expect(
     page.getByText("Review saved", { exact: true }).first(),
   ).toBeVisible();

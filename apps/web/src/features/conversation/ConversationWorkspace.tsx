@@ -78,7 +78,11 @@ export function ConversationWorkspace({
       setSaving(false);
     }
   }
-  async function decide(action: DecisionRequest["action"], reason: string) {
+  async function decide(
+    action: DecisionRequest["action"],
+    reason: string,
+    draft?: ReviewDraft,
+  ) {
     if (!i) return;
     setSaving(true);
     chat.setError("");
@@ -89,6 +93,7 @@ export function ConversationWorkspace({
           expectedRevision: i.revision,
           action,
           reason,
+          ...(draft ? { draft } : {}),
           idempotencyKey: crypto.randomUUID(),
         }),
       });

@@ -24,22 +24,13 @@ export class ReviewService {
     expectedRevision: number,
     draft: ReviewDraft,
   ) {
-    if (draft.services)
-      draft = { ...draft, routing: primaryRouting(draft.services) };
     const key = incidentKey(id),
       sk = sessionKey(session.uid);
     return this.db.transact([key, sk], (docs) => {
       const s = assertSession(docs[sk]),
         r = own(docs[key], s);
       this.editable(r.incident, expectedRevision);
-      requireCondition(
-        !draft.destinationName?.trim() ||
-          (draft.locationDescription.trim() &&
-            draft.confirmedFields.includes("locationDescription")),
-        400,
-        "LOCATION_UNCONFIRMED",
-        "Confirm the incident location before selecting a handoff destination.",
-      );
+      draft = this.prepareDraft(draft);
       requireCondition(
         r.history.length < 100,
         429,
@@ -95,37 +86,58 @@ export class ReviewService {
       }
       this.editable(r.incident, request.expectedRevision);
       requireCondition(
-        r.history.length < 100,
+        !request.draft || request.action === "approve",
+        400,
+        "REVIEW_ACTION",
+        "A review draft can only accompany an approval.",
+      );
+      const draft = request.draft
+        ? this.prepareDraft(request.draft)
+        : r.incident.reviewDraft;
+      const reviewedRevision = r.incident.revision + (request.draft ? 1 : 0);
+      const reviewedIncident: Incident = request.draft
+        ? {
+            ...r.incident,
+            revision: reviewedRevision,
+            reviewDraft: draft,
+            ...(r.incident.contextVersion !== undefined
+              ? { reviewContextVersion: r.incident.contextVersion }
+              : {}),
+          }
+        : r.incident;
+      requireCondition(
+        r.history.length + (request.draft ? 2 : 1) <= 100,
         429,
         "HISTORY_LIMIT",
         "Review history limit reached.",
       );
       if (request.action === "approve")
         requireCondition(
-          r.incident.reviewDraft,
+          draft,
           409,
           "REVIEW_REQUIRED",
           "Save your review before approving.",
         );
       if (request.action === "approve")
         requireCondition(
-          r.incident.contextVersion === undefined ||
-            r.incident.reviewContextVersion === r.incident.contextVersion,
+          reviewedIncident.contextVersion === undefined ||
+            reviewedIncident.reviewContextVersion ===
+              reviewedIncident.contextVersion,
           409,
           "REVIEW_STALE",
           "New information arrived. Recheck and save your review before approving.",
         );
       if (request.action === "approve")
         requireCondition(
-          selectedServices(r.incident.reviewDraft!).length > 0,
+          selectedServices(draft!).length > 0,
           400,
           "SERVICES_REQUIRED",
           "Select at least one service before approving the simulation.",
         );
       const at = new Date().toISOString();
       const incident: Incident = {
-        ...r.incident,
-        revision: r.incident.revision + 1,
+        ...reviewedIncident,
+        revision: reviewedRevision + 1,
         reviewState:
           request.action === "approve"
             ? "approved"
@@ -138,18 +150,16 @@ export class ReviewService {
               dispatchReceipt: {
                 id: randomUUID(),
                 incidentId: id,
-                approvedRevision: request.expectedRevision,
+                approvedRevision: reviewedRevision,
                 createdAt: at,
                 simulated: true as const,
-                smsMessages: buildSmsPreviews(
-                  id,
-                  r.incident.reviewDraft!,
-                  this.origin,
-                ).map((message) => ({
-                  ...message,
-                  id: randomUUID(),
-                  status: "simulated_sent" as const,
-                })),
+                smsMessages: buildSmsPreviews(id, draft!, this.origin).map(
+                  (message) => ({
+                    ...message,
+                    id: randomUUID(),
+                    status: "simulated_sent" as const,
+                  }),
+                ),
               },
             }
           : {}),
@@ -166,12 +176,24 @@ export class ReviewService {
             },
             history: [
               ...r.history,
+              ...(request.draft
+                ? [
+                    {
+                      id: randomUUID(),
+                      action: "edit",
+                      at,
+                      reviewerUid: s.uid,
+                      revision: reviewedRevision,
+                      draft,
+                    },
+                  ]
+                : []),
               {
                 id: randomUUID(),
                 action: request.action,
                 at,
                 reviewerUid: s.uid,
-                revision: request.expectedRevision,
+                revision: reviewedRevision,
                 reason: request.reason,
               },
             ],
@@ -179,6 +201,19 @@ export class ReviewService {
         },
       };
     });
+  }
+  private prepareDraft(draft: ReviewDraft): ReviewDraft {
+    requireCondition(
+      !draft.destinationName?.trim() ||
+        (draft.locationDescription.trim() &&
+          draft.confirmedFields.includes("locationDescription")),
+      400,
+      "LOCATION_UNCONFIRMED",
+      "Confirm the incident location before selecting a handoff destination.",
+    );
+    return draft.services
+      ? { ...draft, routing: primaryRouting(draft.services) }
+      : draft;
   }
   private editable(i: Incident, revision: number) {
     requireCondition(

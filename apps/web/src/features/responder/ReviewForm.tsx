@@ -29,6 +29,7 @@ export function ReviewForm({
   onDecide: (
     action: DecisionRequest["action"],
     reason: string,
+    draft?: ReviewDraft,
   ) => Promise<void>;
 }) {
   const [draft, setDraft] = useState<ReviewDraft>(() =>
@@ -46,21 +47,6 @@ export function ReviewForm({
     incident.sourceTranscript,
     incident.contextVersion,
   ]);
-  const comparable = (value: ReviewDraft) =>
-    JSON.stringify([
-      value.summary.trim(),
-      value.urgency,
-      value.routing,
-      selectedServices(value),
-      value.locationDescription,
-      value.confirmedFields,
-      value.destinationName?.trim() || "",
-      value.editedFields ?? [],
-      value.selectedLocation ?? null,
-    ]);
-  const dirty =
-    !incident.reviewDraft ||
-    comparable(draft) !== comparable(incident.reviewDraft);
   const locked =
     busy ||
     incident.analysisState === "processing" ||
@@ -101,19 +87,20 @@ export function ReviewForm({
         <span className="tag">REQUIRED</span>
       </div>
       <p className="hint">
-        Details are filled from the report and clarifications. Send as-is or
-        edit them. Unknown information can stay unknown.
+        Details are filled from the report and clarifications. Check or edit
+        them, then approve to save and simulate dispatch in one step. Unknown
+        information can stay unknown.
       </p>
       <fieldset disabled={locked}>
         <button
-          className="primary send-review"
+          className="secondary send-review"
           disabled={!draft.summary.trim()}
           onClick={() => onSave(draft)}
         >
-          <Save size={15} /> Send review
+          <Save size={15} /> Save draft
         </button>
         <p className="hint">
-          Saves the review for your decision. It does not dispatch a service.
+          Optional: save your progress without approving or simulating dispatch.
         </p>
         <label className="field">
           Reviewer summary
@@ -330,6 +317,7 @@ export function ReviewForm({
           Decision reason
           <textarea
             rows={2}
+            maxLength={1000}
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             placeholder="What did you verify, or what needs clarification?"
@@ -339,16 +327,14 @@ export function ReviewForm({
           <button
             className="primary"
             disabled={
-              dirty ||
-              !incident.reviewDraft ||
+              !draft.summary.trim() ||
               !reason.trim() ||
-              !selectedServices(draft).length ||
-              incident.contextVersion !== incident.reviewContextVersion
+              !selectedServices(draft).length
             }
-            onClick={() => onDecide("approve", reason)}
+            onClick={() => onDecide("approve", reason, draft)}
           >
             <Check size={16} />
-            Approve simulation
+            Approve &amp; simulate dispatch
           </button>
           <button
             className="secondary"
@@ -367,7 +353,10 @@ export function ReviewForm({
             Close report
           </button>
         </div>
-        {dirty && <p className="hint">Send your review to enable approval.</p>}
+        <p className="hint">
+          Approval saves the current review and records simulated SMS
+          notifications for the selected services. No real service is contacted.
+        </p>
         {!selectedServices(draft).length && (
           <p className="hint">
             Select at least one service to approve, or close the report.

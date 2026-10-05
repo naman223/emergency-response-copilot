@@ -1,15 +1,21 @@
 import { z } from "zod";
 import { reviewDraftSchema, sourceLocationSchema } from "./incident";
-export const decisionSchema = z.strictObject({
-  expectedRevision: z.number().int().positive(),
-  action: z.enum(["approve", "needs_clarification", "close"]),
-  reason: z.string().trim().min(1).max(1000),
-  idempotencyKey: z
-    .string()
-    .min(8)
-    .max(100)
-    .regex(/^[\w-]+$/),
-});
+export const decisionSchema = z
+  .strictObject({
+    expectedRevision: z.number().int().positive(),
+    action: z.enum(["approve", "needs_clarification", "close"]),
+    reason: z.string().trim().min(1).max(1000),
+    draft: reviewDraftSchema.optional(),
+    idempotencyKey: z
+      .string()
+      .min(8)
+      .max(100)
+      .regex(/^[\w-]+$/),
+  })
+  .refine((request) => !request.draft || request.action === "approve", {
+    message: "A review draft can only accompany an approval.",
+    path: ["draft"],
+  });
 export const editSchema = z.strictObject({
   expectedRevision: z.number().int().positive(),
   draft: reviewDraftSchema,

@@ -1,5 +1,11 @@
 # Local implementation status
 
+## Combined review approval — 2026-10-05
+
+The primary action is now **Approve & simulate dispatch**. It submits the current review, including unsaved summary and service edits, and atomically saves and approves it in one request. **Save draft** replaces **Send review** as an optional secondary action. SMS previews remain visible before approval. A failed validation or conflicting revision leaves the incident unchanged; repeated requests reuse the same receipt. Separate save and approval audit entries retain the approved review version. Existing saved-review API clients remain supported.
+
+Validation: 80 unit tests, all 29 Chrome browser tests, 12 authenticated Firebase integration tests, typecheck and production builds passed. New tests verify unsaved edits reach the receipt without a separate save request, failed approval leaves no partial save, stale revisions cannot overwrite another review, and concurrent retries create only one approval and notification set. The 390-pixel mobile action row was visually checked and a one-click approval completed. Focused independent review found no important issues. No real notifications, deployment or Git push were performed.
+
 ## Multiple service notifications and SMS recipient view — 2026-10-05
 
 Human review now offers independent Police, Medical, Fire and Emergency checkboxes. AI service indicators preselect recipients, with ambulance need selecting Medical and unknown needs remaining unselected; older primary routing remains a fallback. Human changes survive later assessment updates and reloads. Approval requires at least one effective recipient, including for legacy drafts. The backend normalizes primary routing for the existing Maps handoff.

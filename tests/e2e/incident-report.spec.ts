@@ -51,8 +51,8 @@ test("urgent clarification retains a visible incident report and updates service
   await page
     .getByRole("button", { name: "Review handoff", exact: true })
     .click();
-  await page.getByRole("button", { name: "Send review", exact: true }).click();
-  await page.getByRole("button", { name: "Approve simulation" }).click();
+  await page.getByRole("button", { name: "Save draft", exact: true }).click();
+  await page.getByRole("button", { name: "Approve & simulate dispatch" }).click();
   await page.reload();
   await expect(
     page.locator(".final-incident [data-indicator=injuries]"),
