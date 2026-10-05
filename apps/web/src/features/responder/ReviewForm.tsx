@@ -3,6 +3,14 @@ import { IncidentReport } from "../conversation/IncidentReport";
 import { prefillReview } from "./review-draft";
 import { LocationPicker } from "./LocationPicker";
 import { ClarificationDetails } from "../conversation/ClarificationDetails";
+import { ServiceMessages } from "../conversation/ServiceMessages";
+import {
+  buildSmsPreviews,
+  responseServices,
+  serviceLabels,
+  selectedServices,
+  primaryRouting,
+} from "@copilot/contracts";
 import { Save, Check, MessageSquare, X } from "lucide-react";
 import type {
   Incident,
@@ -43,6 +51,7 @@ export function ReviewForm({
       value.summary.trim(),
       value.urgency,
       value.routing,
+      selectedServices(value),
       value.locationDescription,
       value.confirmedFields,
       value.destinationName?.trim() || "",
@@ -129,22 +138,46 @@ export function ReviewForm({
               <option value="unclear">Unclear</option>
             </select>
           </label>
-          <label className="field">
-            Suggested responder
-            <select
-              value={draft.routing}
-              onChange={(e) =>
-                change("routing", e.target.value as ReviewDraft["routing"])
-              }
-            >
-              {["unclear", "police", "fire", "medical", "other"].map((v) => (
-                <option key={v} value={v}>
-                  {v[0].toUpperCase() + v.slice(1)}
-                </option>
-              ))}
-            </select>
-          </label>
         </div>
+        <fieldset className="service-selection">
+          <legend>Services to notify</legend>
+          <p className="hint">
+            Selected from the AI assessment. Choose all services needed for this
+            incident.
+          </p>
+          <div className="service-options">
+            {responseServices.map((service) => (
+              <label className="service-option" key={service}>
+                <input
+                  type="checkbox"
+                  checked={selectedServices(draft).includes(service)}
+                  onChange={(event) =>
+                    setDraft((current) => {
+                      const services = responseServices.filter((s) =>
+                        s === service
+                          ? event.target.checked
+                          : selectedServices(current).includes(s),
+                      );
+                      return {
+                        ...current,
+                        services,
+                        routing: primaryRouting(services),
+                        destinationName: "",
+                        editedFields: [
+                          ...new Set([
+                            ...(current.editedFields ?? []),
+                            "services" as const,
+                          ]),
+                        ],
+                      };
+                    })
+                  }
+                />
+                {serviceLabels[service]}
+              </label>
+            ))}
+          </div>
+        </fieldset>
         <label className="field">
           Reviewed location description
           <input
@@ -286,6 +319,13 @@ export function ReviewForm({
         )}
         <ClarificationDetails incident={incident} />
         <IncidentReport incident={incident} />
+        <ServiceMessages
+          messages={buildSmsPreviews(
+            incident.id,
+            draft,
+            window.location.origin,
+          )}
+        />
         <label className="field decision-reason">
           Decision reason
           <textarea
@@ -302,6 +342,7 @@ export function ReviewForm({
               dirty ||
               !incident.reviewDraft ||
               !reason.trim() ||
+              !selectedServices(draft).length ||
               incident.contextVersion !== incident.reviewContextVersion
             }
             onClick={() => onDecide("approve", reason)}
@@ -327,6 +368,11 @@ export function ReviewForm({
           </button>
         </div>
         {dirty && <p className="hint">Send your review to enable approval.</p>}
+        {!selectedServices(draft).length && (
+          <p className="hint">
+            Select at least one service to approve, or close the report.
+          </p>
+        )}
       </fieldset>
     </section>
   );

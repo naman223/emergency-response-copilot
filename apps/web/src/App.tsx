@@ -8,12 +8,16 @@ import {
   Radio,
 } from "lucide-react";
 import type { Incident, IntakeRequest } from "@copilot/contracts";
+import { serviceSchema, type ResponseService } from "@copilot/contracts";
+import { ServiceIncidentView } from "./features/conversation/ServiceIncidentView";
 import { auth, clearUser } from "./firebase";
 import { apiRequest } from "./api";
 import type { Sample } from "./features/caller/CallerView";
 import { StartIncident } from "./features/conversation/StartIncident";
 import { ConversationWorkspace } from "./features/conversation/ConversationWorkspace";
 export default function App() {
+  const [recipient, setRecipient] = useState<ResponseService | null>(null);
+  const [notificationUnavailable, setNotificationUnavailable] = useState(false);
   const [ready, setReady] = useState(false),
     [loading, setLoading] = useState(true),
     [busy, setBusy] = useState(false),
@@ -24,6 +28,9 @@ export default function App() {
     [selected, setSelected] = useState(""),
     [initial, setInitial] = useState("");
   function select(id: string) {
+    setRecipient(null);
+    setNotificationUnavailable(false);
+    if (window.location.search) window.history.replaceState(null, "", "/");
     setSelected(id);
     setInitial("");
     sessionStorage.setItem("copilot-incident", id);
@@ -46,7 +53,21 @@ export default function App() {
       setMode(s.mode);
       setIncidents(rows);
       const saved = sessionStorage.getItem("copilot-incident");
-      if (saved && rows.some((i) => i.id === saved)) setSelected(saved);
+      const params = new URLSearchParams(window.location.search);
+      if (params.has("incident") || params.has("service")) {
+        const service = serviceSchema.safeParse(params.get("service"));
+        const incident = rows.find((i) => i.id === params.get("incident"));
+        if (
+          service.success &&
+          incident?.reviewState === "approved" &&
+          incident.dispatchReceipt?.smsMessages?.some(
+            (m) => m.service === service.data,
+          )
+        ) {
+          setSelected(incident.id);
+          setRecipient(service.data);
+        } else setNotificationUnavailable(true);
+      } else if (saved && rows.some((i) => i.id === saved)) setSelected(saved);
       setReady(true);
     } catch (e) {
       setError((e as Error).message);
@@ -114,6 +135,9 @@ export default function App() {
       sessionStorage.removeItem("copilot-incident");
       setReady(false);
       setSelected("");
+      setRecipient(null);
+      setNotificationUnavailable(false);
+      window.history.replaceState(null, "", "/");
       setInitial("");
       setIncidents([]);
     } catch (e) {
@@ -264,6 +288,24 @@ export default function App() {
                 : "Five fictional scenarios · Scripted local demonstration"}
             </small>
           </div>
+        ) : notificationUnavailable ? (
+          <section className="entry-screen">
+            <h1>Notification unavailable</h1>
+            <p>
+              This link requires the original authenticated demo session and an
+              approved notification. No incident details are available in this
+              session.
+            </p>
+            <button className="secondary" onClick={() => select("")}>
+              Return to workspace
+            </button>
+          </section>
+        ) : recipient && incidents.find((i) => i.id === selected) ? (
+          <ServiceIncidentView
+            incident={incidents.find((i) => i.id === selected)!}
+            service={recipient}
+            onBack={() => select(selected)}
+          />
         ) : selected ? (
           <ConversationWorkspace
             key={selected}

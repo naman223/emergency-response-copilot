@@ -214,6 +214,8 @@ test("sends a populated review without typing and retains clarification details 
     page.getByRole("heading", { name: "Clarifications and updates (2)" }),
   ).toBeVisible();
   await expect(page.locator(".clarification-details")).toContainText("Unknown");
+  // Unclear reports have no inferred recipient; the reviewer chooses one.
+  await page.getByRole("checkbox", { name: "Emergency", exact: true }).check();
   await page.getByRole("button", { name: "Send review", exact: true }).click();
   await expect(
     page.getByText("Review saved", { exact: true }).first(),

@@ -1,4 +1,6 @@
 import type { Incident } from "@copilot/contracts";
+import { selectedServices, serviceLabels } from "@copilot/contracts";
+import { IncidentOutbox } from "./ServiceMessages";
 import { CheckCircle2 } from "lucide-react";
 import { urgencyLabel } from "./IncidentContext";
 import { ClarificationDetails } from "./ClarificationDetails";
@@ -33,11 +35,15 @@ export function ReviewedIncident({
               <dd>{urgencyLabel(d.urgency)}</dd>
             </div>
             <div>
-              <dt>Responder</dt>
+              <dt>
+                {incident.dispatchReceipt
+                  ? "Services notified (simulation)"
+                  : "Selected services"}
+              </dt>
               <dd>
-                {d.routing === "unclear"
-                  ? "Not determined"
-                  : d.routing[0].toUpperCase() + d.routing.slice(1)}
+                {selectedServices(d)
+                  .map((service) => serviceLabels[service])
+                  .join(", ") || "Not determined"}
               </dd>
             </div>
             <div className="full">
@@ -90,6 +96,7 @@ export function ReviewedIncident({
         </small>
       )}
       <ClarificationDetails incident={incident} />
+      <IncidentOutbox incident={incident} />
       <IncidentReport incident={incident} />
     </section>
   );

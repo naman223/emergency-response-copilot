@@ -1,4 +1,9 @@
 import { randomUUID } from "node:crypto";
+import {
+  buildSmsPreviews,
+  selectedServices,
+  primaryRouting,
+} from "@copilot/contracts";
 import type {
   Incident,
   ReviewDraft,
@@ -9,13 +14,18 @@ import { own, incidentKey } from "../incidents/service";
 import type { Database } from "../infra/repository";
 import { requireCondition } from "../errors";
 export class ReviewService {
-  constructor(private db: Database) {}
+  constructor(
+    private db: Database,
+    private origin = "http://127.0.0.1:5173",
+  ) {}
   async save(
     session: Session,
     id: string,
     expectedRevision: number,
     draft: ReviewDraft,
   ) {
+    if (draft.services)
+      draft = { ...draft, routing: primaryRouting(draft.services) };
     const key = incidentKey(id),
       sk = sessionKey(session.uid);
     return this.db.transact([key, sk], (docs) => {
@@ -105,6 +115,13 @@ export class ReviewService {
           "REVIEW_STALE",
           "New information arrived. Recheck and save your review before approving.",
         );
+      if (request.action === "approve")
+        requireCondition(
+          selectedServices(r.incident.reviewDraft!).length > 0,
+          400,
+          "SERVICES_REQUIRED",
+          "Select at least one service before approving the simulation.",
+        );
       const at = new Date().toISOString();
       const incident: Incident = {
         ...r.incident,
@@ -124,6 +141,15 @@ export class ReviewService {
                 approvedRevision: request.expectedRevision,
                 createdAt: at,
                 simulated: true as const,
+                smsMessages: buildSmsPreviews(
+                  id,
+                  r.incident.reviewDraft!,
+                  this.origin,
+                ).map((message) => ({
+                  ...message,
+                  id: randomUUID(),
+                  status: "simulated_sent" as const,
+                })),
               },
             }
           : {}),

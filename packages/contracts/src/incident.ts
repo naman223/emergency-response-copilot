@@ -1,6 +1,7 @@
 import { conversationAssessmentSchema } from "./conversation";
 import { z } from "zod";
 import { analysisSchema, routingSchema, urgencySchema } from "./analysis";
+import { serviceSelectionsSchema, simulatedSmsSchema } from "./services";
 export const sourceLocationSchema = z.strictObject({
   source: z.enum(["device", "sample"]),
   latitude: z.number().min(-90).max(90),
@@ -12,14 +13,23 @@ export const reviewDraftSchema = z.strictObject({
   summary: z.string().trim().min(1).max(2000),
   urgency: urgencySchema,
   routing: routingSchema,
+  services: serviceSelectionsSchema.optional(),
   locationDescription: z.string().max(500),
   confirmedFields: z
     .array(z.enum(["summary", "urgency", "routing", "locationDescription"]))
     .max(4),
   destinationName: z.string().trim().max(300).optional(),
   editedFields: z
-    .array(z.enum(["summary", "urgency", "routing", "locationDescription"]))
-    .max(4)
+    .array(
+      z.enum([
+        "summary",
+        "urgency",
+        "routing",
+        "locationDescription",
+        "services",
+      ]),
+    )
+    .max(5)
     .optional(),
   selectedLocation: z
     .strictObject({
@@ -36,6 +46,7 @@ export const receiptSchema = z.strictObject({
   approvedRevision: z.number().int().positive(),
   createdAt: z.iso.datetime(),
   simulated: z.literal(true),
+  smsMessages: z.array(simulatedSmsSchema).max(4).optional(),
 });
 export const incidentSchema = z.strictObject({
   id: z.uuid(),

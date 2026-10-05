@@ -1,5 +1,17 @@
 # Local implementation status
 
+## Multiple service notifications and SMS recipient view — 2026-10-05
+
+Human review now offers independent Police, Medical, Fire and Emergency checkboxes. AI service indicators preselect recipients, with ambulance need selecting Medical and unknown needs remaining unselected; older primary routing remains a fallback. Human changes survive later assessment updates and reloads. Approval requires at least one effective recipient, including for legacy drafts. The backend normalizes primary routing for the existing Maps handoff.
+
+Each selected service has an SMS preview containing reviewed urgency, location and verification status, optional map coordinates, a short incident summary and a details link. Approval atomically records one explicitly simulated message per service, with idempotent retries returning the same receipt. **SMS sent (simulation)** appears only after approval. No SMS provider or actual emergency-service contact was added.
+
+The service recipient demo opens in a separate tab and shows the received simulated message, reviewed incident, original report/transcript, assessment and full clarification answers. Links require the original authenticated demo session; another session sees an unavailable notification without incident details. These are local demo links, not public links for actual responders.
+
+Validation: 76 unit tests, all 28 Chrome browser cases, 11 authenticated emulator integration tests, typecheck and frontend/API production builds passed. The independent review's zero-recipient legacy approval finding was reproduced and fixed with a regression test. Two older unclear-report walkthroughs now explicitly choose a recipient; the recording regression waits for real audio frames before stopping, avoiding a headers-only capture. The live Gemini walkthrough preselected Police, Medical and Emergency for a fictional injured-worker report, accepted a clarification, recorded four simulated notifications after a manual Fire selection, and opened a Medical recipient link containing the clarification. Reload persistence and 390-pixel mobile fit passed. Desktop service selections, SMS cards and recipient view were visually inspected. This validates the prototype workflow, not emergency-response accuracy.
+
+The local live preview remains at `http://127.0.0.1:5173`. No real SMS, public deployment or Git push was performed.
+
 ## Essential clarification and incident indicators — 2026-10-05
 
 Urgency no longer ends intake by itself. The urgent recommendation remains visible while the coordinator asks for missing essentials, accepts unknown answers and retains the five-question target and ten-question ceiling. Manual completion is still available. The current question is pinned in the intake banner so the incident report below the conversation cannot hide it.

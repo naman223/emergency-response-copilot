@@ -3180,6 +3180,73 @@ fieldset {
 .incident-side-panel .report-indicators {
   grid-template-columns: 1fr;
 }
+.service-selection {
+  margin: 20px 0;
+  padding: 14px;
+  border: 1px solid #dbe6df;
+  border-radius: 12px;
+}
+.service-selection legend {
+  font-weight: 700;
+}
+.service-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.service-option {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 12px;
+  background: #f0f6f2;
+  border-radius: 8px;
+}
+.service-option input {
+  width: 18px;
+  height: 18px;
+  accent-color: #285b43;
+}
+.service-messages {
+  margin: 24px 0;
+}
+.sms-card {
+  margin: 12px 0;
+  padding: 16px;
+  border: 1px solid #dbe6df;
+  background: #f6faf7;
+  border-radius: 12px;
+  min-width: 0;
+}
+.sms-heading {
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  align-items: center;
+}
+.sms-card pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font:
+    12px/1.65 ui-monospace,
+    monospace;
+  color: #294334;
+}
+.sms-card a {
+  font-size: 13px;
+  color: #285b43;
+  overflow-wrap: anywhere;
+}
+.sms-card small {
+  display: block;
+  margin: 8px 0;
+  color: #63786d;
+}
+.service-incident-view {
+  max-width: 850px;
+  padding: 30px;
+  margin: 0 auto;
+}
 @media (max-width: 600px) {
   .incident-report {
     padding: 14px;

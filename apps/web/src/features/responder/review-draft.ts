@@ -1,4 +1,9 @@
 import type { Incident, ReviewDraft } from "@copilot/contracts";
+import {
+  recommendedServices,
+  routingServices,
+  primaryRouting,
+} from "@copilot/contracts";
 
 const fields = [
   "summary",
@@ -18,6 +23,7 @@ export function prefillReview(incident: Incident): ReviewDraft {
       incident.assessment?.urgency ?? incident.brief?.urgency ?? "unclear",
     routing:
       incident.assessment?.routing ?? incident.brief?.routing ?? "unclear",
+    services: recommendedServices(incident),
     locationDescription:
       incident.assessment?.locationDescription ??
       incident.locationDescription ??
@@ -25,6 +31,7 @@ export function prefillReview(incident: Incident): ReviewDraft {
     confirmedFields: [],
     editedFields: [],
   };
+  suggestions.routing = primaryRouting(suggestions.services ?? []);
   const saved = incident.reviewDraft;
   if (!saved) return suggestions;
   // Reviews saved before field provenance was introduced remain human-owned.
@@ -32,6 +39,11 @@ export function prefillReview(incident: Incident): ReviewDraft {
   const next = { ...suggestions, editedFields: edited };
   for (const field of fields)
     if (edited.includes(field)) Object.assign(next, { [field]: saved[field] });
+  if (edited.includes("services"))
+    next.services = saved.services ?? routingServices(saved.routing);
+  else if (edited.includes("routing"))
+    next.services = routingServices(saved.routing);
+  next.routing = primaryRouting(next.services ?? []);
   next.confirmedFields = saved.confirmedFields.filter(
     (field) => next[field] === saved[field],
   );
@@ -43,6 +55,8 @@ export function prefillReview(incident: Incident): ReviewDraft {
   if (
     next.locationDescription === saved.locationDescription &&
     next.routing === saved.routing &&
+    JSON.stringify(next.services) ===
+      JSON.stringify(saved.services ?? routingServices(saved.routing)) &&
     next.confirmedFields.includes("locationDescription") &&
     saved.destinationName
   )

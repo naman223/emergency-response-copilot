@@ -1,4 +1,5 @@
 import type { Incident } from "@copilot/contracts";
+import { recommendedServices, serviceLabels } from "@copilot/contracts";
 import { urgencyLabel } from "./IncidentContext";
 
 const labels = {
@@ -31,9 +32,11 @@ export function IncidentReport({ incident }: { incident: Incident }) {
           <dd>{urgencyLabel(assessment.urgency)}</dd>
         </div>
         <div>
-          <dt>Suggested responder</dt>
+          <dt>Suggested services</dt>
           <dd>
-            {assessment.routing === "unclear" ? "Unknown" : assessment.routing}
+            {recommendedServices(incident)
+              .map((service) => serviceLabels[service])
+              .join(", ") || "Unknown"}
           </dd>
         </div>
         <div>

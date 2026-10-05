@@ -134,6 +134,7 @@ test("officer discusses the report, clarifies, reviews and approves a simulation
     .fill(
       "Reviewed caller report and officer-provided campus location. Injury status remains unknown.",
     );
+  await page.getByRole("checkbox", { name: "Emergency", exact: true }).check();
   await page.getByRole("button", { name: "Send review" }).click();
   await expect(
     page.getByText("Review saved", { exact: true }).first(),
@@ -236,6 +237,7 @@ test("new clarification preserves the saved review and requires rechecking", asy
   await page
     .getByLabel("Reviewer summary")
     .fill("My deliberately saved human summary.");
+  await page.getByRole("checkbox", { name: "Emergency", exact: true }).check();
   await page.getByRole("button", { name: "Send review", exact: true }).click();
   await expect(
     page.getByText("Review saved", { exact: true }).first(),

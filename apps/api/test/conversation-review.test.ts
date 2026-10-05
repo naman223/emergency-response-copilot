@@ -29,7 +29,7 @@ it("preserves human edits but rejects approval after new coordinator context unt
   const draft = {
     summary: "My reviewed account",
     urgency: "unclear" as const,
-    routing: "unclear" as const,
+    routing: "police" as const,
     locationDescription: "",
     confirmedFields: [],
   };

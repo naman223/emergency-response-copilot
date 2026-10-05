@@ -24,6 +24,14 @@ Other messages are retained but do not update the assessment; the coordinator sa
 
 ## Bounded intake and service handoff
 
+### Multiple services and simulated SMS
+
+**Services to notify** offers independent Police, Medical, Fire and Emergency checkboxes in human review. Defaults follow the incident's AI indicators: ambulance need selects Medical, and unknown service needs are not automatically selected. The primary routing suggestion is retained as a fallback for older assessments. You can change any selection; your choices survive later AI updates and reloads. Unclear incidents can have no suggested recipient. Choose at least one service before approving, or close the report.
+
+The **SMS preview for selected services** shows a separate message for each recipient, including urgency, the reviewed location and its verification status, an optional map pin, a short summary, selected services and a details link. A reviewer-selected destination applies to the primary selected service. **Send review** saves your choices and previews; **Approve simulation** records **SMS sent (simulation)** with one notification per selected department. Repeated approval requests return the same receipt and messages. No SMS provider is configured and no real SMS is sent.
+
+**Open Medical incident view** (or another department) opens a simulated recipient screen with the received message, reviewed incident, original report/transcript and all clarification answers. These links require the original authenticated demo session, including when opening in another tab of the same browser. A different session cannot see the incident. They are local prototype links, not public links for actual emergency services.
+
 The coordinator targets five essential topics: precise incident location, what happened, current immediate danger, injuries/medical needs, and caller/personnel safety. It asks only for missing information and accepts explicitly unknown information without asking again. Five clarification questions is the normal target; after that the model must identify a critical reason to continue, and the server enforces a hard ceiling of ten. Urgency alone does not end clarification: an urgent recommendation remains visible while the coordinator asks about missing essentials. Sufficient-information responses finish earlier. **Finish assessment now** also closes intake with the information available.
 
 **Assessment ready** presents urgency, suggested responder and remaining unknowns. New officer updates revise the assessment without restarting clarification. Readiness is separate from human approval; it cannot send a dispatch. Urgency is assessed throughout, so an urgent report does not wait for ten answers.
@@ -44,7 +52,7 @@ Unknown is not a denial. The model is instructed to retain unknown fire or trans
 
 ## Saving and approving the human review
 
-The conversation opens with **Human review** selected. Summary, urgency, responder and reported location fill from the available report and latest assessment. **Send review** saves these values without requiring any typing; the editable decision reason has a neutral default. Check the populated review, send it, then separately choose **Approve simulation** or close the report. Sending a review alone never dispatches. Unknown information does not prevent a deliberate human decision and is never converted into a verified fact.
+The conversation opens with **Human review** selected. Summary, urgency, suggested services and reported location fill from the available report and latest assessment. **Send review** saves these values without requiring any typing; the editable decision reason has a neutral default. Check the populated review, select at least one service if none was suggested, send it, then separately choose **Approve simulation** or close the report. Sending a review alone never dispatches. Unknown information does not prevent a deliberate human decision and is never converted into a verified fact.
 
 Untouched fields update with the conversation. Fields a human edits are preserved, including unsaved edits while another clarification is being processed. A new officer update invalidates a saved review before inference begins, so even an interrupted response requires the latest information to be reviewed before approval. The incident retains the original submitted text, source transcript, supporting facts, remaining unknowns, and the full ordered **Clarifications and updates** history. Unassessed answers are labeled; corrections remain visible alongside earlier statements and survive approval/reload.
 

@@ -22,6 +22,8 @@ Local ports: web 5173, API 8181, Auth emulator 9099, Firestore 8180, Storage 919
 - Human review remains separate: new context preserves saved edits but requires rechecking before approval.
 - Session ownership checks for data, audio, edits and approvals; private Firestore/Storage rules.
 - Transactional revision checks and idempotent simulated dispatch.
+- Police, Medical, Fire and Emergency selections prefilled from the AI assessment, with a per-service SMS preview and simulated outbox after human approval.
+- Authenticated recipient demo links showing the reviewed incident, original report and clarification history.
 - Validation of media size/type/duration; bounded processing, retries and request quotas; failed analysis preserves the recording for manual review.
 - Session reset and expiration enforcement, plus a cleanup job entry point.
 - A Vertex AI Gemini adapter and Cloud Run container configuration for later cloud setup.
@@ -55,4 +57,4 @@ See [sample conversation guide](docs/conversations.md), [implementation status](
 
 ## Current boundary
 
-The current deliverable is the local prototype. Live Gemini evaluation and Google Cloud deployment await a user-selected project. No real dispatch integrations, medical advice, calibrated emergency probabilities, or production emergency-response claims are included. Public competition submission and final PDF/video publication remain later steps.
+The current deliverable is the local prototype, with live Gemini connected through the user-selected Google Cloud project. Broader model evaluation and public cloud deployment remain later steps. SMS notifications and dispatch are simulated; recipient links require the original authenticated demo session. No real emergency-service integration, medical advice, calibrated emergency probabilities, or production emergency-response claims are included. Public competition submission and final PDF/video publication remain later steps.

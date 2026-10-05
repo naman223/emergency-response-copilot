@@ -33,3 +33,46 @@ it("prefills a report immediately and retains manual overrides as AI fields refr
   expect(next.confirmedFields).toEqual([]);
   expect(next.destinationName).toBeUndefined();
 });
+
+it("refreshes suggested recipients but preserves an explicit human selection", () => {
+  const original = prefillReview(incident);
+  const updated = {
+    ...incident,
+    assessment: {
+      summary: "Smoke",
+      urgency: "urgent_review",
+      routing: "fire",
+      locationDescription: "Main entrance",
+      facts: [],
+      unknowns: [],
+    },
+  } as Incident;
+  expect(prefillReview({ ...updated, reviewDraft: original }).services).toEqual(
+    ["fire"],
+  );
+  const manual = {
+    ...original,
+    services: ["police", "medical"] as const,
+    editedFields: ["services"] as const,
+  };
+  expect(
+    prefillReview({
+      ...updated,
+      reviewDraft: {
+        ...manual,
+        services: [...manual.services],
+        editedFields: [...manual.editedFields],
+      },
+    }).services,
+  ).toEqual(["police", "medical"]);
+  expect(
+    prefillReview({
+      ...updated,
+      reviewDraft: {
+        ...original,
+        routing: "medical",
+        editedFields: ["routing"],
+      },
+    }).services,
+  ).toEqual(["medical"]);
+});

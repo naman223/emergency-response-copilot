@@ -41,7 +41,7 @@ export async function buildApp(d: AppDependencies) {
   });
   const intake = new IncidentService(d),
     analysis = new AnalysisService(d),
-    review = new ReviewService(d.db);
+    review = new ReviewService(d.db, d.config.origin);
   const uid = (r: any) => authenticate(r.headers.authorization, d.verifyToken);
   const session = async (r: any) => verifySession(d.db, await uid(r));
   const id = (r: any) => z.uuid().parse(r.params.id);
