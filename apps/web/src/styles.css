@@ -3092,3 +3092,99 @@ fieldset {
 .clarification-details strong {
   font-size: 13px;
 }
+.incident-report {
+  margin: 24px 0;
+  padding: 20px;
+  background: #f7faf8;
+  border: 1px solid #dbe6df;
+  border-radius: 14px;
+  text-align: left;
+}
+.incident-report h3 {
+  margin: 8px 0;
+}
+.incident-report > p {
+  line-height: 1.6;
+}
+.report-overview {
+  display: grid;
+  gap: 12px;
+  margin: 18px 0;
+}
+.report-overview dt {
+  color: #63786d;
+  font-size: 12px;
+}
+.report-overview dd {
+  margin: 4px 0 0;
+  overflow-wrap: anywhere;
+  text-transform: capitalize;
+}
+.report-indicators {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.report-indicator {
+  border: 1px solid #dbe6df;
+  background: white;
+  border-radius: 10px;
+  padding: 12px;
+  min-width: 0;
+}
+.report-indicator > div {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 8px;
+}
+.report-indicator strong {
+  font-size: 13px;
+}
+.report-indicator p {
+  margin: 8px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #63786d;
+  overflow-wrap: anywhere;
+}
+.indicator-status {
+  border-radius: 5px;
+  padding: 3px 6px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.indicator-status.yes {
+  background: #fce8dc;
+  color: #914419;
+}
+.indicator-status.no {
+  background: #e4f2e8;
+  color: #285b43;
+}
+.indicator-status.unknown {
+  background: #f3eddc;
+  color: #756039;
+}
+.report-gaps {
+  margin: 16px 0;
+  font-size: 13px;
+}
+.incident-report > small {
+  display: block;
+  margin-top: 14px;
+  font-size: 11px;
+  color: #63786d;
+}
+.incident-side-panel .report-indicators {
+  grid-template-columns: 1fr;
+}
+@media (max-width: 600px) {
+  .incident-report {
+    padding: 14px;
+  }
+  .report-indicators {
+    grid-template-columns: 1fr;
+  }
+}

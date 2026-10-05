@@ -2,6 +2,7 @@ import type { Incident } from "@copilot/contracts";
 import { CheckCircle2 } from "lucide-react";
 import { urgencyLabel } from "./IncidentContext";
 import { ClarificationDetails } from "./ClarificationDetails";
+import { IncidentReport } from "./IncidentReport";
 export function ReviewedIncident({
   incident,
   reason,
@@ -89,6 +90,7 @@ export function ReviewedIncident({
         </small>
       )}
       <ClarificationDetails incident={incident} />
+      <IncidentReport incident={incident} />
     </section>
   );
 }

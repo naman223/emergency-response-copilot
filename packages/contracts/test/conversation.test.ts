@@ -32,6 +32,17 @@ it("rejects model authority fields and transcript replacement", () => {
   expect(() => parse({ ...response(), dispatch: true })).toThrow();
   expect(() => parse({ ...response(), transcript: "changed" })).toThrow();
 });
+it("offers original transcription only when audio is attached to a model request", () => {
+  const modelSchema = (contracts as any).coordinatorModelResponseSchema;
+  expect(modelSchema).toBeTypeOf("function");
+  const withTranscript = {
+    ...response(),
+    transcript: "Original caller recording.",
+  };
+  expect(modelSchema(false).safeParse(response()).success).toBe(true);
+  expect(modelSchema(false).safeParse(withTranscript).success).toBe(false);
+  expect(modelSchema(true).safeParse(withTranscript).success).toBe(true);
+});
 it("checks quotes against the referenced source, not any available message", () => {
   const r = response();
   r.assessment.facts[0].source = {
@@ -44,6 +55,35 @@ it("checks quotes against the referenced source, not any available message", () 
 });
 it("preserves unknown information without turning it into denial", () =>
   expect(parse(response()).assessment.unknowns).toEqual(["Exact location"]));
+it("retains distinct emergency and service indicators with reasons, including unknown medical transport", () => {
+  const indicators = Object.fromEntries(
+    [
+      "emergency",
+      "police",
+      "medical",
+      "ambulance",
+      "fire",
+      "weapon",
+      "injuries",
+      "immediateDanger",
+    ].map((key) => [
+      key,
+      {
+        status: key === "weapon" ? "yes" : "unknown",
+        reason:
+          key === "weapon"
+            ? "A knife was reported."
+            : "Not established from the report.",
+      },
+    ]),
+  );
+  expect(
+    parse({
+      ...response(),
+      assessment: { ...response().assessment, indicators },
+    }).assessment.indicators,
+  ).toEqual(indicators);
+});
 it("bounds messages and suggestions", () => {
   expect(() => parse({ ...response(), reply: "x".repeat(4001) })).toThrow();
   expect(() =>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { IncidentReport } from "../conversation/IncidentReport";
 import { prefillReview } from "./review-draft";
 import { LocationPicker } from "./LocationPicker";
 import { ClarificationDetails } from "../conversation/ClarificationDetails";
@@ -284,6 +285,7 @@ export function ReviewForm({
           </details>
         )}
         <ClarificationDetails incident={incident} />
+        <IncidentReport incident={incident} />
         <label className="field decision-reason">
           Decision reason
           <textarea

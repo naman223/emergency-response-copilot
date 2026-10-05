@@ -12,7 +12,6 @@ export function applyIntakePolicy(
   const ready =
     policy.forceFinish ||
     policy.questionsAsked >= 10 ||
-    assessment?.urgency === "urgent_review" ||
     !response.question ||
     (policy.questionsAsked >= 5 && !response.clarificationReason?.trim());
   if (!ready) return { ready, response };

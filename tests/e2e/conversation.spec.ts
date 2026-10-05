@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-test("urgent intake stops early and records a human-selected simulated destination", async ({
+test("urgent intake allows immediate human completion and records a selected simulated destination", async ({
   page,
 }) => {
   await page.goto("/");
@@ -8,6 +8,15 @@ test("urgent intake stops early and records a human-selected simulated destinati
     .getByRole("button", {
       name: "Start sample conversation: Followed near the north gate",
     })
+    .click();
+  await page
+    .getByRole("button", {
+      name: "University campus, beside the library",
+      exact: true,
+    })
+    .waitFor();
+  await page
+    .getByRole("button", { name: "Finish assessment now", exact: true })
     .click();
   await expect(
     page.getByText("Assessment ready", { exact: true }),

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowDown, Headphones } from "lucide-react";
-import type { ConversationTurn } from "@copilot/contracts";
+import type { ConversationTurn, Incident } from "@copilot/contracts";
+import { IncidentReport } from "./IncidentReport";
 import { MessageBubble } from "./MessageBubble";
 import { audioUrl } from "../../api";
 export function ConversationThread({
@@ -10,6 +11,7 @@ export function ConversationThread({
   busy,
   stage,
   onRetry,
+  incident,
 }: {
   id: string;
   turns: ConversationTurn[];
@@ -17,6 +19,7 @@ export function ConversationThread({
   busy: boolean;
   stage: string;
   onRetry: (t: ConversationTurn) => void;
+  incident: Incident;
 }) {
   const [audio, setAudio] = useState(""),
     [away, setAway] = useState(false);
@@ -128,6 +131,7 @@ export function ConversationThread({
             Recovering an interrupted response… Your report is saved.
           </p>
         )}
+        <IncidentReport incident={incident} />
       </div>
       {away && (
         <button className="new-messages" onClick={jump}>

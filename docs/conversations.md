@@ -24,7 +24,7 @@ Other messages are retained but do not update the assessment; the coordinator sa
 
 ## Bounded intake and service handoff
 
-The coordinator targets five essential topics: incident location, what happened, immediate danger, injuries/medical needs, and caller safety/contact. It asks only for missing information. Five clarification questions is the normal target; after that the model must identify a critical reason to continue, and the server enforces a hard ceiling of ten. Urgent assessments and sufficient-information responses finish earlier. **Finish assessment now** also closes intake with the information available.
+The coordinator targets five essential topics: precise incident location, what happened, current immediate danger, injuries/medical needs, and caller/personnel safety. It asks only for missing information and accepts explicitly unknown information without asking again. Five clarification questions is the normal target; after that the model must identify a critical reason to continue, and the server enforces a hard ceiling of ten. Urgency alone does not end clarification: an urgent recommendation remains visible while the coordinator asks about missing essentials. Sufficient-information responses finish earlier. **Finish assessment now** also closes intake with the information available.
 
 **Assessment ready** presents urgency, suggested responder and remaining unknowns. New officer updates revise the assessment without restarting clarification. Readiness is separate from human approval; it cannot send a dispatch. Urgency is assessed throughout, so an urgent report does not wait for ten answers.
 
@@ -33,6 +33,14 @@ During generation the app streams progress states. Reply text is published after
 In **Review handoff**, enter and verify the full incident address or coordinates. **Find nearby services in Google Maps** opens real map search results for police stations, fire stations, hospital emergency departments, or other emergency services near that location. It shares the search location/type with Google Maps, not the incident narrative. Results are not an automatic nearest-available dispatch decision. The reviewer checks suitability/contact details and records a selected service name; saving and approving retains it in the simulated handoff report. No service is contacted. Changing the location/routing or removing location confirmation clears the selected destination.
 
 The existing 20-turn limit includes initial intake, clarifications, finish requests and voluntary updates. Interrupted attempts do not consume additional completed-question count, and retries cannot reopen a ready assessment.
+
+## Incident report and service indicators
+
+An **Incident report** appears below the conversation after an assessment is available, and also in human review and the final incident. It updates with clarification answers and remains available after reload. Alongside urgency, responder and reported location, it shows emergency, police response, medical support, ambulance, fire response, weapon reported, injuries reported and immediate danger now. Each indicator has **Yes**, **No** or **Unknown** and a concise reason. These are provisional AI suggestions, separate from the human review decision.
+
+The current clarification question also stays visible in the intake banner above the report, so scrolling through the indicators does not hide the question to answer.
+
+Unknown is not a denial. The model is instructed to retain unknown fire or transport needs when they are not established; a reported minor injury can support medical help without establishing ambulance need. A previously reported knife threat can remain Yes for weapon while current immediate danger is unknown after the suspect leaves. Legacy assessments and scripted scenarios without these indicators show Unknown rather than inventing values. New information changes current indicators while the clarification history preserves the original answers. Check the stated reasons: these classifications remain model suggestions.
 
 ## Saving and approving the human review
 
@@ -53,3 +61,5 @@ Limits: twenty turns per incident, one active generation per session, three atte
 A Vertex AI streaming conversation adapter is implemented. Local live checks with Gemini 3.5 Flash have exercised a fictional free-form text report, a location/status correction, and a caller recording. An audio attribution issue found during those checks was corrected by explicitly distinguishing the caller recording from the officer's messages; the repeated sample returned transcript-sourced facts with matching quotes. These few checks establish connectivity and basic behavior, not emergency-response accuracy or general model quality.
 
 Use `npm run dev:live` after configuring the ignored `.env.live` file and Google authentication; see [local setup](development.md#local-app-with-live-gemini). Plain `npm run dev` still selects scripted mode. The app and Firebase remain local in both modes. Live mode sends report content to Google for inference and uses the configured cloud project's billing. No public deployment has been made.
+
+Gemini 3 intake turns use `LOW` thinking and an 8,192-token output allowance. Live testing exposed truncated structured responses at the previous 4,096-token allowance, which includes thinking as well as visible output, and a later turn reached the 45-second deadline. The deadline and schema/content limits remain enforced. See Google's [Gemini 3.5 Flash guide](https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/guides/gemini-3-5-flash) and [thinking configuration](https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/thinking). Only requests with attached original audio expose the transcript field in the model output schema; text reports and subsequent turns cannot request a new original transcript.

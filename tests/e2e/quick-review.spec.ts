@@ -11,6 +11,15 @@ test("sending a review with surrounding whitespace still enables approval", asyn
     })
     .click();
   await page
+    .getByRole("button", {
+      name: "University campus, beside the library",
+      exact: true,
+    })
+    .waitFor();
+  await page
+    .getByRole("button", { name: "Finish assessment now", exact: true })
+    .click();
+  await page
     .getByRole("button", { name: "Review handoff", exact: true })
     .click();
   await page.getByLabel("Reviewer summary").fill("  Human reviewed wording.  ");
@@ -80,6 +89,15 @@ test("map location selection is saved separately from device GPS and drives near
     .getByRole("button", {
       name: "Start sample conversation: Followed near the north gate",
     })
+    .click();
+  await page
+    .getByRole("button", {
+      name: "University campus, beside the library",
+      exact: true,
+    })
+    .waitFor();
+  await page
+    .getByRole("button", { name: "Finish assessment now", exact: true })
     .click();
   await page
     .getByRole("button", { name: "Review handoff", exact: true })

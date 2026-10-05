@@ -96,6 +96,24 @@ export class FixtureConversationProvider implements ConversationProvider {
                 "Correction: the south gate, beside the library",
               ];
       const a: ConversationAssessment = structuredClone(script.assessment);
+      if (a.indicators && followup?.value) {
+        if (followup.value === "No injuries reported") {
+          a.indicators.injuries = {
+            status: "no",
+            reason: "The officer reports no injuries.",
+          };
+        } else if (followup.value === "Injuries reported") {
+          a.indicators.injuries = {
+            status: "yes",
+            reason: "The officer reports injuries.",
+          };
+          a.indicators.medical = {
+            status: "yes",
+            reason:
+              "Reported injuries suggest medical support for human review.",
+          };
+        }
+      }
       a.locationDescription = location?.value ?? "";
       a.unknowns = [
         ...(!location?.value ? ["Exact location unknown"] : []),

@@ -41,7 +41,7 @@ it("stops at five unless a critical gap is explicitly identified, with a hard ce
   expect(end.response.question).toBeNull();
   expect(end.response.reply).not.toContain("Another question");
 });
-it("finishes urgent incidents immediately and cannot reopen a completed intake", () => {
+it("keeps essential clarification for urgent incidents and cannot reopen completed intake", () => {
   expect(
     applyIntakePolicy(
       {
@@ -51,7 +51,7 @@ it("finishes urgent incidents immediately and cannot reopen a completed intake",
       { questionsAsked: 0, forceFinish: false },
       undefined,
     ).ready,
-  ).toBe(true);
+  ).toBe(false);
   expect(
     applyIntakePolicy(
       response,

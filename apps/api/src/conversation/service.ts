@@ -399,7 +399,7 @@ export class ConversationService {
         }),
       ]);
       // Only publish text after the stopping rule has accepted it. A discarded
-      // follow-up must not flash on screen during urgent or completed intake.
+      // follow-up must not flash on screen during completed intake.
       await send({ type: "delta", text: response.reply });
       await send({ type: "status", stage: "updating_context" });
     } catch (e) {

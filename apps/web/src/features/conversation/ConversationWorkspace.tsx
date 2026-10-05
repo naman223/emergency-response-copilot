@@ -163,8 +163,13 @@ export function ConversationWorkspace({
               <p>
                 {intakeReady
                   ? `${urgencyLabel(i.assessment?.urgency ?? "unclear")} · Suggested responder: ${i.assessment?.routing ?? "not determined"}. Review the handoff below; you can still add corrections.`
-                  : `${i.clarificationCount ?? 0} of up to 10 questions · Target: 5 essential questions. Unknown is accepted.`}
+                  : `${i.assessment ? `${urgencyLabel(i.assessment.urgency)} · Suggested responder: ${i.assessment.routing}. ` : ""}${i.clarificationCount ?? 0} of up to 10 questions · Target: 5 essential questions. Unknown is accepted.`}
               </p>
+              {!intakeReady && last?.state === "completed" && last.question && (
+                <p className="pending-question">
+                  <strong>Coordinator asks:</strong> {last.question}
+                </p>
+              )}
             </div>
             {intakeReady ? (
               <button
@@ -198,6 +203,7 @@ export function ConversationWorkspace({
         ) : (
           <ConversationThread
             id={id}
+            incident={chat.snapshot.incident}
             turns={chat.snapshot.turns}
             partial={chat.partial}
             busy={chat.busy}

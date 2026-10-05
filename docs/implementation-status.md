@@ -1,5 +1,15 @@
 # Local implementation status
 
+## Essential clarification and incident indicators — 2026-10-05
+
+Urgency no longer ends intake by itself. The urgent recommendation remains visible while the coordinator asks for missing essentials, accepts unknown answers and retains the five-question target and ten-question ceiling. Manual completion is still available. The current question is pinned in the intake banner so the incident report below the conversation cannot hide it.
+
+The incident report now shows emergency, police response, medical support, ambulance, fire response, weapon, injuries and current immediate danger, each with Yes/No/Unknown and a short model-provided reason. Summary, urgency, responder and reported location remain visible. The report updates with clarification, appears in human review and the approved incident, and survives reload. Older assessments without indicators display Unknown. These are AI suggestions distinct from the human decision.
+
+Live testing found truncated JSON when the prior 4,096-token allowance was exhausted and a subsequent turn that hit the 45-second deadline. The model now has an 8,192-token allowance and Gemini 3 uses LOW thinking for short intake turns. Original-transcript output is offered only when original audio is attached. Temporary diagnostics were removed; deadlines, context limits and review safeguards remain enforced.
+
+Validation: 70 unit tests, 11 emulator integration tests, typecheck and production builds passed. The browser suite passed 25 of 26 cases; a mistaken test-only manual-finish step in an already completed conversation was removed, after which all four quick-review cases passed. A final targeted run passed the incident-report/current-question and mobile-composer cases. All 26 browser cases are covered across these runs. With the final live settings, both user-provided fictional Bengaluru reports asked clarification and completed after four clarification answers, accepting Unknown without an endless loop. The walkthrough checked indicator updates, approval/reload persistence and mobile fit; desktop/mobile screens were inspected. These limited workflow checks do not establish emergency-response accuracy. The local live app remains at `http://127.0.0.1:5173`; no public deployment or Git push was made.
+
 ## Prefilled review, clarification history and map selection — 2026-10-05
 
 Human review opens with all known incident details prefilled and a default review reason. **Send review** saves without requiring new text; **Approve simulation** remains a separate decision. Untouched fields refresh as clarification arrives, while manual edits are preserved. Unknown values remain unknown. The original report and full clarification answers remain part of the incident, including after approval and reload. Answers are persisted before inference starts and invalidate an older review even if processing is interrupted. Initial reported location is now passed explicitly to Gemini.

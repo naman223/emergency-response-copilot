@@ -363,7 +363,7 @@ it("coalesces rapid provider deltas into bounded delivery batches", async () => 
   );
   expect(events.filter((e) => e.type === "delta").length).toBeLessThan(10);
 });
-it("never streams a follow-up question discarded by the urgent stopping rule", async () => {
+it("keeps an urgent assessment and its essential question, but manual completion discards further questions", async () => {
   const s = await setup();
   const events: any[] = [];
   const service = new ConversationService({
@@ -395,7 +395,21 @@ it("never streams a follow-up question discarded by the urgent stopping rule", a
       .map((e) => e.text)
       .join(""),
   ).toBe(snap.turns[0].reply);
-  expect(snap.turns[0].reply).not.toContain("Which entrance?");
+  expect(snap.turns[0].question).toBe("Which entrance?");
+  expect(snap.incident.intakeState).toBe("clarifying");
+  expect(snap.incident.assessment?.urgency).toBe("urgent_review");
+  const finished = await service.run(
+    s.session,
+    s.incident.id,
+    {
+      turnId: randomUUID(),
+      expectedRevision: snap.incident.revision,
+      kind: "finish",
+    },
+    async () => {},
+  );
+  expect(finished.turns.at(-1)?.question).toBeNull();
+  expect(finished.turns.at(-1)?.reply).not.toContain("Which entrance?");
 });
 it("rejects retry of a failed turn superseded by a later message", async () => {
   const s = await setup();

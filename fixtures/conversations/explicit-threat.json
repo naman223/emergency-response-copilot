@@ -34,7 +34,41 @@
     ],
     "urgency": "urgent_review",
     "routing": "police",
-    "locationDescription": ""
+    "locationDescription": "",
+    "indicators": {
+      "emergency": {
+        "status": "yes",
+        "reason": "The caller requests immediate help while being followed."
+      },
+      "police": {
+        "status": "yes",
+        "reason": "Reported pursuit and a knife suggest police response for human review."
+      },
+      "medical": {
+        "status": "unknown",
+        "reason": "Not established from the reported information."
+      },
+      "ambulance": {
+        "status": "unknown",
+        "reason": "Not established from the reported information."
+      },
+      "fire": {
+        "status": "unknown",
+        "reason": "Not established from the reported information."
+      },
+      "weapon": {
+        "status": "yes",
+        "reason": "The caller mentions a knife."
+      },
+      "injuries": {
+        "status": "unknown",
+        "reason": "Not established from the reported information."
+      },
+      "immediateDanger": {
+        "status": "yes",
+        "reason": "The caller reports an ongoing pursuit by someone with a knife."
+      }
+    }
   },
   "summaryBase": "The caller reports being followed near the north gate and mentions a knife. Urgent human review is suggested."
 }

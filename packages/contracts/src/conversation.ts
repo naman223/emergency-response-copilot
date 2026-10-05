@@ -1,6 +1,20 @@
 import { z } from "zod";
 import { urgencySchema, routingSchema } from "./analysis";
 const uuid = z.uuid();
+export const incidentIndicatorSchema = z.strictObject({
+  status: z.enum(["yes", "no", "unknown"]),
+  reason: z.string().trim().min(1).max(300),
+});
+export const incidentIndicatorsSchema = z.strictObject({
+  emergency: incidentIndicatorSchema,
+  police: incidentIndicatorSchema,
+  medical: incidentIndicatorSchema,
+  ambulance: incidentIndicatorSchema,
+  fire: incidentIndicatorSchema,
+  weapon: incidentIndicatorSchema,
+  injuries: incidentIndicatorSchema,
+  immediateDanger: incidentIndicatorSchema,
+});
 export const evidenceRefSchema = z
   .strictObject({
     source: z.enum(["transcript", "officer"]),
@@ -26,6 +40,7 @@ export const conversationAssessmentSchema = z.strictObject({
   urgency: urgencySchema,
   routing: routingSchema,
   locationDescription: z.string().max(500),
+  indicators: incidentIndicatorsSchema.optional(),
 });
 export const coordinatorResponseSchema = z.strictObject({
   reply: z.string().trim().min(1).max(4000),
@@ -35,6 +50,14 @@ export const coordinatorResponseSchema = z.strictObject({
   transcript: z.string().max(12000).optional(),
   clarificationReason: z.string().trim().max(300).optional(),
 });
+const textCoordinatorResponseSchema = coordinatorResponseSchema.omit({
+  transcript: true,
+});
+export function coordinatorModelResponseSchema(audioAttached: boolean) {
+  return audioAttached
+    ? coordinatorResponseSchema
+    : textCoordinatorResponseSchema;
+}
 export const turnRequestSchema = z
   .strictObject({
     turnId: uuid,
