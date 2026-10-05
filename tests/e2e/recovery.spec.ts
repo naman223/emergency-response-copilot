@@ -39,14 +39,9 @@ test("late microphone permission is released after leaving caller intake", async
   await page.getByRole("button", { name: "Start demo session" }).click();
   await page.getByRole("button", { name: "Record audio", exact: true }).click();
   await page
-    .getByRole("button", {
-      name: "Start sample conversation: Unclear noise outside",
-      exact: true,
-    })
+    .getByRole("button", { name: "Reset session", exact: true })
     .click();
-  await page
-    .getByRole("heading", { name: "AI emergency coordinator" })
-    .waitFor();
+  await page.getByRole("button", { name: "Start demo session" }).waitFor();
   await page.evaluate(() => (window as any).grantPermission());
   await expect
     .poll(() => page.evaluate(() => (window as any).mediaStops))

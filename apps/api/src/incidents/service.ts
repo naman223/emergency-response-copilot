@@ -62,13 +62,12 @@ export class IncidentService {
   async create(session: Session, metadata: IntakeRequest, input?: Uint8Array) {
     const { db, audio, config } = this.deps;
     requireCondition(
-      Number(!!metadata.sampleId) +
-        Number(!!metadata.reportText) +
-        Number(!!input) ===
-        1,
+      metadata.sampleId
+        ? !metadata.reportText && !input
+        : !!metadata.reportText || !!input,
       400,
       "INVALID_INPUT",
-      "Choose one report: text, sample or audio.",
+      "Choose a sample, or provide report text and/or a recording.",
     );
     let wav: Uint8Array | undefined;
     if (metadata.sampleId) {
@@ -87,8 +86,7 @@ export class IncidentService {
       wav = await readFile(
         resolve(fixtureRoot(), "audio", metadata.sampleId + ".wav"),
       );
-    } else if (!metadata.reportText) {
-      requireCondition(input, 400, "AUDIO_REQUIRED", "Add a recording first.");
+    } else if (input) {
       wav = (await validateAudio(input)).wav;
     }
     const id = randomUUID(),

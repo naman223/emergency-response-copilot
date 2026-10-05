@@ -2,6 +2,14 @@
 
 Start a demo session, then choose **Start conversation** on a sample. **Preview recording** plays that sample before intake. The center is your conversation with an AI emergency coordinator; the incident context is beside it or behind **Incident context** on mobile.
 
+## Review a recording before starting
+
+In live mode, **Stop recording** (including the 60-second automatic stop) or **Upload audio** requests a Gemini transcript and reported-location suggestion. **What is happening?** fills with the transcript when empty and unchanged; review and edit it before choosing **Start conversation**. If you already typed a report or edited it while transcription was running, the transcript is shown separately with **Use transcript in report**, so your text is not overwritten. You can play or remove the attached recording. Editing the report keeps the original audio attached; both are saved only when you explicitly start the conversation.
+
+An explicitly mentioned incident location can fill the empty location field. This copies reported wording, not verified coordinates or a geocoded address; it never replaces a manually entered location. Editing a report clears a location that was automatically suggested from its previous text. **Suggest location from report** extracts a location from typed or corrected text. Device GPS remains separate. Unknown or ambiguous location stays unknown, and human verification is still required for a service lookup.
+
+The start buttons are disabled during recording or preview processing. If transcription fails, the recording stays attached and **Retry transcription**, manual typing, or starting with audio remains available. In scripted mode, personal-audio transcription is unavailable and is labeled as such. Preview requests require an active session and share the existing inference quotas and deadline. They do not create incidents, turns or saved audio; temporary audio used for validation is removed. Live mode sends the recording to Google at preview time, before the start button is clicked. Starting the conversation processes the attached original recording again alongside the reviewed report.
+
 ## Scripted sample replies
 
 The local provider is deterministic, not a language model. It recognizes these documented replies:

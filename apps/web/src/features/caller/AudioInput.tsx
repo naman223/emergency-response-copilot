@@ -1,6 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { Mic, Square, Upload, FileAudio } from "lucide-react";
-export function AudioInput({ onFile }: { onFile: (file: File) => void }) {
+export function AudioInput({
+  onFile,
+  disabled = false,
+  onCaptureChange,
+}: {
+  onFile: (file: File) => void;
+  disabled?: boolean;
+  onCaptureChange?: (active: boolean) => void;
+}) {
   const recorder = useRef<MediaRecorder | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mounted = useRef(false);
@@ -20,9 +28,11 @@ export function AudioInput({ onFile }: { onFile: (file: File) => void }) {
     };
   }, []);
   async function record() {
-    if (pending.current || recorder.current?.state === "recording") return;
+    if (disabled || pending.current || recorder.current?.state === "recording")
+      return;
     pending.current = true;
     setWaiting(true);
+    onCaptureChange?.(true);
     let stream: MediaStream | undefined;
     try {
       stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -57,6 +67,7 @@ export function AudioInput({ onFile }: { onFile: (file: File) => void }) {
           ),
         );
         setRecording(false);
+        onCaptureChange?.(false);
         setMessage("Recording ready to submit.");
       };
       r.start();
@@ -70,6 +81,7 @@ export function AudioInput({ onFile }: { onFile: (file: File) => void }) {
       activeStream.current = null;
       if (mounted.current) {
         setRecording(false);
+        onCaptureChange?.(false);
         setMessage(
           "Microphone unavailable. Upload audio or choose a sample below.",
         );
@@ -85,7 +97,7 @@ export function AudioInput({ onFile }: { onFile: (file: File) => void }) {
         <button
           type="button"
           className={recording ? "danger" : "secondary"}
-          disabled={waiting}
+          disabled={disabled || waiting}
           onClick={() => (recording ? recorder.current?.stop() : record())}
         >
           {recording ? <Square size={16} /> : <Mic size={16} />}{" "}
@@ -101,6 +113,7 @@ export function AudioInput({ onFile }: { onFile: (file: File) => void }) {
           <input
             aria-label="Upload audio"
             type="file"
+            disabled={disabled || recording || waiting}
             accept="audio/wav,audio/mpeg,audio/webm,audio/mp4,video/webm,video/mp4"
             onChange={(e) => {
               const f = e.target.files?.[0];

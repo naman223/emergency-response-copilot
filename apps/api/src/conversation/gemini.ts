@@ -30,6 +30,9 @@ export class GeminiConversationProvider implements ConversationProvider {
     if (input.report.wav)
       parts.push(
         {
+          text: "If originalReport is also present in the context, it is the officer's editable report or reviewed transcription supplied with the recording. Preserve it as reported officer information and use its explicit corrections when assessing the incident. Keep the original audio transcript faithful to the recording; do not silently rewrite it to match edits. Note unresolved contradictions and their sources.",
+        },
+        {
           text: "The following audio is an original caller recording supplied by the security officer. The caller and officer are different people. Address the officer about what the caller reports; do not assume the officer is the person in danger. Return a transcript. Facts derived from this recording must use source=transcript with exact transcript quotes, not an officer message ID. Empty officer messages contain no evidence.",
         },
         {

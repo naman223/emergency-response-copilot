@@ -1,5 +1,15 @@
 # Local implementation status
 
+## Recording preview and reported location — 2026-10-05
+
+Stopping or uploading a recording in live mode now requests an editable Gemini transcript before the conversation starts. An explicit incident location copied from the transcript can populate an empty location field. Typed or corrected reports also have **Suggest location from report**. Existing manual text/location edits are preserved while a preview is in flight; stale or cancelled responses cannot replace the current draft. The original audio remains attached when the transcript is edited, and explicit **Start conversation** saves both. The coordinator is instructed to distinguish the original recording from reviewed officer text. A failed preview offers retry/manual entry without discarding the recording.
+
+The authenticated preview endpoint creates no incident and persists no audio; it validates media, shares session/global inference quotas, enforces a deadline, and releases its session lease after completion, failure or cancellation. Suggested locations remain unverified descriptions, separate from GPS. The upload metadata limit now accommodates the existing 2,000-character report limit in multibyte languages as well as English.
+
+Validation: 65 unit tests, 11 emulator integration tests, typecheck and production builds passed. The browser run passed 19 of its 20 cases; the remaining microphone-cleanup case depended on starting a sample while microphone permission was pending, which is now intentionally disabled. It passed after being updated to leave intake through session reset. One additional browser regression passed for correct retry behavior after a typed-location lookup fails. Thus 21 browser cases are covered across the full run and targeted reruns. Preview browser tests use controlled model responses; a separate live Gemini walkthrough used real Chrome MediaRecorder with a fictional audio file as the microphone source. It verified transcription, a North Gate location suggestion, typed correction/location extraction, original audio plus edited-text submission, an actual coordinator reply, and no incident creation before explicit start. Desktop and mobile layouts were inspected. Physical microphones, other browsers and broader transcription accuracy remain untested.
+
+One independent review found no Critical/Important issues. Its minor retry-label finding was reproduced and fixed: failure of a text-location request no longer offers to retranscribe an attached recording. The local app remains in live Gemini mode; no public deployment was made.
+
 ## Bounded intake and handoff — 2026-10-05
 
 Approved intake now targets five essential questions, permits critical-gap clarification up to a server-enforced ceiling of ten, and ends earlier for urgent or sufficiently complete assessments. Officers can choose **Finish assessment now**. Persisted **Assessment ready** status prevents later updates or reloads from restarting the questionnaire; the brief retains unknown information and suggested urgency/routing for human review.

@@ -19,19 +19,25 @@ import { AnalysisService } from "./analysis/service";
 import { ReviewService } from "./review/service";
 import { resetSession } from "./demo/cleanup";
 import { MAX_BYTES } from "./incidents/media";
+import {
+  GeminiReportPreviewProvider,
+  ReportPreviewService,
+  type ReportPreviewProvider,
+} from "./incidents/report-preview";
 export type AppDependencies = {
   config: Config;
   db: Database;
   audio: AudioStore;
   provider: AnalysisProvider;
   conversationProvider?: ConversationProvider;
+  previewProvider?: ReportPreviewProvider;
   verifyToken: (token: string) => Promise<string>;
 };
 export async function buildApp(d: AppDependencies) {
   const app = Fastify({ logger: false, bodyLimit: MAX_BYTES + 65536 });
   await app.register(cors, { origin: d.config.origin });
   await app.register(multipart, {
-    limits: { fileSize: MAX_BYTES, files: 1, fields: 1, fieldSize: 4096 },
+    limits: { fileSize: MAX_BYTES, files: 1, fields: 1, fieldSize: 16384 },
   });
   const intake = new IncidentService(d),
     analysis = new AnalysisService(d),
@@ -94,6 +100,46 @@ export async function buildApp(d: AppDependencies) {
       .send(await readFile(resolve(fixtureRoot(), "audio", sampleId + ".wav")));
   });
   registerConversationRoutes(app, d);
+  const reportPreview = new ReportPreviewService({
+    ...d,
+    previewProvider:
+      d.previewProvider ??
+      (d.config.mode === "live"
+        ? new GeminiReportPreviewProvider(d.config)
+        : undefined),
+  });
+  app.post("/api/report-preview", async (r, reply) => {
+    const s = await session(r);
+    let input: { text?: string; audio?: Uint8Array };
+    if (r.isMultipart()) {
+      let audio: Buffer | undefined;
+      for await (const part of r.parts()) {
+        if (part.type !== "file" || part.fieldname !== "audio")
+          throw new AppError(
+            400,
+            "INVALID_INPUT",
+            "Attach one audio recording.",
+          );
+        audio = await part.toBuffer();
+        if (part.file.truncated)
+          throw new AppError(413, "AUDIO_SIZE", "Audio exceeds 10 MiB.");
+      }
+      input = { audio };
+    } else
+      input = z
+        .strictObject({ text: z.string().trim().min(1).max(2000) })
+        .parse(r.body);
+    const controller = new AbortController();
+    const disconnected = () => {
+      if (!reply.raw.writableEnded) controller.abort();
+    };
+    reply.raw.on("close", disconnected);
+    try {
+      return await reportPreview.run(s, input, controller.signal);
+    } finally {
+      reply.raw.off("close", disconnected);
+    }
+  });
   app.post("/api/session", async (r) => {
     const s = await startSession(d.db, await uid(r));
     return { expiresAt: s.expiresAt, mode: d.config.mode };

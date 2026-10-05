@@ -11,6 +11,7 @@ import type { IntakeRequest, SourceLocation } from "@copilot/contracts";
 import { AudioInput } from "../caller/AudioInput";
 import type { Sample } from "../caller/CallerView";
 import { ensureUser } from "../../firebase";
+import { useReportDraft } from "./useReportDraft";
 export function StartIncident({
   mode,
   samples,
@@ -22,9 +23,9 @@ export function StartIncident({
   busy: boolean;
   onStart: (m: IntakeRequest, file?: File) => Promise<void>;
 }) {
-  const [text, setText] = useState(""),
-    [file, setFile] = useState<File>(),
-    [description, setDescription] = useState(""),
+  const draft = useReportDraft(mode);
+  const { text, file, description } = draft;
+  const [capturing, setCapturing] = useState(false),
     [location, setLocation] = useState<SourceLocation>(),
     [notice, setNotice] = useState(""),
     [preview, setPreview] = useState<{ id: string; url: string }>();
@@ -99,28 +100,98 @@ export function StartIncident({
               maxLength={2000}
               placeholder="For example: A caller reports being followed near the north gate…"
               value={text}
-              onChange={(e) => {
-                setText(e.target.value);
-                setFile(undefined);
-              }}
+              disabled={busy}
+              onChange={(e) => draft.editText(e.target.value)}
             />
           </label>
           <AudioInput
-            onFile={(f) => {
-              setFile(f);
-              setText("");
+            disabled={busy}
+            onFile={draft.attach}
+            onCaptureChange={(active) => {
+              setCapturing(active);
+              if (active) draft.cancel();
             }}
           />
-          {file && <p className="inline-message">Attached: {file.name}</p>}
+          {file && (
+            <div className="recording-review">
+              <p className="inline-message">Attached: {file.name}</p>
+              {draft.recordingUrl && (
+                <audio
+                  controls
+                  src={draft.recordingUrl}
+                  aria-label="Review your recording"
+                />
+              )}
+              <button
+                className="text-button"
+                disabled={busy || capturing}
+                onClick={draft.remove}
+              >
+                Remove recording
+              </button>
+            </div>
+          )}
+          {draft.processing && (
+            <p className="inline-message" role="status">
+              {draft.processing === "audio"
+                ? "Transcribing recording…"
+                : "Finding the reported location…"}
+            </p>
+          )}
+          {draft.message && (
+            <p className="hint" role={draft.failed ? "alert" : "status"}>
+              {draft.message}
+            </p>
+          )}
+          {draft.failed === "audio" && file && (
+            <button
+              className="text-button"
+              disabled={!!draft.processing || busy || capturing}
+              onClick={() => void draft.preview(file)}
+            >
+              Retry transcription
+            </button>
+          )}
+          {draft.candidate && (
+            <div className="transcript-preview">
+              <strong>Transcript preview</strong>
+              <p>{draft.candidate.transcript}</p>
+              <p className="hint">
+                Your existing report was kept. You can replace it with this
+                transcript.
+              </p>
+              <button
+                className="secondary"
+                disabled={busy || capturing}
+                onClick={draft.applyTranscript}
+              >
+                Use transcript in report
+              </button>
+            </div>
+          )}
           <label className="field">
             Location description <span className="optional">optional</span>
             <input
               placeholder="Site, entrance or nearby landmark"
               value={description}
               maxLength={500}
-              onChange={(e) => setDescription(e.target.value)}
+              disabled={busy}
+              onChange={(e) => draft.editLocation(e.target.value)}
             />
           </label>
+          <p className="hint">
+            Locations found in speech or text are reported, not verified. Check
+            the site or address; device GPS is separate.
+          </p>
+          {mode === "live" && (
+            <button
+              className="text-button"
+              disabled={busy || capturing || !!draft.processing || !text.trim()}
+              onClick={() => void draft.preview()}
+            >
+              Suggest location from report
+            </button>
+          )}
           <button className="text-button" onClick={locate}>
             <MapPin size={15} />
             Use device location
@@ -132,7 +203,9 @@ export function StartIncident({
           )}
           <button
             className="primary begin-report"
-            disabled={busy || (!text.trim() && !file)}
+            disabled={
+              busy || capturing || !!draft.processing || (!text.trim() && !file)
+            }
             onClick={() =>
               onStart(
                 {
@@ -148,7 +221,7 @@ export function StartIncident({
           </button>
           <p className="local-note">
             {mode === "live"
-              ? "Live Gemini: reports and recordings are sent to Google for AI analysis. You review every recommendation."
+              ? "Live Gemini: stopping a recording or uploading audio sends it to Google for a transcript and location suggestion. Review them before starting the conversation."
               : "Local mode: personal reports are saved for manual review. Try a sample below for a guided coordinator conversation."}
           </p>
         </section>
@@ -214,7 +287,7 @@ export function StartIncident({
                 </button>
                 <button
                   className="sample-start"
-                  disabled={busy}
+                  disabled={busy || capturing || !!draft.processing}
                   aria-label={`Start sample conversation: ${s.title}`}
                   onClick={() => onStart({ ...metadata, sampleId: s.id })}
                 >

@@ -3026,3 +3026,22 @@ fieldset {
   line-height: inherit;
   color: inherit;
 }
+.recording-review audio {
+  display: block;
+  width: 100%;
+  margin: 8px 0;
+}
+.new-report-panel > .text-button {
+  margin-right: 16px;
+}
+.transcript-preview {
+  padding: 16px;
+  margin: 12px 0;
+  border: 1px solid var(--border, #dce3df);
+  border-radius: 12px;
+  background: #f5f8f6;
+}
+.transcript-preview p {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
