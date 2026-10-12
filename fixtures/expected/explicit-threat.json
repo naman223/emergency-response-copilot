@@ -1,0 +1,27 @@
+{
+  "transcript": "Someone is following me near the north gate. He has a knife. I was delivering a package when he stopped me beside the parking area and demanded my phone. I moved toward the staffed entrance, but he is still behind me. I cannot tell whether anyone else is nearby. I have not checked for injuries. Please send help now.",
+  "facts": [
+    {
+      "text": "Caller reports being followed",
+      "quote": "Someone is following me",
+      "evidenceStatus": "matched"
+    },
+    {
+      "text": "Weapon reported",
+      "quote": "He has a knife",
+      "evidenceStatus": "matched"
+    },
+    {
+      "text": "Caller reports a demand for their phone",
+      "quote": "demanded my phone",
+      "evidenceStatus": "matched"
+    }
+  ],
+  "unknowns": [
+    "Exact address",
+    "Whether anyone is injured"
+  ],
+  "urgency": "urgent_review",
+  "routing": "police",
+  "explanation": "The caller reports a knife threat, a demand for their phone and an ongoing pursuit toward a staffed entrance. Urgent police review is suggested; the exact site and injury status are unknown."
+}

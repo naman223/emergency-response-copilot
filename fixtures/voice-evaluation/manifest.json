@@ -1,0 +1,211 @@
+[
+  {
+    "id": "armed-robbery",
+    "kind": "speech",
+    "language": "en",
+    "voice": "Samantha",
+    "rate": 175,
+    "script": "A delivery employee was confronted in the main parking area of the Bengaluru Operations Center. A man threatened him with a knife and took his wallet and phone. The employee has a minor arm injury. The suspect ran toward the east entrance two minutes ago. Immediate assistance is required. I do not know whether the suspect is still nearby or whether an ambulance is needed.",
+    "concepts": [
+      ["knife"],
+      ["minor", "small"],
+      ["two minutes", "2 minutes"],
+      ["bengaluru", "bangalore"]
+    ],
+    "location": {
+      "includes": ["bengaluru", "bangalore"],
+      "excludes": []
+    },
+    "initial": {
+      "urgency": "urgent_review",
+      "indicators": {
+        "police": "yes",
+        "medical": "yes",
+        "weapon": "yes",
+        "injuries": "yes",
+        "ambulance": "unknown",
+        "immediateDanger": "unknown"
+      }
+    },
+    "audio": "armed-robbery.wav",
+    "sha256": "d94edad61e684a0e3d0c7190aea9d9b125b85b23a288b884da11c489404cf75a",
+    "durationSeconds": 20.569563
+  },
+  {
+    "id": "unresponsive-correction",
+    "kind": "speech",
+    "language": "en",
+    "voice": "Rishi",
+    "rate": 165,
+    "script": "At four in the morning I found an unresponsive employee inside the north loading area of the Chennai Facility. No movement or breathing has been observed. There is red liquid on the floor nearby and an unidentified metal object three meters away. I cannot confirm an injury or a weapon. The area is isolated. Immediate medical assistance is required.",
+    "concepts": [
+      ["unresponsive"],
+      ["breathing"],
+      ["chennai"],
+      ["metal object"]
+    ],
+    "location": {
+      "includes": ["chennai"],
+      "excludes": []
+    },
+    "initial": {
+      "urgency": "urgent_review",
+      "indicators": {
+        "medical": "yes",
+        "ambulance": "yes",
+        "emergency": "yes",
+        "injuries": "unknown",
+        "weapon": "unknown"
+      }
+    },
+    "correction": {
+      "text": "Correction: the employee is now responsive, walking and speaking normally. No medical support is needed, no ambulance is needed, and no emergency help is needed. No injuries have been reported. No current immediate danger is observed.",
+      "expected": {
+        "urgency": "standard_review",
+        "indicators": {
+          "medical": "no",
+          "ambulance": "no",
+          "emergency": "no",
+          "injuries": "no",
+          "immediateDanger": "no"
+        }
+      }
+    },
+    "audio": "unresponsive-correction.wav",
+    "sha256": "b9e3bf097cdf09b8c80e12c9a40531fe80509ac41e78821d50e3717bdd6cb4ab",
+    "durationSeconds": 21.886563
+  },
+  {
+    "id": "benign-equipment",
+    "kind": "speech",
+    "language": "en",
+    "voice": "Samantha",
+    "rate": 185,
+    "script": "At the Hyderabad Warehouse kitchen, the chef is using a kitchen knife to prepare vegetables. This is an equipment enquiry, not a threat. Nobody has threatened anyone. No injuries have been reported. No medical support is needed, no ambulance is needed, and no emergency help is needed. No current immediate danger is observed.",
+    "concepts": [
+      ["kitchen knife"],
+      ["vegetables"],
+      ["equipment"],
+      ["hyderabad"]
+    ],
+    "location": {
+      "includes": ["hyderabad"],
+      "excludes": []
+    },
+    "initial": {
+      "urgency": "standard_review",
+      "indicators": {
+        "emergency": "no",
+        "medical": "no",
+        "ambulance": "no",
+        "injuries": "no",
+        "immediateDanger": "no"
+      }
+    },
+    "audio": "benign-equipment.wav",
+    "sha256": "1b60b8af3b289d38f1a8cf931096233a22ab3651a613034e69b109e1a2932a6a",
+    "durationSeconds": 18.573
+  },
+  {
+    "id": "degraded-uncertain",
+    "kind": "speech",
+    "language": "en",
+    "voice": "Rishi",
+    "rate": 210,
+    "filter": "highpass=f=500,lowpass=f=1900,volume=0.6",
+    "script": "I noticed an unknown person looking around and then disappearing. I did not see a weapon. No injuries have been reported. I cannot say where the person is now, whether an incident actually happened, or whether any immediate help is needed. I do not know the incident location.",
+    "concepts": [["unknown person"], ["weapon"], ["injuries"], ["location"]],
+    "initial": {
+      "indicators": {
+        "weapon": "no",
+        "injuries": "no",
+        "emergency": "unknown",
+        "ambulance": "unknown",
+        "fire": "unknown"
+      }
+    },
+    "audio": "degraded-uncertain.wav",
+    "sha256": "6e88570b9fd527e9ca6303c9e47849586c75ed1a7b91d8d22caf06bf809d91bb",
+    "durationSeconds": 15.165625
+  },
+  {
+    "id": "hindi-robbery",
+    "kind": "speech",
+    "language": "hi",
+    "voice": "Lekha",
+    "rate": 165,
+    "script": "बेंगलुरु ऑपरेशन सेंटर के मुख्य पार्किंग क्षेत्र में एक व्यक्ति ने डिलीवरी कर्मचारी को चाकू दिखाकर धमकाया। कर्मचारी के हाथ पर हल्की चोट है। संदिग्ध दो मिनट पहले पूर्वी प्रवेश द्वार की ओर भाग गया। तुरंत मदद चाहिए। मुझे नहीं पता कि अब कोई खतरा है या एम्बुलेंस की जरूरत है।",
+    "concepts": [
+      ["चाकू"],
+      ["चोट"],
+      ["बेंगलुरु", "बैंगलोर"],
+      ["दो मिनट", "2 मिनट"]
+    ],
+    "location": {
+      "includes": ["बेंगलुरु", "बैंगलोर"],
+      "excludes": []
+    },
+    "initial": {
+      "urgency": "urgent_review",
+      "indicators": {
+        "police": "yes",
+        "medical": "yes",
+        "weapon": "yes",
+        "injuries": "yes",
+        "ambulance": "unknown",
+        "immediateDanger": "unknown"
+      }
+    },
+    "audio": "hindi-robbery.wav",
+    "sha256": "b19b08b1cff6b0a8fed2fc7444b412f9944d45eafaa2d5b0581089650ce53cf9",
+    "durationSeconds": 18.593563
+  },
+  {
+    "id": "remote-incident",
+    "kind": "speech",
+    "language": "en",
+    "voice": "Rishi",
+    "rate": 175,
+    "script": "I am calling from the Hyderabad office, but the incident is at the Chennai Facility north loading area. A colleague there reported an unresponsive employee. No breathing has been observed. The colleague cannot confirm an injury or a weapon. Immediate medical help is required at the Chennai Facility, not at my Hyderabad office.",
+    "concepts": [["hyderabad"], ["chennai"], ["unresponsive"], ["breathing"]],
+    "location": {
+      "includes": ["chennai"],
+      "excludes": ["hyderabad"]
+    },
+    "initial": {
+      "urgency": "urgent_review",
+      "indicators": {
+        "medical": "yes",
+        "ambulance": "yes",
+        "emergency": "yes",
+        "injuries": "unknown",
+        "weapon": "unknown"
+      }
+    },
+    "audio": "remote-incident.wav",
+    "sha256": "4c2d3d23686ddfa14a7e542535034bb592f13dba2fbe7ddd4cb1ded973a56fb1",
+    "durationSeconds": 20.168438
+  },
+  {
+    "id": "silence",
+    "kind": "non-speech",
+    "language": "en",
+    "script": "",
+    "signal": "silence",
+    "concepts": [],
+    "audio": "silence.wav",
+    "sha256": "de6f706e2a8192f21f747056aaedc802223138ec01e5dd39be21d1609f0f658d",
+    "durationSeconds": 3
+  },
+  {
+    "id": "noise",
+    "kind": "non-speech",
+    "language": "en",
+    "script": "",
+    "signal": "noise",
+    "concepts": [],
+    "audio": "noise.wav",
+    "sha256": "215abc72fe1aace248b69371753e7eb9a398a9001140139aef83d0e7fa8613eb",
+    "durationSeconds": 3
+  }
+]

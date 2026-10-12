@@ -1,0 +1,22 @@
+{
+  "transcript": "Someone fell down beside the loading bay and is not responding to me. I called out several times and did not see any movement. I cannot confirm whether the person is breathing. I can see a small patch of blood on the ground nearby, but I do not know where it came from. Another worker is waiting at the entrance. I do not know the address. Please help.",
+  "facts": [
+    {
+      "text": "Person reportedly unresponsive",
+      "quote": "is not responding to me",
+      "evidenceStatus": "matched"
+    },
+    {
+      "text": "Breathing is unconfirmed",
+      "quote": "I cannot confirm whether the person is breathing",
+      "evidenceStatus": "matched"
+    }
+  ],
+  "unknowns": [
+    "Exact location",
+    "Whether the person is breathing"
+  ],
+  "urgency": "urgent_review",
+  "routing": "medical",
+  "explanation": "The caller reports an unresponsive person after a fall beside a loading bay, with breathing unconfirmed. Urgent medical review is suggested. Blood nearby does not establish its source or a cause; the site address remains unknown."
+}

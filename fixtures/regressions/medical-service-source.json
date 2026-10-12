@@ -1,0 +1,120 @@
+{
+  "description": "Minimal fictional medical-source regression, extracted from a captured model response; no live run or deployment metadata.",
+  "rows": [
+    {
+      "reloadHistory": {
+        "turns": [
+          {
+            "id": "00000001-1111-4111-8111-111111111111",
+            "incidentId": "00000002-1111-4111-8111-111111111111",
+            "kind": "initial",
+            "officerText": "I am calling from the Hyderabad office, but the incident is at the Chennai facility north loading area. A colleague there reported an unresponsive employee. No breathing has been observed. The colleague cannot confirm an injury or a weapon. Immediate medical help is required at the Chennai facility, not at my Hyderabad office.",
+            "state": "completed",
+            "attempts": 1,
+            "createdAt": "2026-01-01T00:00:00.000Z",
+            "updatedAt": "2026-01-01T00:00:00.000Z",
+            "reply": "I have received your report regarding the Chennai facility north loading area. An employee there is reported unresponsive with no breathing observed. Because of the reported unresponsiveness and lack of observed breathing, an urgent medical and ambulance response is suggested for clinical assessment. I understand that a colleague on-site could not confirm an injury or a weapon. To help us coordinate, is there any immediate danger or suspect activity currently observed at the Chennai loading area?",
+            "question": "Is there any immediate danger or suspect activity currently observed at the Chennai loading area?",
+            "suggestedReplies": [
+              "No immediate danger or suspect activity has been reported.",
+              "The colleague did not mention any immediate danger.",
+              "Unknown if there is any immediate danger or suspect activity."
+            ],
+            "assessment": {
+              "summary": "An employee is reported unresponsive with no breathing observed at the Chennai facility north loading area. A colleague on-site was unable to confirm any injuries or weapons. Immediate medical assistance has been requested at the Chennai location.",
+              "facts": [
+                {
+                  "text": "The incident is located at the Chennai facility north loading area.",
+                  "source": {
+                    "source": "transcript",
+                    "quote": "the incident is at the Chennai facility north loading area."
+                  },
+                  "evidenceStatus": "matched"
+                },
+                {
+                  "text": "An employee at the Chennai facility is reported unresponsive.",
+                  "source": {
+                    "source": "transcript",
+                    "quote": "a colleague there reported an unresponsive employee."
+                  },
+                  "evidenceStatus": "unverified"
+                },
+                {
+                  "text": "No breathing has been observed for the unresponsive employee.",
+                  "source": {
+                    "source": "transcript",
+                    "quote": "No breathing has been observed."
+                  },
+                  "evidenceStatus": "matched"
+                },
+                {
+                  "text": "A colleague on-site cannot confirm an injury or a weapon.",
+                  "source": {
+                    "source": "transcript",
+                    "quote": "The colleague cannot confirm an injury or a weapon."
+                  },
+                  "evidenceStatus": "matched"
+                }
+              ],
+              "unknowns": [
+                "Emergency response need: Unknown",
+                "Police response need: Unknown",
+                "Fire response need: Unknown",
+                "Weapon reported: Unknown",
+                "Injuries reported: Unknown",
+                "Current immediate danger: Unknown",
+                "Whether any injuries are present",
+                "Whether a weapon is present",
+                "Whether there is any current immediate danger or suspect activity at the scene",
+                "Current safety status of personnel on-site"
+              ],
+              "urgency": "urgent_review",
+              "routing": "medical",
+              "locationDescription": "Chennai facility north loading area",
+              "indicators": {
+                "emergency": {
+                  "status": "unknown",
+                  "reason": "Immediate medical assistance is requested, but there is no confirmed report of immediate danger, violence, or active threat."
+                },
+                "police": {
+                  "status": "unknown",
+                  "reason": "No criminal activity, suspect, or weapon has been confirmed or denied."
+                },
+                "medical": {
+                  "status": "yes",
+                  "reason": "Immediate medical help is requested for an unresponsive employee with no breathing observed."
+                },
+                "ambulance": {
+                  "status": "yes",
+                  "reason": "Urgent ambulance response is suggested for medical assessment of an unresponsive person with no breathing observed."
+                },
+                "fire": {
+                  "status": "unknown",
+                  "reason": "There is no mention of fire or fire hazards in the report."
+                },
+                "weapon": {
+                  "status": "unknown",
+                  "reason": "The colleague on-site cannot confirm if a weapon is present."
+                },
+                "injuries": {
+                  "status": "unknown",
+                  "reason": "The colleague on-site cannot confirm if there is an injury."
+                },
+                "immediateDanger": {
+                  "status": "unknown",
+                  "reason": "Current threat level and immediate danger at the loading area are not mentioned."
+                }
+              }
+            },
+            "completedRevision": 3
+          }
+        ]
+      },
+      "turns": [
+        {
+          "sourceTranscript": "I am calling from the Hyderabad office, but the incident is at the Chennai facility north loading area. A colleague there reported an unresponsive employee. No breathing has been observed. The colleague cannot confirm an injury or a weapon. Immediate medical help is required at the Chennai facility, not at my Hyderabad office."
+        }
+      ]
+    }
+  ]
+}

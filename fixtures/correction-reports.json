@@ -1,0 +1,124 @@
+[
+  {
+    "id": "vehicle-escalation",
+    "report": "During the night patrol at the West Gate, I found a vehicle that was reported stolen earlier today. The driver-side window is smashed, and the ignition appears to have been tampered with. The vehicle is parked close to the restricted facility entrance. I have secured the area, but I do not know whether the suspect entered the facility. This incident occurred at the Bengaluru Operations Center, Karnataka, India.",
+    "steps": [
+      {
+        "urgency": "standard_review",
+        "indicators": {
+          "police": "yes",
+          "emergency": "unknown",
+          "immediateDanger": "unknown"
+        }
+      },
+      {
+        "text": "Update: a person is now threatening a delivery employee with a knife at the West Gate. The employee has a bleeding arm injury. Immediate assistance is required. I cannot confirm whether an ambulance is needed.",
+        "urgency": "urgent_review",
+        "indicators": {
+          "police": "yes",
+          "emergency": "yes",
+          "medical": "yes",
+          "weapon": "yes",
+          "injuries": "yes",
+          "immediateDanger": "yes",
+          "ambulance": "unknown"
+        }
+      }
+    ]
+  },
+  {
+    "id": "injury-corrections",
+    "report": "At the Hyderabad Warehouse, Telangana, India, a storage door was forced open overnight and laptops were taken. No injuries have been reported. The storage area is secured. I cannot confirm whether the suspect remains outside the warehouse.",
+    "steps": [
+      {
+        "urgency": "standard_review",
+        "indicators": { "injuries": "no", "police": "yes" }
+      },
+      {
+        "text": "Correction: a warehouse employee has a minor cut on his arm and medical support is needed. An ambulance is not required. The employee is currently safe, and no current immediate danger is observed.",
+        "indicators": {
+          "injuries": "yes",
+          "medical": "yes",
+          "ambulance": "no",
+          "immediateDanger": "no"
+        }
+      },
+      {
+        "text": "Correction: I cannot confirm whether the employee has an injury, needs medical support, or needs an ambulance. Those three details are now unknown. The employee remains safe.",
+        "indicators": {
+          "injuries": "unknown",
+          "medical": "unknown",
+          "ambulance": "unknown"
+        }
+      }
+    ]
+  },
+  {
+    "id": "medical-observation-correction",
+    "report": "At 04:00 AM I located an unresponsive person inside the north loading area of the Chennai Facility, Tamil Nadu, India. There is visible blood near the individual, and a metal object is lying approximately three meters away. No movement or breathing has been observed. The area has been isolated, and no one has touched the scene.",
+    "steps": [
+      {
+        "urgency": "urgent_review",
+        "indicators": {
+          "medical": "yes",
+          "ambulance": "yes",
+          "emergency": "yes",
+          "injuries": "unknown",
+          "weapon": "unknown"
+        }
+      },
+      {
+        "text": "Correction: the red liquid was spilled theatrical blood from a training prop. The metal object is a maintenance wrench; I did not see a weapon. The person is still unresponsive and breathing has not been observed. I cannot confirm whether the person is injured. Immediate medical assistance is still required.",
+        "urgency": "urgent_review",
+        "indicators": {
+          "medical": "yes",
+          "ambulance": "yes",
+          "emergency": "yes",
+          "injuries": "unknown",
+          "weapon": "no"
+        }
+      }
+    ]
+  },
+  {
+    "id": "fire-retracted",
+    "report": "At the Chennai Facility storage entrance, I see a white plume that appears to be smoke coming from a cleaning machine. I cannot confirm flames or injuries, and I am concerned about a possible fire. Personnel have moved away from the entrance.",
+    "steps": [
+      { "indicators": { "injuries": "unknown", "weapon": "unknown" } },
+      {
+        "text": "Correction: inspection confirms the white plume was dust from the cleaning machine. No fire or smoke is present. No fire response is required, and no emergency help is needed. No injuries have been reported. No current immediate danger is observed.",
+        "urgency": "standard_review",
+        "indicators": {
+          "fire": "no",
+          "emergency": "no",
+          "injuries": "no",
+          "immediateDanger": "no"
+        }
+      }
+    ]
+  },
+  {
+    "id": "confirmation-withdrawn",
+    "report": "A stolen vehicle was found at the Bengaluru Operations Center West Gate. Its ignition appears to have been tampered with. The area is secured, but current suspect whereabouts and personnel safety are unknown.",
+    "steps": [
+      {
+        "urgency": "standard_review",
+        "indicators": { "police": "yes", "emergency": "unknown" }
+      },
+      {
+        "text": "Correction: inspection confirms the ignition is tampered with. The vehicle remains secured at the West Gate. Suspect whereabouts and personnel safety remain unknown.",
+        "urgency": "standard_review",
+        "indicators": { "police": "yes", "emergency": "unknown" }
+      },
+      {
+        "text": "Correction: I withdraw that confirmation. I cannot confirm whether the ignition is tampered with; it only appears to have been tampered with. Suspect whereabouts and personnel safety remain unknown.",
+        "urgency": "standard_review",
+        "indicators": {
+          "police": "yes",
+          "emergency": "unknown",
+          "immediateDanger": "unknown"
+        }
+      }
+    ]
+  }
+]

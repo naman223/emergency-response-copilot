@@ -1,0 +1,82 @@
+{
+  "opening": "The caller reports being followed by a person with a knife after a demand for their phone near the parking area. They are moving toward a staffed entrance, but the person is reportedly still behind them. This suggests urgent police review. The exact site and injury status remain unknown.",
+  "question": "Which site does the north gate refer to?",
+  "followup": "Do you have any information about injuries?",
+  "answers": [
+    "No injuries reported",
+    "Injuries reported",
+    "Unknown"
+  ],
+  "transcript": "Someone is following me near the north gate. He has a knife. I was delivering a package when he stopped me beside the parking area and demanded my phone. I moved toward the staffed entrance, but he is still behind me. I cannot tell whether anyone else is nearby. I have not checked for injuries. Please send help now.",
+  "assessment": {
+    "summary": "The caller reports being followed by a person with a knife after a demand for their phone near the parking area. They are moving toward a staffed entrance, but the person is reportedly still behind them. This suggests urgent police review. The exact site and injury status remain unknown.",
+    "facts": [
+      {
+        "text": "Caller reports being followed",
+        "source": {
+          "source": "transcript",
+          "quote": "Someone is following me"
+        },
+        "evidenceStatus": "unverified"
+      },
+      {
+        "text": "Weapon reported",
+        "source": {
+          "source": "transcript",
+          "quote": "He has a knife"
+        },
+        "evidenceStatus": "unverified"
+      },
+      {
+        "text": "Caller reports a demand for their phone",
+        "source": {
+          "source": "transcript",
+          "quote": "demanded my phone"
+        },
+        "evidenceStatus": "unverified"
+      }
+    ],
+    "unknowns": [
+      "Exact location unknown",
+      "Injury status unknown"
+    ],
+    "urgency": "urgent_review",
+    "routing": "police",
+    "locationDescription": "",
+    "indicators": {
+      "emergency": {
+        "status": "yes",
+        "reason": "The caller requests immediate help while being followed."
+      },
+      "police": {
+        "status": "yes",
+        "reason": "Reported pursuit and a knife suggest police response for human review."
+      },
+      "medical": {
+        "status": "unknown",
+        "reason": "Not established from the reported information."
+      },
+      "ambulance": {
+        "status": "unknown",
+        "reason": "Not established from the reported information."
+      },
+      "fire": {
+        "status": "unknown",
+        "reason": "Not established from the reported information."
+      },
+      "weapon": {
+        "status": "yes",
+        "reason": "The caller mentions a knife."
+      },
+      "injuries": {
+        "status": "unknown",
+        "reason": "Not established from the reported information."
+      },
+      "immediateDanger": {
+        "status": "yes",
+        "reason": "The caller reports an ongoing pursuit by someone with a knife."
+      }
+    }
+  },
+  "summaryBase": "The caller reports an ongoing pursuit near the north gate by a person with a knife who demanded their phone. They are moving toward a staffed entrance. Urgent police review is suggested."
+}

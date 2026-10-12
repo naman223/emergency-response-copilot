@@ -1,0 +1,89 @@
+{
+  "report": "At the Chennai Facility storage entrance, I see a white plume that appears to be smoke coming from a cleaning machine. I cannot confirm flames or injuries, and I am concerned about a possible fire. Personnel have moved away from the entrance.",
+  "correction": "Correction: inspection confirms the white plume was dust from the cleaning machine. No fire or smoke is present. No fire response is required, and no emergency help is needed. No injuries have been reported. No current immediate danger is observed.",
+  "candidate": {
+    "reply": "Thank you for the correction. I have updated the assessment to reflect that the white plume that appeared to be smoke was confirmed to be dust from the cleaning machine, with no fire, smoke, or injuries present. Since you have confirmed that no emergency help or fire response is required, are there any other safety concerns or facility issues at the storage entrance that require attention?",
+    "question": "Are there any other safety concerns or facility issues at the storage entrance that require attention?",
+    "assessment": {
+      "summary": "At the Chennai Facility storage entrance, an inspection confirmed that a previously reported white plume that appeared to be smoke was dust from a cleaning machine, not smoke. No fire, smoke, or injuries are present. The officer has stated that no fire response or emergency help is needed, and no current immediate danger is observed.",
+      "facts": [
+        {
+          "text": "Inspection confirmed the white plume was dust from the cleaning machine.",
+          "source": {
+            "source": "officer",
+            "messageId": "097e4843-3b2d-4133-9a22-0e8b62f145f8",
+            "quote": "Correction: inspection confirms the white plume was dust from the cleaning machine."
+          },
+          "evidenceStatus": "matched"
+        },
+        {
+          "text": "No fire or smoke is present, and no fire response or emergency help is needed.",
+          "source": {
+            "source": "officer",
+            "messageId": "097e4843-3b2d-4133-9a22-0e8b62f145f8",
+            "quote": "No fire or smoke is present. No fire response is required, and no emergency help is needed."
+          },
+          "evidenceStatus": "matched"
+        },
+        {
+          "text": "No injuries have been reported.",
+          "source": {
+            "source": "officer",
+            "messageId": "097e4843-3b2d-4133-9a22-0e8b62f145f8",
+            "quote": "No injuries have been reported."
+          },
+          "evidenceStatus": "matched"
+        },
+        {
+          "text": "No current immediate danger is observed.",
+          "source": {
+            "source": "officer",
+            "messageId": "097e4843-3b2d-4133-9a22-0e8b62f145f8",
+            "quote": "No current immediate danger is observed."
+          },
+          "evidenceStatus": "matched"
+        }
+      ],
+      "unknowns": [
+        "Whether facility maintenance is required for the cleaning machine"
+      ],
+      "urgency": "standard_review",
+      "routing": "other",
+      "locationDescription": "Chennai Facility storage entrance",
+      "indicators": {
+        "emergency": {
+          "status": "no",
+          "reason": "The officer confirmed no emergency help is needed."
+        },
+        "police": {
+          "status": "unknown",
+          "reason": "Not established: no matched source quote explicitly denies police response need."
+        },
+        "medical": {
+          "status": "unknown",
+          "reason": "Not established: no matched source quote explicitly denies medical response need."
+        },
+        "ambulance": {
+          "status": "unknown",
+          "reason": "Not established: no matched source quote explicitly denies ambulance response need."
+        },
+        "fire": {
+          "status": "no",
+          "reason": "The officer confirmed no fire is present and no fire response is required."
+        },
+        "weapon": {
+          "status": "unknown",
+          "reason": "Not established: no matched source quote explicitly denies a reported weapon."
+        },
+        "injuries": {
+          "status": "no",
+          "reason": "The officer explicitly stated that no injuries have been reported."
+        },
+        "immediateDanger": {
+          "status": "no",
+          "reason": "The officer explicitly stated that no current immediate danger is observed."
+        }
+      }
+    }
+  }
+}

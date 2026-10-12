@@ -1,0 +1,27 @@
+[
+  {
+    "id": "suspicious-person",
+    "report": "I noticed an unknown person walking near the restricted fence behind the facility. The individual looked around several times and then disappeared behind a parked truck. I did not see a weapon, damaged property, or an actual attempt to enter the building. I am worried that something may be wrong.",
+    "reviewFocus": "Retain uncertainty; do not invent a weapon, break-in or immediate attack. Clarify location and current safety."
+  },
+  {
+    "id": "unresponsive-person",
+    "report": "At 04:00 AM I located an unresponsive person inside the north loading area of the Chennai Facility, Tamil Nadu, India. There is visible blood near the individual, and a metal object is lying approximately three meters away. No movement or breathing has been observed. The area has been isolated, and no one has touched the scene.",
+    "reviewFocus": "Immediately flag urgent medical/emergency and ambulance needs. Do not confirm death or classify an unidentified metal object as a weapon."
+  },
+  {
+    "id": "secured-burglary",
+    "report": "At 6:30 AM, I discovered that the rear door of the storage building had been forced open overnight. Several laptops are missing, and there are tool marks around the lock. No person is currently inside the building, no injuries have been reported, and the area is now secured. The incident occurred at the Hyderabad Warehouse, Telangana, India.",
+    "reviewFocus": "Distinguish a secured past property crime from an active life-threatening incident. Preserve the explicit absence of reported injuries."
+  },
+  {
+    "id": "armed-robbery",
+    "report": "A delivery employee was confronted near the main parking area at the Bengaluru Operations Center. The suspect threatened him with a knife and forcibly took his wallet and mobile phone. The employee has a minor injury, and the suspect was last seen running toward the east entrance approximately two minutes ago. Immediate assistance is required.",
+    "reviewFocus": "Flag urgent police and medical review. Clarify current victim safety and medical needs without repeating already known facts."
+  },
+  {
+    "id": "recovered-vehicle",
+    "report": "During the night patrol at the West Gate, I found a vehicle that was reported stolen earlier today. The driver-side window is smashed, and the ignition appears to have been tampered with. The vehicle is parked close to the restricted facility entrance. I have secured the area, but I do not know whether the suspect entered the facility. This incident occurred at the Bengaluru Operations Center, Karnataka, India.",
+    "reviewFocus": "Suggest police review, preserve unknown suspect entry, and ask about current personnel safety rather than asserting an intrusion."
+  }
+]

@@ -1,0 +1,179 @@
+{
+  "note": "Captured fictional Gemini structured outputs. The original repair discarded the first review's Emergency Unknown correction and failed. No thought parts or credentials.",
+  "checkedAt": "2026-10-06T15:31:57.814Z",
+  "report": "During the night patrol at the West Gate, I found a vehicle that was reported stolen earlier today. The driver-side window is smashed, and the ignition appears to have been tampered with. The vehicle is parked close to the restricted facility entrance. I have secured the area, but I do not know whether the suspect entered the facility. This incident occurred at the Bengaluru Operations Center, Karnataka, India.",
+  "messageId": "d4148322-2bb2-4378-bd3d-c12db0e45eae",
+  "responses": [
+    {
+      "reply": "I have received your report regarding the stolen vehicle found at the West Gate of the Bengaluru Operations Center with a smashed window and tampered ignition. You noted that the area is secured, but it is unknown if the suspect entered the restricted facility. To ensure your safety and coordinate the appropriate response, could you clarify if you are currently in any immediate danger or if you have observed any suspects nearby?",
+      "question": "Are you currently facing any immediate danger, or have you observed any suspects in the vicinity of the West Gate?",
+      "suggestedReplies": [
+        "I am safe and see no suspects nearby.",
+        "There is a suspect nearby but I am in a safe position.",
+        "I am in immediate danger and need assistance.",
+        "The situation is currently stable with no suspects visible."
+      ],
+      "assessment": {
+        "summary": "An officer on night patrol located a previously reported stolen vehicle parked near the restricted facility entrance at the West Gate of the Bengaluru Operations Center. The vehicle has a smashed driver-side window and a tampered ignition. The officer has secured the area, but it is unknown if any suspect entered the facility. The current safety of the officer and the presence of immediate danger remain unconfirmed.",
+        "facts": [
+          {
+            "text": "A stolen vehicle was found during night patrol at the West Gate.",
+            "source": {
+              "source": "officer",
+              "quote": "During the night patrol at the West Gate, I found a vehicle that was reported stolen earlier today.",
+              "messageId": "d4148322-2bb2-4378-bd3d-c12db0e45eae"
+            },
+            "evidenceStatus": "unverified"
+          },
+          {
+            "text": "The vehicle's driver-side window is smashed and the ignition is tampered with.",
+            "source": {
+              "source": "officer",
+              "quote": "The driver-side window is smashed, and the ignition appears to have been tampered with.",
+              "messageId": "d4148322-2bb2-4378-bd3d-c12db0e45eae"
+            },
+            "evidenceStatus": "unverified"
+          },
+          {
+            "text": "The vehicle is parked near the restricted facility entrance.",
+            "source": {
+              "source": "officer",
+              "quote": "The vehicle is parked close to the restricted facility entrance.",
+              "messageId": "d4148322-2bb2-4378-bd3d-c12db0e45eae"
+            },
+            "evidenceStatus": "unverified"
+          },
+          {
+            "text": "The officer secured the area but does not know if the suspect entered the facility.",
+            "source": {
+              "source": "officer",
+              "quote": "I have secured the area, but I do not know whether the suspect entered the facility.",
+              "messageId": "d4148322-2bb2-4378-bd3d-c12db0e45eae"
+            },
+            "evidenceStatus": "unverified"
+          }
+        ],
+        "unknowns": [
+          "Whether the suspect entered the restricted facility",
+          "Current immediate danger or suspect location",
+          "Presence of any injuries or medical needs",
+          "Whether weapons are involved"
+        ],
+        "urgency": "standard_review",
+        "routing": "police",
+        "locationDescription": "West Gate, Bengaluru Operations Center, Karnataka, India",
+        "indicators": {
+          "emergency": {
+            "status": "yes",
+            "reason": "A stolen vehicle was recovered near a restricted facility entrance with unknown suspect status, requiring police response and security assessment."
+          },
+          "police": {
+            "status": "yes",
+            "reason": "The incident involves a recovered stolen vehicle with signs of forced entry and tampering near a restricted entrance."
+          },
+          "medical": {
+            "status": "unknown",
+            "reason": "No injuries or medical needs have been reported or denied in the initial report."
+          },
+          "ambulance": {
+            "status": "unknown",
+            "reason": "No transport needs have been reported or denied in the initial report."
+          },
+          "fire": {
+            "status": "unknown",
+            "reason": "No fire, smoke, or hazards have been reported or denied in the initial report."
+          },
+          "weapon": {
+            "status": "unknown",
+            "reason": "No weapons have been reported or denied in the initial report."
+          },
+          "injuries": {
+            "status": "unknown",
+            "reason": "No injuries have been reported or denied in the initial report."
+          },
+          "immediateDanger": {
+            "status": "unknown",
+            "reason": "The officer has secured the area, but the suspect's location and potential entry into the restricted facility are unknown."
+          }
+        }
+      },
+      "clarificationReason": "The officer's current safety and the presence of immediate danger or nearby suspects are unknown and critical for determining response urgency."
+    },
+    {
+      "reply": "I have received your report regarding the stolen vehicle found at the West Gate of the Bengaluru Operations Center with a smashed window and tampered ignition. You noted that the area is secured, but it is unknown if the suspect entered the restricted facility. To ensure your safety and coordinate the appropriate response, could you clarify if you are currently in any immediate danger or if you have observed any suspects nearby?",
+      "question": "Are you currently facing any immediate danger, or have you observed any suspects in the vicinity of the West Gate?",
+      "suggestedReplies": [
+        "I am safe and see no suspects nearby.",
+        "There is a suspect nearby but I am in a safe position.",
+        "I am in immediate danger and need assistance.",
+        "The situation is currently stable with no suspects visible."
+      ],
+      "assessment": {
+        "facts": [
+          {
+            "text": "A stolen vehicle was found during night patrol at the West Gate.",
+            "source": {
+              "source": "officer",
+              "quote": "During the night patrol at the West Gate, I found a vehicle that was reported stolen earlier today.",
+              "messageId": "d4148322-2bb2-4378-bd3d-c12db0e45eae"
+            },
+            "evidenceStatus": "matched"
+          },
+          {
+            "text": "The vehicle's driver-side window is smashed and the ignition appears to have been tampered with.",
+            "source": {
+              "source": "officer",
+              "quote": "The driver-side window is smashed, and the ignition appears to have been tampered with.",
+              "messageId": "d4148322-2bb2-4378-bd3d-c12db0e45eae"
+            },
+            "evidenceStatus": "matched"
+          },
+          {
+            "text": "The vehicle is parked near the restricted facility entrance.",
+            "source": {
+              "source": "officer",
+              "quote": "The vehicle is parked close to the restricted facility entrance.",
+              "messageId": "d4148322-2bb2-4378-bd3d-c12db0e45eae"
+            },
+            "evidenceStatus": "matched"
+          },
+          {
+            "text": "The officer secured the area but does not know if the suspect entered the facility.",
+            "source": {
+              "source": "officer",
+              "quote": "I have secured the area, but I do not know whether the suspect entered the facility.",
+              "messageId": "d4148322-2bb2-4378-bd3d-c12db0e45eae"
+            },
+            "evidenceStatus": "matched"
+          }
+        ],
+        "indicators": {
+          "emergency": {
+            "status": "unknown",
+            "reason": "The officer has secured the area, but the suspect's location and potential entry into the restricted facility are unknown."
+          }
+        }
+      }
+    },
+    {
+      "reply": "I have received your report regarding the stolen vehicle found at the West Gate of the Bengaluru Operations Center with a smashed window and an ignition that appears to have been tampered with. You noted that the area is secured, but it is unknown if the suspect entered the restricted facility. To ensure your safety and coordinate the appropriate response, could you clarify if you are currently in any immediate danger or if you have observed any suspects nearby?",
+      "question": "Are you currently facing any immediate danger, or have you observed any suspects in the vicinity of the West Gate?",
+      "suggestedReplies": [
+        "I am safe and see no suspects nearby.",
+        "There is a suspect nearby but I am in a safe position.",
+        "I am in immediate danger and need assistance.",
+        "The situation is currently stable with no suspects visible."
+      ],
+      "assessment": {
+        "summary": "An officer on night patrol located a previously reported stolen vehicle parked near the restricted facility entrance at the West Gate of the Bengaluru Operations Center. The vehicle has a smashed driver-side window and an ignition that appears to have been tampered with. The officer has secured the area, but it is unknown if any suspect entered the facility. The current safety of the officer and the presence of immediate danger remain unconfirmed.",
+        "unknowns": [
+          "Whether the suspect entered the restricted facility",
+          "Current immediate danger or suspect location",
+          "Presence of any injuries or medical needs",
+          "Whether weapons are involved"
+        ],
+        "urgency": "standard_review"
+      }
+    }
+  ]
+}

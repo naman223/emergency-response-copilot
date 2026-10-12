@@ -1,0 +1,30 @@
+# Only the API build inputs and five fictional samples enter the build context.
+**
+!package.json
+!package-lock.json
+!apps/
+!apps/api/
+!apps/api/package.json
+!apps/api/src/
+!apps/api/src/**
+!apps/web/
+!apps/web/package.json
+!packages/
+!packages/contracts/
+!packages/contracts/package.json
+!packages/contracts/src/
+!packages/contracts/src/**
+!fixtures/
+!fixtures/manifest.json
+!fixtures/audio/
+!fixtures/audio/*.wav
+!fixtures/conversations/
+!fixtures/conversations/*.json
+!fixtures/expected/
+!fixtures/expected/*.json
+# Keep secret-like files excluded even if placed inside an allowed directory.
+**/.env*
+**/*-credentials.json
+**/*service-account*.json
+**/*.pem
+**/*.key

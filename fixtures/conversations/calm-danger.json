@@ -1,0 +1,40 @@
+{
+  "opening": "The caller calmly reports smoke. A calm voice does not resolve the possible danger; the reported smoke warrants urgent human review. I need a clearer location and confirmation of what has been observed.",
+  "question": "Which site is this report from?",
+  "followup": "Has smoke been seen, or only smelled?",
+  "answers": [
+    "Smoke is visible",
+    "Only a smell",
+    "Unknown"
+  ],
+  "transcript": "I am speaking calmly. There is thick smoke coming from the library. Two people are still inside. Please send help.",
+  "assessment": {
+    "summary": "The caller calmly reports smoke. A calm voice does not resolve the possible danger; the reported smoke warrants urgent human review. I need a clearer location and confirmation of what has been observed.",
+    "facts": [
+      {
+        "text": "Smoke reported",
+        "source": {
+          "source": "transcript",
+          "quote": "thick smoke coming from the library"
+        },
+        "evidenceStatus": "unverified"
+      },
+      {
+        "text": "People reportedly inside",
+        "source": {
+          "source": "transcript",
+          "quote": "Two people are still inside"
+        },
+        "evidenceStatus": "unverified"
+      }
+    ],
+    "unknowns": [
+      "Exact location unknown",
+      "Further context unknown"
+    ],
+    "urgency": "urgent_review",
+    "routing": "fire",
+    "locationDescription": ""
+  },
+  "summaryBase": "The caller reports smoke while speaking calmly. The reported smoke warrants urgent human review."
+}

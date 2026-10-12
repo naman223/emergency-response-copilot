@@ -1,0 +1,19 @@
+{
+  "transcript": "I am organising a cooking class tomorrow. Can I bring a kitchen knife? Nobody is hurt and there is no emergency.",
+  "facts": [
+    {
+      "text": "Future cooking class",
+      "quote": "cooking class tomorrow",
+      "evidenceStatus": "matched"
+    },
+    {
+      "text": "Caller denies an emergency",
+      "quote": "there is no emergency",
+      "evidenceStatus": "matched"
+    }
+  ],
+  "unknowns": [],
+  "urgency": "standard_review",
+  "routing": "other",
+  "explanation": "Fictional demonstration: benign weapon mention. Human verification required."
+}
