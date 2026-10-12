@@ -20,7 +20,7 @@ export function createFirebase(config: Config) {
     },
     randomUUID(),
   );
-  const firestore = getFirestore(app);
+  const firestore = getFirestore(app, config.databaseId);
   const records = firestore.collection("records");
   const ref = (key: string) => records.doc(encodeURIComponent(key));
   const db: Database = {

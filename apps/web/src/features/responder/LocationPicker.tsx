@@ -12,12 +12,14 @@ export function LocationPicker({
   selectedLocation,
   deviceLocation,
   disabled,
+  verified = false,
   onSelect,
 }: {
   description: string;
   selectedLocation?: ReviewDraft["selectedLocation"];
   deviceLocation?: SourceLocation;
   disabled: boolean;
+  verified?: boolean;
   onSelect: (
     description: string,
     location: NonNullable<ReviewDraft["selectedLocation"]>,
@@ -166,8 +168,20 @@ export function LocationPicker({
       </button>
       {selectedLocation && (
         <p className="hint">
-          Map-selected point: {selectedLocation.latitude.toFixed(6)},{" "}
+          {selectedLocation.source === "device"
+            ? "Device location (default)"
+            : "Map-selected point"}
+          : {selectedLocation.latitude.toFixed(6)},{" "}
           {selectedLocation.longitude.toFixed(6)}
+          {selectedLocation.source === "device" && (
+            <>
+              {selectedLocation.accuracyMeters !== undefined &&
+                ` · GPS accuracy ±${Math.round(selectedLocation.accuracyMeters)} m`}
+              {verified
+                ? " · Reviewer verified"
+                : " · Not yet verified as the incident location"}
+            </>
+          )}
         </p>
       )}
       {open && (

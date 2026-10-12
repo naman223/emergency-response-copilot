@@ -55,3 +55,27 @@ it("creates one explicitly simulated SMS per service using the reviewed location
     buildSmsPreviews("id", { ...draft, services: [] }, "http://127.0.0.1:5173"),
   ).toEqual([]);
 });
+
+it("labels inherited device coordinates honestly in service messages", () => {
+  const draft = {
+    summary: "Reviewed report",
+    urgency: "urgent_review",
+    routing: "police",
+    services: ["police"],
+    locationDescription: "12.971600, 77.594600",
+    confirmedFields: [],
+    selectedLocation: {
+      source: "device",
+      latitude: 12.9716,
+      longitude: 77.5946,
+      accuracyMeters: 12,
+      selectedAt: "2026-10-05T16:00:00Z",
+    },
+  } as unknown as ReviewDraft;
+  const message = buildSmsPreviews("id", draft, "http://127.0.0.1:5173")[0]
+    .body;
+  expect(message).toContain("Device GPS: 12.971600, 77.594600");
+  expect(message).toContain("GPS accuracy: ±12 m");
+  expect(message).toContain("not verified");
+  expect(message).not.toContain("Map pin");
+});

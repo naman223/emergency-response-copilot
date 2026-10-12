@@ -11,6 +11,7 @@ import { AppError } from "../errors";
 export function registerConversationRoutes(
   app: FastifyInstance,
   d: AppDependencies,
+  shutdownSignal?: AbortSignal,
 ) {
   const provider =
     d.conversationProvider ??
@@ -39,6 +40,9 @@ export function registerConversationRoutes(
             ? retryTurnRequestSchema.parse(r.body)
             : turnRequestSchema.parse(r.body);
         const writer = eventWriter(reply);
+        const signal = shutdownSignal
+          ? AbortSignal.any([writer.signal, shutdownSignal])
+          : writer.signal;
         try {
           if (retry)
             await service.retry(
@@ -47,7 +51,7 @@ export function registerConversationRoutes(
               z.uuid().parse((r.params as any).turnId),
               body as any,
               (e) => writer.emit(e),
-              writer.signal,
+              signal,
             );
           else
             await service.run(
@@ -55,7 +59,7 @@ export function registerConversationRoutes(
               incidentId,
               body as any,
               (e) => writer.emit(e),
-              writer.signal,
+              signal,
             );
         } catch (e) {
           if (!writer.started) throw e;

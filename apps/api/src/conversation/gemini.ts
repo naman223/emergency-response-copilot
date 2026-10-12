@@ -9,6 +9,18 @@ import type {
 } from "./provider";
 import { buildConversationContext } from "./context";
 import { ReplyDecoder } from "./reply-decoder";
+import {
+  sourceGroundingInstruction,
+  medicalRecommendationInstruction,
+} from "./source-grounding";
+import {
+  consistencyReviewInstruction,
+  consistencyPatchSchema,
+  consistencyReviewContext,
+  validateReviewedResponse,
+  RejectedConsistencyReview,
+  serviceEvidenceInstruction,
+} from "./consistency-review";
 export class GeminiConversationProvider implements ConversationProvider {
   private client: GoogleGenAI;
   constructor(private config: Config) {
@@ -18,12 +30,22 @@ export class GeminiConversationProvider implements ConversationProvider {
       location: config.location,
       httpOptions: {
         timeout: config.analysisTimeout,
-        retryOptions: { attempts: 1 },
+        // The SDK's direct transport performs one request and preserves HTTP
+        // status. Its optional retry wrapper discards status even at attempts: 1.
       },
     });
   }
   async *generate(input: ProviderInput): AsyncIterable<ProviderChunk> {
     const parts: any[] = [{ text: buildConversationContext(input) }];
+    parts.unshift({ text: sourceGroundingInstruction });
+    parts.unshift({ text: medicalRecommendationInstruction });
+    parts.unshift({ text: serviceEvidenceInstruction });
+    parts.unshift({
+      text: "Routing is an emergency-service suggestion: police, medical and fire map to those services; other maps to Emergency, never generic maintenance. Use unclear when no emergency service is supported, especially after a correction retracts the original response need. No service is automatically notified. If essentials are supplied or accepted as unknown, finish the assessment instead of asking unrelated facility-maintenance questions. Preserve no injuries have been reported as no reported injuries; it does not establish that no injuries are present.",
+    });
+    parts.unshift({
+      text: "Evidence source mapping: originalReport is typed/reviewed officer text, NOT an audio transcript. Cite it with source=officer and the id of the message whose officer text contains the quote. Cite clarification answers the same way. Use source=transcript only for quotes in originalTranscript or a transcript produced from attached original audio. If there is no original transcript and no audio, never use source=transcript. Recheck source types as well as quote text on every turn; do not carry forward an unverified citation unchanged.",
+    });
     parts.unshift({
       text: "The context's reportedLocation is the incident location supplied during intake; carry it into the assessment unless the officer corrects it or explicitly says it is unknown. deviceLocation is separate device GPS, not a verified incident location. Do not replace a known reported location with Unknown merely because it is absent from the audio. Subsequent clarification answers and corrections must update the current summary, facts, urgency, routing and remaining unknowns.",
     });
@@ -32,6 +54,12 @@ export class GeminiConversationProvider implements ConversationProvider {
     });
     parts.unshift({
       text: "Every assessment must include indicators for emergency, police response, medical support, ambulance, fire response, weapon reported, injuries reported, and current immediate danger. Each has status yes/no/unknown and a short report-grounded reason. These are provisional AI suggestions for human review, never verified service orders. Distinguish injuries, medical support, and ambulance transport: minor injury can justify medical support while ambulance need remains unknown. Do not equate police routing with no medical need. Use no for an explicit denial or supported absence; silence about fire, injuries, danger or transport is unknown, not no. A past weapon threat may be yes for weapon while current immediate danger is unknown after the suspect flees. Emergency describes reported need for urgent assistance, not an invented probability. Update all indicators after clarifications and corrections; do not retain superseded facts. Do not supply medical procedures or diagnostic certainty.",
+    });
+    parts.unshift({
+      text: "Evidence discipline for every indicator: NOT MENTIONED is UNKNOWN, not NO. When using No for injuries, weapon, fire, medical support or ambulance, ground the reason in an explicit relevant denial from the original report or officer answer; do not invent a denial by writing 'no injuries/fire were reported' when the report never discussed them. An answer of Unknown cannot establish absence. Someone looking around a fence with no weapon/damage/entry observed establishes no observed weapon or entry, but says nothing about injuries, fire or transport: those remain Unknown. Blood on the ground NEAR a person does not prove that the person is injured or identify the blood's source: injuries remain Unknown unless injury to that person is explicitly reported. An unidentified metal object is not a confirmed weapon. Unresponsiveness and no observed breathing still justify urgent medical, ambulance and emergency recommendations independently of injury certainty; do not diagnose death or a cause. Re-evaluate from the original report and officer answers, not from unsupported conclusions in an earlier assessment. Preserve explicit denials such as 'no injuries have been reported' when actually stated by the reporter. In each reply, distinguish observed facts, uncertainty and suggested response needs.",
+    });
+    parts.unshift({
+      text: "Preserve the scope and uncertainty of observations in EVERY field, including indicator reasons: 'no breathing observed' must remain 'no breathing observed', never 'non-breathing', 'not breathing' or a diagnosis. Nobody inside a building does not establish that a suspect left the site or that surrounding areas are safe. An apparent condition must remain reported/apparent rather than verified. Evidence quotes must be one contiguous exact substring of the cited source; never join sentences with ellipses. Use separate facts for separate passages. Recheck carried-forward facts and reasons against the original source on each turn.",
     });
     if (input.report.wav)
       parts.push(
@@ -72,10 +100,88 @@ export class GeminiConversationProvider implements ConversationProvider {
     for await (const chunk of stream) {
       for (const part of chunk.candidates?.[0]?.content?.parts ?? []) {
         if (part.thought || !part.text) continue;
-        const text = decoder.push(part.text);
-        if (text) yield { type: "delta", text };
+        decoder.push(part.text);
       }
     }
-    yield { type: "result", response: decoder.finish() };
+    let draft = decoder.finish();
+    let context = consistencyReviewContext(draft, input);
+    let response;
+    let rejectedReview: unknown;
+    let correctionRequired = "";
+    // One bounded repair may reconcile a rejected patch. Neither draft nor
+    // rejected review text reaches the officer. All calls share the turn's abort signal.
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const reviewed = await this.review(
+        attempt
+          ? JSON.stringify({
+              sourceAndDraft: JSON.parse(context),
+              rejectedReview,
+              correctionRequired,
+            })
+          : context,
+        input.signal,
+        attempt === 1,
+      );
+      try {
+        response = validateReviewedResponse(reviewed, draft, input);
+        break;
+      } catch (error) {
+        if (attempt === 1) throw error;
+        if (error instanceof RejectedConsistencyReview) {
+          draft = error.candidate;
+          context = consistencyReviewContext(draft, input);
+        }
+        rejectedReview = reviewed;
+        correctionRequired = (error as Error).message.slice(0, 4000);
+      }
+    }
+    if (!response) throw Error("No consistent response was produced");
+    yield { type: "delta", text: response.reply };
+    yield { type: "result", response };
+  }
+  private async review(
+    context: string,
+    signal: AbortSignal,
+    repair = false,
+  ): Promise<unknown> {
+    const reviewStream = await this.client.models.generateContentStream({
+      model: this.config.model,
+      contents: [
+        {
+          role: "user",
+          parts: [{ text: context }],
+        },
+      ],
+      config: {
+        abortSignal: signal,
+        temperature: 0,
+        ...(this.config.model.startsWith("gemini-3")
+          ? {
+              thinkingConfig: {
+                thinkingLevel: /^gemini-3(?:\.5)?-flash(?:$|-)/.test(
+                  this.config.model,
+                )
+                  ? ThinkingLevel.MINIMAL
+                  : ThinkingLevel.LOW,
+              },
+            }
+          : {}),
+        maxOutputTokens: 8192,
+        responseMimeType: "application/json",
+        responseJsonSchema: z.toJSONSchema(consistencyPatchSchema),
+        systemInstruction:
+          consistencyReviewInstruction +
+          (repair
+            ? "\nThis is the single corrective retry. Every defect listed in correctionRequired must be addressed in this response. Return replacements for all affected fields, including reply AND assessment.summary when absence wording conflicts with an Unknown indicator. Replace unsupported 'No injuries/weapons/fire reported' assertions with explicit unknown status; absence of mention is not an explicit denial. Repair every listed qualifier in summary, reply, facts and reasons. Retain corrections already present in the supplied draft. Do not raise urgency solely to satisfy the Emergency indicator check; keep uncertainty unless source evidence establishes urgent assistance. Recheck the whole merged candidate against the sources, not only your changed fields."
+            : ""),
+      },
+    });
+    const reviewDecoder = new ReplyDecoder();
+    for await (const chunk of reviewStream) {
+      for (const part of chunk.candidates?.[0]?.content?.parts ?? []) {
+        if (!part.thought && part.text) reviewDecoder.push(part.text);
+      }
+    }
+    return reviewDecoder.finish({ replyRequired: false });
   }
 }

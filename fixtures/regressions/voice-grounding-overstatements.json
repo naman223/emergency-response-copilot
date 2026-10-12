@@ -1,0 +1,647 @@
+{
+  "capturedFrom": "docs/voice-matrix-results.json",
+  "model": "gemini-3.5-flash",
+  "note": "Fictional published outputs captured for future source-grounding regressions. No private reasoning or real incident data.",
+  "cases": [
+    {
+      "id": "armed-robbery",
+      "sourceTranscript": "A delivery employee was confronted in the main parking area of the Bengaluru Operations Center. A man threatened him with a knife and took his wallet and phone. The employee has a minor arm injury. The suspect ran toward the east entrance two minutes ago. Immediate assistance is required. I do not know whether the suspect is still nearby or whether an ambulance is needed.",
+      "reply": "I have received your report regarding the armed robbery in the main parking area of the Bengaluru Operations Center. A suspect armed with a knife took a delivery employee's wallet and phone, causing a minor arm injury, and fled toward the east entrance approximately two minutes ago. Since the suspect's current location is unknown, we need to establish if there are any other personnel in immediate danger. Are you or other staff currently in a secure location?",
+      "assessment": {
+        "summary": "An armed robbery occurred in the main parking area of the Bengaluru Operations Center. A suspect threatened a delivery employee with a knife, stole his wallet and phone, and caused a minor arm injury. The suspect fled toward the east entrance approximately two minutes ago. The suspect's current location and the need for an ambulance are reported as unknown.",
+        "facts": [
+          {
+            "text": "A delivery employee was confronted in the main parking area of the Bengaluru Operations Center.",
+            "source": {
+              "source": "officer",
+              "messageId": "d28ccb51-8802-495e-88cc-737166dbff89",
+              "quote": "A delivery employee was confronted in the main parking area of the Bengaluru Operations Center."
+            },
+            "evidenceStatus": "matched"
+          },
+          {
+            "text": "A man threatened the employee with a knife and took his wallet and phone.",
+            "source": {
+              "source": "officer",
+              "messageId": "d28ccb51-8802-495e-88cc-737166dbff89",
+              "quote": "A man threatened him with a knife and took his wallet and phone."
+            },
+            "evidenceStatus": "matched"
+          },
+          {
+            "text": "The employee has a minor arm injury.",
+            "source": {
+              "source": "officer",
+              "messageId": "d28ccb51-8802-495e-88cc-737166dbff89",
+              "quote": "The employee has a minor arm injury."
+            },
+            "evidenceStatus": "matched"
+          },
+          {
+            "text": "The suspect ran toward the east entrance two minutes ago.",
+            "source": {
+              "source": "officer",
+              "messageId": "d28ccb51-8802-495e-88cc-737166dbff89",
+              "quote": "The suspect ran toward the east entrance two minutes ago."
+            },
+            "evidenceStatus": "matched"
+          }
+        ],
+        "unknowns": [
+          "Ambulance need: Unknown",
+          "Fire response need: Unknown",
+          "Current immediate danger: Unknown",
+          "Whether the suspect is still nearby",
+          "Whether an ambulance is needed",
+          "Current safety status of the officer and other personnel"
+        ],
+        "urgency": "urgent_review",
+        "routing": "police",
+        "locationDescription": "main parking area of the Bengaluru Operations Center",
+        "indicators": {
+          "emergency": {
+            "status": "yes",
+            "reason": "An armed robbery with a knife occurred recently, resulting in an injury, and immediate assistance is requested."
+          },
+          "police": {
+            "status": "yes",
+            "reason": "An armed robbery occurred and the suspect fled the scene recently."
+          },
+          "medical": {
+            "status": "yes",
+            "reason": "The employee has a reported minor arm injury."
+          },
+          "ambulance": {
+            "status": "unknown",
+            "reason": "The officer explicitly stated they do not know whether an ambulance is needed."
+          },
+          "fire": {
+            "status": "unknown",
+            "reason": "Fire response needs were not mentioned in the report."
+          },
+          "weapon": {
+            "status": "yes",
+            "reason": "The suspect threatened the employee with a knife."
+          },
+          "injuries": {
+            "status": "yes",
+            "reason": "The employee has a minor arm injury."
+          },
+          "immediateDanger": {
+            "status": "unknown",
+            "reason": "It is unknown whether the armed suspect is still nearby."
+          }
+        }
+      },
+      "problem": "Unsupported causal attribution of injury to suspect"
+    },
+    {
+      "id": "benign-equipment",
+      "sourceTranscript": "At the Hyderabad warehouse kitchen, the chef is using a kitchen knife to prepare vegetables. This is an equipment inquiry, not a threat. Nobody has threatened anyone. No injuries have been reported. No medical support is needed. No ambulance is needed, and no emergency help is needed. No current immediate danger is observed.",
+      "reply": "Assessment ready. The officer reports that at the Hyderabad warehouse kitchen, a chef is using a kitchen knife to prepare vegetables. This is described as an equipment inquiry rather than a threat. No threats, injuries, or immediate dangers have been observed, and no emergency services are requested.\n\nStandard review. Suggested responder: human routing decision required. Unresolved details remain listed in the incident brief. Review the assessment, confirm the incident location, and choose a service for the simulated handoff. No emergency service has been contacted.",
+      "assessment": {
+        "summary": "The officer reports that at the Hyderabad warehouse kitchen, a chef is using a kitchen knife to prepare vegetables. This is described as an equipment inquiry rather than a threat. No threats, injuries, or immediate dangers have been observed, and no emergency services are requested.",
+        "facts": [
+          {
+            "text": "The chef is using a kitchen knife to prepare vegetables at the Hyderabad warehouse kitchen.",
+            "source": {
+              "source": "transcript",
+              "quote": "At the Hyderabad warehouse kitchen, the chef is using a kitchen knife to prepare vegetables."
+            },
+            "evidenceStatus": "matched"
+          },
+          {
+            "text": "The activity is an equipment inquiry, not a threat, and nobody has threatened anyone.",
+            "source": {
+              "source": "transcript",
+              "quote": "This is an equipment inquiry, not a threat. Nobody has threatened anyone."
+            },
+            "evidenceStatus": "matched"
+          },
+          {
+            "text": "No injuries have been reported, and no medical support or ambulance is needed.",
+            "source": {
+              "source": "transcript",
+              "quote": "No injuries have been reported. No medical support is needed. No ambulance is needed"
+            },
+            "evidenceStatus": "matched"
+          },
+          {
+            "text": "No emergency help is needed and no current immediate danger is observed.",
+            "source": {
+              "source": "transcript",
+              "quote": "no emergency help is needed. No current immediate danger is observed."
+            },
+            "evidenceStatus": "matched"
+          }
+        ],
+        "unknowns": [
+          "Police response need: Unknown",
+          "Fire response need: Unknown",
+          "Weapon reported: Unknown"
+        ],
+        "urgency": "standard_review",
+        "routing": "unclear",
+        "locationDescription": "Hyderabad warehouse kitchen",
+        "indicators": {
+          "emergency": {
+            "status": "no",
+            "reason": "The officer explicitly reported that no emergency help is needed."
+          },
+          "police": {
+            "status": "unknown",
+            "reason": "Not established: no matched source quote explicitly denies police response need."
+          },
+          "medical": {
+            "status": "no",
+            "reason": "The officer explicitly reported that no medical support is needed."
+          },
+          "ambulance": {
+            "status": "no",
+            "reason": "The officer explicitly reported that no ambulance is needed."
+          },
+          "fire": {
+            "status": "unknown",
+            "reason": "Fire presence or fire service needs were not mentioned in the report."
+          },
+          "weapon": {
+            "status": "unknown",
+            "reason": "Not established: no matched source quote explicitly denies a reported weapon."
+          },
+          "injuries": {
+            "status": "no",
+            "reason": "The officer explicitly reported that no injuries have been reported."
+          },
+          "immediateDanger": {
+            "status": "no",
+            "reason": "The officer explicitly reported that no current immediate danger is observed."
+          }
+        }
+      },
+      "problem": "Reported injury absence changed to observed absence"
+    },
+    {
+      "id": "remote-incident",
+      "sourceTranscript": "I am calling from the Hyderabad office, but the incident is at the Chennai facility north loading area. A colleague there reported an unresponsive employee. No breathing has been observed. The colleague cannot confirm an injury or a weapon. Immediate medical help is required at the Chennai facility, not at my Hyderabad office.",
+      "reply": "I have received the report of an unresponsive employee with no breathing observed at the Chennai facility north loading area. Based on the lack of breathing, there is an urgent need for medical and ambulance services. To ensure responder and personnel safety, is there any known immediate danger to the colleague or others at the Chennai facility north loading area?",
+      "assessment": {
+        "summary": "An employee is reported unresponsive with no breathing observed at the Chennai facility north loading area. Immediate medical assistance is required. The presence of injuries, weapons, or immediate danger remains unconfirmed.",
+        "facts": [
+          {
+            "text": "An unresponsive employee was reported at the Chennai facility north loading area.",
+            "source": {
+              "source": "transcript",
+              "quote": "A colleague there reported an unresponsive employee."
+            },
+            "evidenceStatus": "matched"
+          },
+          {
+            "text": "No breathing has been observed for the employee.",
+            "source": {
+              "source": "transcript",
+              "quote": "No breathing has been observed."
+            },
+            "evidenceStatus": "matched"
+          },
+          {
+            "text": "The colleague cannot confirm an injury or a weapon.",
+            "source": {
+              "source": "transcript",
+              "quote": "The colleague cannot confirm an injury or a weapon."
+            },
+            "evidenceStatus": "matched"
+          },
+          {
+            "text": "Immediate medical help is required at the Chennai facility.",
+            "source": {
+              "source": "transcript",
+              "quote": "Immediate medical help is required at the Chennai facility, not at my Hyderabad office."
+            },
+            "evidenceStatus": "matched"
+          }
+        ],
+        "unknowns": [
+          "Police response need: Unknown",
+          "Fire response need: Unknown",
+          "Weapon reported: Unknown",
+          "Injuries reported: Unknown",
+          "Current immediate danger: Unknown",
+          "Whether there is an injury",
+          "Whether a weapon is present",
+          "Current immediate danger status or personnel safety at the Chennai facility"
+        ],
+        "urgency": "urgent_review",
+        "routing": "medical",
+        "locationDescription": "Chennai facility north loading area",
+        "indicators": {
+          "emergency": {
+            "status": "yes",
+            "reason": "An employee is unresponsive with no breathing observed, requiring immediate medical help."
+          },
+          "police": {
+            "status": "unknown",
+            "reason": "No police response need has been explicitly reported or denied."
+          },
+          "medical": {
+            "status": "yes",
+            "reason": "Immediate medical help is requested for an unresponsive employee."
+          },
+          "ambulance": {
+            "status": "yes",
+            "reason": "An unresponsive employee with no breathing observed requires urgent medical transport."
+          },
+          "fire": {
+            "status": "unknown",
+            "reason": "Fire response needs were not mentioned in the report."
+          },
+          "weapon": {
+            "status": "unknown",
+            "reason": "The colleague cannot confirm a weapon."
+          },
+          "injuries": {
+            "status": "unknown",
+            "reason": "The colleague cannot confirm an injury."
+          },
+          "immediateDanger": {
+            "status": "unknown",
+            "reason": "Immediate danger or safety status at the Chennai facility has not been reported."
+          }
+        }
+      },
+      "problem": "No breathing observed becomes lack of breathing in the coordinator reply"
+    },
+    {
+      "id": "armed-robbery",
+      "pass": 2,
+      "sourceTranscript": "A delivery employee was confronted in the main parking area of the Bengaluru Operations Center. A man threatened him with a knife and took his wallet and phone. The employee has a minor arm injury. The suspect ran toward the east entrance two minutes ago. Immediate assistance is required. I do not know whether the suspect is still nearby or whether an ambulance is needed.",
+      "reply": "I have received your report regarding the armed robbery in the main parking area of the Bengaluru Operations Center. An employee has a minor arm injury from a suspect armed with a knife, who fled toward the east entrance approximately two minutes ago. Since you noted that you do not know if an ambulance is needed, could you clarify if the injured employee is requesting or appears to need medical transport?",
+      "assessment": {
+        "summary": "An armed robbery occurred in the main parking area of the Bengaluru Operations Center. A suspect armed with a knife took a delivery employee's wallet and phone, causing a minor arm injury. The suspect fled toward the east entrance approximately two minutes ago. The suspect's current location and the need for an ambulance are currently unknown.",
+        "facts": [
+          {
+            "text": "A delivery employee was confronted in the main parking area of the Bengaluru Operations Center.",
+            "source": {
+              "source": "officer",
+              "messageId": "8a4b0ff4-1fb2-4f01-b3e6-a5da3bea1772",
+              "quote": "A delivery employee was confronted in the main parking area of the Bengaluru Operations Center."
+            },
+            "evidenceStatus": "matched"
+          },
+          {
+            "text": "A man threatened the employee with a knife and took his wallet and phone.",
+            "source": {
+              "source": "officer",
+              "messageId": "8a4b0ff4-1fb2-4f01-b3e6-a5da3bea1772",
+              "quote": "A man threatened him with a knife and took his wallet and phone."
+            },
+            "evidenceStatus": "matched"
+          },
+          {
+            "text": "The employee has a minor arm injury.",
+            "source": {
+              "source": "officer",
+              "messageId": "8a4b0ff4-1fb2-4f01-b3e6-a5da3bea1772",
+              "quote": "The employee has a minor arm injury."
+            },
+            "evidenceStatus": "matched"
+          },
+          {
+            "text": "The suspect ran toward the east entrance two minutes ago.",
+            "source": {
+              "source": "officer",
+              "messageId": "8a4b0ff4-1fb2-4f01-b3e6-a5da3bea1772",
+              "quote": "The suspect ran toward the east entrance two minutes ago."
+            },
+            "evidenceStatus": "matched"
+          }
+        ],
+        "unknowns": [
+          "Ambulance need: Unknown",
+          "Fire response need: Unknown",
+          "Current immediate danger: Unknown",
+          "Whether the suspect is still nearby",
+          "Whether an ambulance is needed"
+        ],
+        "urgency": "urgent_review",
+        "routing": "police",
+        "locationDescription": "Main parking area of the Bengaluru Operations Center",
+        "indicators": {
+          "emergency": {
+            "status": "yes",
+            "reason": "An armed robbery recently occurred, immediate assistance is requested, and there is an active injury."
+          },
+          "police": {
+            "status": "yes",
+            "reason": "An armed robbery with a knife was reported, and the suspect fled two minutes ago."
+          },
+          "medical": {
+            "status": "yes",
+            "reason": "The employee has a reported minor arm injury."
+          },
+          "ambulance": {
+            "status": "unknown",
+            "reason": "The officer explicitly stated they do not know whether an ambulance is needed."
+          },
+          "fire": {
+            "status": "unknown",
+            "reason": "No fire or fire hazards were mentioned in the report."
+          },
+          "weapon": {
+            "status": "yes",
+            "reason": "The suspect threatened the employee with a knife."
+          },
+          "injuries": {
+            "status": "yes",
+            "reason": "The employee has a minor arm injury."
+          },
+          "immediateDanger": {
+            "status": "unknown",
+            "reason": "The suspect fled toward the east entrance two minutes ago, and it is unknown if they are still nearby."
+          }
+        }
+      },
+      "problem": "Repeated unsupported causal attribution of injury"
+    },
+    {
+      "id": "benign-equipment",
+      "pass": 2,
+      "sourceTranscript": "At the Hyderabad warehouse kitchen, the chef is using a kitchen knife to prepare vegetables. This is an equipment inquiry, not a threat. Nobody has threatened anyone. No injuries have been reported. No medical support is needed. No ambulance is needed, and no emergency help is needed. No current immediate danger is observed.",
+      "reply": "Assessment ready. The caller reports that a chef at the Hyderabad warehouse kitchen is using a kitchen knife to prepare vegetables. This is explicitly identified as an equipment inquiry rather than a threat. No threats, injuries, or immediate dangers are present, and no emergency services are requested.\n\nStandard review. Suggested responder: human routing decision required. Unresolved details remain listed in the incident brief. Review the assessment, confirm the incident location, and choose a service for the simulated handoff. No emergency service has been contacted.",
+      "assessment": {
+        "summary": "The caller reports that a chef at the Hyderabad warehouse kitchen is using a kitchen knife to prepare vegetables. This is explicitly identified as an equipment inquiry rather than a threat. No threats, injuries, or immediate dangers are present, and no emergency services are requested.",
+        "facts": [
+          {
+            "text": "The chef is using a kitchen knife to prepare vegetables at the Hyderabad warehouse kitchen.",
+            "source": {
+              "source": "transcript",
+              "quote": "At the Hyderabad warehouse kitchen, the chef is using a kitchen knife to prepare vegetables."
+            },
+            "evidenceStatus": "matched"
+          },
+          {
+            "text": "The incident is an equipment inquiry and not a threat, with no one threatened.",
+            "source": {
+              "source": "transcript",
+              "quote": "This is an equipment inquiry, not a threat. Nobody has threatened anyone."
+            },
+            "evidenceStatus": "matched"
+          },
+          {
+            "text": "No injuries have been reported, and no medical support or ambulance is needed.",
+            "source": {
+              "source": "transcript",
+              "quote": "No injuries have been reported. No medical support is needed. No ambulance is needed"
+            },
+            "evidenceStatus": "matched"
+          },
+          {
+            "text": "No emergency help is needed and no current immediate danger is observed.",
+            "source": {
+              "source": "transcript",
+              "quote": "and no emergency help is needed. No current immediate danger is observed."
+            },
+            "evidenceStatus": "matched"
+          }
+        ],
+        "unknowns": [
+          "Police response need: Unknown",
+          "Fire response need: Unknown",
+          "Weapon reported: Unknown"
+        ],
+        "urgency": "standard_review",
+        "routing": "unclear",
+        "locationDescription": "Hyderabad warehouse kitchen",
+        "indicators": {
+          "emergency": {
+            "status": "no",
+            "reason": "The report explicitly states that no emergency help is needed."
+          },
+          "police": {
+            "status": "unknown",
+            "reason": "Not established: no matched source quote explicitly denies police response need."
+          },
+          "medical": {
+            "status": "no",
+            "reason": "The report explicitly states that no medical support is needed."
+          },
+          "ambulance": {
+            "status": "no",
+            "reason": "The report explicitly states that no ambulance is needed."
+          },
+          "fire": {
+            "status": "unknown",
+            "reason": "Fire response needs were not mentioned in the report."
+          },
+          "weapon": {
+            "status": "unknown",
+            "reason": "Not established: no matched source quote explicitly denies a reported weapon."
+          },
+          "injuries": {
+            "status": "no",
+            "reason": "The report explicitly states that no injuries have been reported."
+          },
+          "immediateDanger": {
+            "status": "no",
+            "reason": "The report explicitly states that no current immediate danger is observed."
+          }
+        }
+      },
+      "problem": "Coordinated noun list turns reported injury absence into present absence"
+    },
+    {
+      "id": "hindi-robbery",
+      "pass": 2,
+      "sourceTranscript": "बेंगलुरु ऑपरेशन सेंटर के मुख्य पार्किंग क्षेत्र में एक व्यक्ति ने डिलीवरी कर्मचारी को चाकू दिखाकर धमकाया। कर्मचारी के हाथ पर हल्की चोट है। संदिग्ध 2 मिनट पहले पूर्वी प्रवेश द्वार की ओर भाग गया। तुरंत मदद चाहिए। मुझे नहीं पता कि अब कोई खतरा है या एम्बुलेंस की जरूरत है।",
+      "reply": "मैंने आपकी रिपोर्ट और ऑडियो रिकॉर्डिंग को दर्ज कर लिया है। बेंगलुरु ऑपरेशन सेंटर के मुख्य पार्किंग क्षेत्र में चाकू दिखाकर धमकाने और कर्मचारी को हल्की चोट लगने की घटना के कारण पुलिस सहायता की तत्काल आवश्यकता है। संदिग्ध पूर्वी प्रवेश द्वार की ओर भागा है। क्या घायल कर्मचारी को इस समय चिकित्सा सहायता या प्राथमिक उपचार की आवश्यकता है?",
+      "assessment": {
+        "summary": "बेंगलुरु ऑपरेशन सेंटर के मुख्य पार्किंग क्षेत्र में एक संदिग्ध ने डिलीवरी कर्मचारी को चाकू दिखाकर धमकाया, जिससे कर्मचारी के हाथ पर हल्की चोट आई है। संदिग्ध लगभग 2 मिनट पहले पूर्वी प्रवेश द्वार की ओर भाग गया। वर्तमान खतरे की स्थिति और एम्बुलेंस की आवश्यकता अभी स्पष्ट नहीं है।",
+        "facts": [
+          {
+            "text": "बेंगलुरु ऑपरेशन सेंटर के मुख्य पार्किंग क्षेत्र में एक व्यक्ति ने डिलीवरी कर्मचारी को चाकू दिखाकर धमकाया।",
+            "source": {
+              "source": "transcript",
+              "quote": "बेंगलुरु ऑपरेशन सेंटर के मुख्य पार्किंग क्षेत्र में एक व्यक्ति ने डिलीवरी कर्मचारी को चाकू दिखाकर धमकाया।"
+            },
+            "evidenceStatus": "matched"
+          },
+          {
+            "text": "कर्मचारी के हाथ पर हल्की चोट है।",
+            "source": {
+              "source": "transcript",
+              "quote": "कर्मचारी के हाथ पर हल्की चोट है।"
+            },
+            "evidenceStatus": "matched"
+          },
+          {
+            "text": "संदिग्ध 2 मिनट पहले पूर्वी प्रवेश द्वार की ओर भाग गया।",
+            "source": {
+              "source": "transcript",
+              "quote": "संदिग्ध 2 मिनट पहले पूर्वी प्रवेश द्वार की ओर भाग गया।"
+            },
+            "evidenceStatus": "matched"
+          },
+          {
+            "text": "अधिकारी को नहीं पता कि अब कोई खतरा है या एम्बुलेंस की जरूरत है।",
+            "source": {
+              "source": "transcript",
+              "quote": "मुझे नहीं पता कि अब कोई खतरा है या एम्बुलेंस की जरूरत है।"
+            },
+            "evidenceStatus": "matched"
+          }
+        ],
+        "unknowns": [
+          "Ambulance need: Unknown",
+          "Fire response need: Unknown",
+          "Current immediate danger: Unknown",
+          "क्या घायल कर्मचारी को तत्काल चिकित्सा सहायता या एम्बुलेंस की आवश्यकता है",
+          "क्या पूर्वी प्रवेश द्वार या आसपास के क्षेत्रों में अभी भी कोई खतरा है",
+          "संदिग्ध की वर्तमान स्थिति या पहचान"
+        ],
+        "urgency": "urgent_review",
+        "routing": "police",
+        "locationDescription": "बेंगलुरु ऑपरेशन सेंटर का मुख्य पार्किंग क्षेत्र",
+        "indicators": {
+          "emergency": {
+            "status": "yes",
+            "reason": "एक संदिग्ध ने चाकू दिखाकर कर्मचारी को धमकाया और घायल किया, और वह अभी फरार है।"
+          },
+          "police": {
+            "status": "yes",
+            "reason": "चाकू से हमले की धमकी और संदिग्ध के फरार होने की घटना दर्ज की गई है।"
+          },
+          "medical": {
+            "status": "yes",
+            "reason": "कर्मचारी के हाथ पर हल्की चोट लगने की पुष्टि हुई है।"
+          },
+          "ambulance": {
+            "status": "unknown",
+            "reason": "अधिकारी ने स्पष्ट रूप से कहा है कि उन्हें नहीं पता कि एम्बुलेंस की जरूरत है या नहीं।"
+          },
+          "fire": {
+            "status": "unknown",
+            "reason": "घटनास्थल पर आग लगने या अग्निशमन सेवा की आवश्यकता का कोई उल्लेख नहीं है।"
+          },
+          "weapon": {
+            "status": "yes",
+            "reason": "संदिग्ध द्वारा डिलीवरी कर्मचारी को चाकू दिखाने की रिपोर्ट है।"
+          },
+          "injuries": {
+            "status": "yes",
+            "reason": "कर्मचारी के हाथ पर हल्की चोट लगने की रिपोर्ट की गई है।"
+          },
+          "immediateDanger": {
+            "status": "unknown",
+            "reason": "संदिग्ध भाग चुका है और अधिकारी ने कहा है कि उन्हें वर्तमान खतरे की जानकारी नहीं है।"
+          }
+        }
+      },
+      "followup": {
+        "kind": "message",
+        "text": "Unknown",
+        "reply": "मैंने दर्ज कर लिया है कि घायल कर्मचारी के लिए चिकित्सा सहायता की आवश्यकता अभी अज्ञात है। चाकू से हमले और संदिग्ध के फरार होने के कारण पुलिस सहायता के लिए यह एक अत्यंत महत्वपूर्ण (Urgent) मामला बना हुआ है। क्या आप और वहां मौजूद अन्य कर्मचारी इस समय सुरक्षित स्थान पर हैं?",
+        "question": "क्या आप और वहां मौजूद अन्य कर्मचारी इस समय सुरक्षित स्थान पर हैं?",
+        "intakeState": "clarifying",
+        "sourceTranscript": "बेंगलुरु ऑपरेशन सेंटर के मुख्य पार्किंग क्षेत्र में एक व्यक्ति ने डिलीवरी कर्मचारी को चाकू दिखाकर धमकाया। कर्मचारी के हाथ पर हल्की चोट है। संदिग्ध 2 मिनट पहले पूर्वी प्रवेश द्वार की ओर भाग गया। तुरंत मदद चाहिए। मुझे नहीं पता कि अब कोई खतरा है या एम्बुलेंस की जरूरत है।",
+        "assessment": {
+          "summary": "बेंगलुरु ऑपरेशन सेंटर के मुख्य पार्किंग क्षेत्र में एक संदिग्ध ने डिलीवरी कर्मचारी को चाकू दिखाकर धमकाया, जिससे कर्मचारी के हाथ पर हल्की चोट आई है। संदिग्ध पूर्वी प्रवेश द्वार की ओर भाग गया। वर्तमान खतरे, एम्बुलेंस, या चिकित्सा सहायता की आवश्यकता अभी अज्ञात है।",
+          "facts": [
+            {
+              "text": "बेंगलुरु ऑपरेशन सेंटर के मुख्य पार्किंग क्षेत्र में एक व्यक्ति ने डिलीवरी कर्मचारी को चाकू दिखाकर धमकाया।",
+              "source": {
+                "source": "officer",
+                "messageId": "50975ee9-11f6-4f2c-ae29-bbe929a00e12",
+                "quote": "बेंगलुरु ऑपरेशन सेंटर के मुख्य पार्किंग क्षेत्र में एक व्यक्ति ने डिलीवरी कर्मचारी को चाकू दिखाकर धमकाया।"
+              },
+              "evidenceStatus": "matched"
+            },
+            {
+              "text": "कर्मचारी के हाथ पर हल्की चोट है।",
+              "source": {
+                "source": "officer",
+                "messageId": "50975ee9-11f6-4f2c-ae29-bbe929a00e12",
+                "quote": "कर्मचारी के हाथ पर हल्की चोट है।"
+              },
+              "evidenceStatus": "matched"
+            },
+            {
+              "text": "संदिग्ध 2 मिनट पहले पूर्वी प्रवेश द्वार की ओर भाग गया।",
+              "source": {
+                "source": "officer",
+                "messageId": "50975ee9-11f6-4f2c-ae29-bbe929a00e12",
+                "quote": "संदिग्ध 2 मिनट पहले पूर्वी प्रवेश द्वार की ओर भाग गया।"
+              },
+              "evidenceStatus": "matched"
+            },
+            {
+              "text": "अधिकारी को नहीं पता कि अब कोई खतरा है या एम्बुलेंस की जरूरत है।",
+              "source": {
+                "source": "officer",
+                "messageId": "50975ee9-11f6-4f2c-ae29-bbe929a00e12",
+                "quote": "मुझे नहीं पता कि अब कोई खतरा है या एम्बुलेंस की जरूरत है।"
+              },
+              "evidenceStatus": "matched"
+            },
+            {
+              "text": "अधिकारी को नहीं पता कि घायल कर्मचारी को इस समय चिकित्सा सहायता या प्राथमिक उपचार की आवश्यकता है या नहीं।",
+              "source": {
+                "source": "officer",
+                "messageId": "49f70915-abba-4e89-8eaa-f09c98f24aad",
+                "quote": "Unknown"
+              },
+              "evidenceStatus": "matched"
+            }
+          ],
+          "unknowns": [
+            "Ambulance need: Unknown",
+            "Fire response need: Unknown",
+            "Current immediate danger: Unknown",
+            "अधिकारी को नहीं पता कि घायल कर्मचारी को इस समय चिकित्सा सहायता या प्राथमिक उपचार की आवश्यकता है या नहीं।",
+            "Medical assistance need: Unknown",
+            "Caller and personnel safety: Unknown"
+          ],
+          "urgency": "urgent_review",
+          "routing": "police",
+          "locationDescription": "बेंगलुरु ऑपरेशन सेंटर का मुख्य पार्किंग क्षेत्र",
+          "indicators": {
+            "emergency": {
+              "status": "yes",
+              "reason": "एक संदिग्ध ने चाकू दिखाकर कर्मचारी को धमकाया और घायल किया, और वह अभी फरार है।"
+            },
+            "police": {
+              "status": "yes",
+              "reason": "चाकू से हमले की धमकी और संदिग्ध के फरार होने की घटना दर्ज की गई है।"
+            },
+            "medical": {
+              "status": "yes",
+              "reason": "कर्मचारी के हाथ पर हल्की चोट लगने की रिपोर्ट की गई है।"
+            },
+            "ambulance": {
+              "status": "unknown",
+              "reason": "अधिकारी ने स्पष्ट रूप से कहा है कि उन्हें नहीं पता कि एम्बुलेंस की जरूरत है या नहीं।"
+            },
+            "fire": {
+              "status": "unknown",
+              "reason": "Not established: no matched source quote explicitly denies fire response need."
+            },
+            "weapon": {
+              "status": "yes",
+              "reason": "संदिग्ध द्वारा डिलीवरी कर्मचारी को चाकू दिखाने की रिपोर्ट है।"
+            },
+            "injuries": {
+              "status": "yes",
+              "reason": "कर्मचारी के हाथ पर हल्की चोट लगने की रिपोर्ट की गई है।"
+            },
+            "immediateDanger": {
+              "status": "unknown",
+              "reason": "संदिग्ध भाग चुका है और अधिकारी ने कहा है कि उन्हें वर्तमान खतरे की जानकारी नहीं है।"
+            }
+          }
+        },
+        "services": ["police", "medical", "emergency"],
+        "latencyMs": 20243,
+        "issues": []
+      },
+      "problem": "Hindi summary asserts the threat caused injury; follow-up calls the reported knife threat an attack"
+    }
+  ]
+}

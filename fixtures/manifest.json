@@ -3,7 +3,7 @@
     "id": "explicit-threat",
     "title": "Followed near the north gate",
     "label": "Explicit threat",
-    "description": "Explicit threat \u00b7 fictional synthesized recording"
+    "description": "A delivery worker reports a knife threat, a demand for their phone and an ongoing pursuit. Longer fictional synthesized recording."
   },
   {
     "id": "calm-danger",
@@ -25,8 +25,8 @@
   },
   {
     "id": "missing-location",
-    "title": "Fall with unknown address",
+    "title": "Unresponsive person near a loading bay",
     "label": "Missing location",
-    "description": "Missing location \u00b7 fictional synthesized recording"
+    "description": "A caller reports a fall, no response and uncertain breathing, with the site address unknown. Longer fictional synthesized recording."
   }
 ]

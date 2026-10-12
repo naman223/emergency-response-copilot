@@ -4,6 +4,10 @@ import type {
   ConversationTurn,
 } from "@copilot/contracts";
 import { apiRequest } from "../../api";
+import {
+  conversationDeadlines,
+  conversationFailureMessage,
+} from "@copilot/contracts";
 import { streamConversation } from "./stream";
 export function useConversation(
   id: string,
@@ -69,7 +73,11 @@ export function useConversation(
           },
         ],
       });
-    const timeout = setTimeout(() => ctrl.abort(), 60000);
+    let timedOut = false;
+    const timeout = setTimeout(() => {
+      timedOut = true;
+      ctrl.abort();
+    }, conversationDeadlines(base.incident.analysisMode).browser);
     try {
       await streamConversation(
         retry
@@ -102,7 +110,9 @@ export function useConversation(
       if (alive.current)
         setError(
           (e as Error).name === "AbortError"
-            ? "The response was interrupted. Your report is saved."
+            ? conversationFailureMessage(
+                timedOut ? "BROWSER_TIMEOUT" : "CONVERSATION_INTERRUPTED",
+              )
             : (e as Error).message,
         );
     } finally {

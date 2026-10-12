@@ -1,5 +1,5 @@
 {
-  "opening": "The caller reports being followed near the north gate and says the person has a knife. I suggest urgent human review because the reported pursuit and weapon occur together. The exact site and injury status remain unconfirmed.",
+  "opening": "The caller reports being followed by a person with a knife after a demand for their phone near the parking area. They are moving toward a staffed entrance, but the person is reportedly still behind them. This suggests urgent police review. The exact site and injury status remain unknown.",
   "question": "Which site does the north gate refer to?",
   "followup": "Do you have any information about injuries?",
   "answers": [
@@ -7,9 +7,9 @@
     "Injuries reported",
     "Unknown"
   ],
-  "transcript": "Someone is following me near the north gate. He has a knife. Please send help now.",
+  "transcript": "Someone is following me near the north gate. He has a knife. I was delivering a package when he stopped me beside the parking area and demanded my phone. I moved toward the staffed entrance, but he is still behind me. I cannot tell whether anyone else is nearby. I have not checked for injuries. Please send help now.",
   "assessment": {
-    "summary": "The caller reports being followed near the north gate and says the person has a knife. I suggest urgent human review because the reported pursuit and weapon occur together. The exact site and injury status remain unconfirmed.",
+    "summary": "The caller reports being followed by a person with a knife after a demand for their phone near the parking area. They are moving toward a staffed entrance, but the person is reportedly still behind them. This suggests urgent police review. The exact site and injury status remain unknown.",
     "facts": [
       {
         "text": "Caller reports being followed",
@@ -24,6 +24,14 @@
         "source": {
           "source": "transcript",
           "quote": "He has a knife"
+        },
+        "evidenceStatus": "unverified"
+      },
+      {
+        "text": "Caller reports a demand for their phone",
+        "source": {
+          "source": "transcript",
+          "quote": "demanded my phone"
         },
         "evidenceStatus": "unverified"
       }
@@ -70,5 +78,5 @@
       }
     }
   },
-  "summaryBase": "The caller reports being followed near the north gate and mentions a knife. Urgent human review is suggested."
+  "summaryBase": "The caller reports an ongoing pursuit near the north gate by a person with a knife who demanded their phone. They are moving toward a staffed entrance. Urgent police review is suggested."
 }

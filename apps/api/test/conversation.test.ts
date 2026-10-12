@@ -312,6 +312,121 @@ it("times out an unresponsive provider and permits manual review", async () => {
   expect(snap.turns[0].failureCode).toBe("CONVERSATION_TIMEOUT");
   expect(s.docs["session:alice"].activeLease).toBeUndefined();
 });
+it("retains a safe failed attempt after retry succeeds", async () => {
+  const s = await setup();
+  const tid = randomUUID();
+  let attempt = 0;
+  const service = new ConversationService({
+    ...s,
+    provider: {
+      async *generate() {
+        if (attempt++ === 0)
+          throw new SyntaxError("private malformed response contents");
+        yield { type: "result" as const, response: result };
+      },
+    },
+  });
+  const events: any[] = [];
+  const failed = await service.run(
+    s.session,
+    s.incident.id,
+    { turnId: tid, expectedRevision: 1, kind: "initial" },
+    async (event) => {
+      events.push(event);
+    },
+  );
+  expect(failed.turns[0].failureCode).toBe("INVALID_RESPONSE");
+  expect(events.at(-1).message).toMatch(/format|incomplete/i);
+  const completed = await service.retry(
+    s.session,
+    s.incident.id,
+    tid,
+    { attemptId: randomUUID(), expectedRevision: failed.incident.revision },
+    async () => {},
+  );
+  expect(completed.turns[0].state).toBe("completed");
+  expect(completed.turns[0].failureCode).toBeUndefined();
+  const history = (completed.turns[0] as any).attemptHistory;
+  expect(history).toHaveLength(2);
+  expect(history[0]).toMatchObject({
+    attempt: 1,
+    state: "failed",
+    failureCode: "INVALID_RESPONSE",
+  });
+  expect(history[1]).toMatchObject({ attempt: 2, state: "completed" });
+  expect(history[0].durationMs).toBeGreaterThanOrEqual(0);
+  expect(JSON.stringify(history)).not.toContain("private malformed");
+});
+it.each(["legacy failure", "expired lease"])(
+  "preserves %s when retry completes",
+  async (kind) => {
+    const s = await setup();
+    const tid = randomUUID();
+    await s.service.run(
+      s.session,
+      s.incident.id,
+      { turnId: tid, expectedRevision: 1, kind: "initial" },
+      async () => {},
+    );
+    const stored = s.docs[`turn:${s.incident.id}:${tid}`];
+    delete stored.turn.attemptHistory;
+    delete stored.turn.reply;
+    stored.turn.state = kind === "expired lease" ? "processing" : "failed";
+    stored.turn.failureCode = "INVALID_RESPONSE";
+    if (kind === "expired lease") {
+      const lease = { token: "expired", until: Date.now() - 1 };
+      s.docs[`incident:${s.incident.id}`].activeTurnId = tid;
+      s.docs[`incident:${s.incident.id}`].lease = lease;
+      s.docs["session:alice"].activeLease = lease;
+    }
+    const current = await s.service.get(s.session, s.incident.id);
+    const completed = await s.service.retry(
+      s.session,
+      s.incident.id,
+      tid,
+      { attemptId: randomUUID(), expectedRevision: current.incident.revision },
+      async () => {},
+    );
+    expect(completed.turns[0].attemptHistory).toHaveLength(2);
+    expect(completed.turns[0].attemptHistory![0]).toMatchObject({
+      attempt: 1,
+      state: kind === "expired lease" ? "interrupted" : "failed",
+      failureCode:
+        kind === "expired lease"
+          ? "CONVERSATION_INTERRUPTED"
+          : "INVALID_RESPONSE",
+    });
+    expect(completed.turns[0].attemptHistory![1].state).toBe("completed");
+    if (kind === "legacy failure") {
+      expect(completed.turns[0].attemptHistory![0].startedAt).toBeUndefined();
+      expect(completed.turns[0].attemptHistory![0].durationMs).toBeUndefined();
+    }
+  },
+);
+it("allows a live draft plus review to finish within their shared bounded deadline", async () => {
+  const s = await setup();
+  const started = Date.now();
+  const service = new ConversationService({
+    ...s,
+    config: { ...s.config, mode: "live", analysisTimeout: 100 },
+    provider: {
+      async *generate() {
+        expect(
+          s.docs["session:alice"].activeLease.until,
+        ).toBeGreaterThanOrEqual(started + 5200);
+        await new Promise((resolve) => setTimeout(resolve, 150));
+        yield { type: "result" as const, response: result };
+      },
+    },
+  });
+  const snapshot = await service.run(
+    s.session,
+    s.incident.id,
+    { turnId: randomUUID(), expectedRevision: 1, kind: "initial" },
+    async () => {},
+  );
+  expect(snapshot.turns[0].state).toBe("completed");
+});
 it("reset during generation prevents deleted conversations from being resurrected", async () => {
   const s = await setup();
   const service = new ConversationService({

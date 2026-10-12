@@ -34,7 +34,46 @@ export type AppDependencies = {
   verifyToken: (token: string) => Promise<string>;
 };
 export async function buildApp(d: AppDependencies) {
-  const app = Fastify({ logger: false, bodyLimit: MAX_BYTES + 65536 });
+  const app = Fastify({
+    logger: false,
+    bodyLimit: MAX_BYTES + 65536,
+    forceCloseConnections: true,
+  });
+  const shutdown = new AbortController();
+  const handlers = new Map<Promise<void>, () => void>();
+  // Socket closure (including hijacked streams) does not mean its handler has
+  // finished persisting state. Drain handler lifetimes before resource cleanup.
+  app.addHook("onRoute", (route) => {
+    const handler = route.handler;
+    route.handler = async function (request, reply) {
+      let settled!: () => void;
+      const done = new Promise<void>((resolve) => (settled = resolve));
+      handlers.set(done, () => {
+        if (request.isMultipart() && !request.raw.complete)
+          request.raw.destroy(
+            new AppError(
+              503,
+              "SERVER_SHUTTING_DOWN",
+              "The server is restarting. Retry the upload.",
+              true,
+            ),
+          );
+      });
+      try {
+        return await handler.call(this, request, reply);
+      } finally {
+        handlers.delete(done);
+        settled();
+      }
+    };
+  });
+  app.addHook("preClose", async () => {
+    shutdown.abort();
+    // Multipart handlers may be awaiting body/file bytes before inference.
+    // Destroy incomplete uploads so their parsers can settle before draining.
+    for (const cancelUpload of handlers.values()) cancelUpload();
+    await Promise.all([...handlers.keys()]);
+  });
   await app.register(cors, { origin: d.config.origin });
   await app.register(multipart, {
     limits: { fileSize: MAX_BYTES, files: 1, fields: 1, fieldSize: 16384 },
@@ -43,7 +82,26 @@ export async function buildApp(d: AppDependencies) {
     analysis = new AnalysisService(d),
     review = new ReviewService(d.db, d.config.origin);
   const uid = (r: any) => authenticate(r.headers.authorization, d.verifyToken);
-  const session = async (r: any) => verifySession(d.db, await uid(r));
+  const session = async (r: any) => {
+    const s = await verifySession(d.db, await uid(r));
+    // Shutdown can destroy an upload while authentication is still pending.
+    // Never attach a multipart parser after its stream's close/error fired.
+    if (shutdown.signal.aborted)
+      throw new AppError(
+        503,
+        "SERVER_SHUTTING_DOWN",
+        "The server is restarting. Retry the request.",
+        true,
+      );
+    if (r.isMultipart() && r.raw.destroyed && !r.raw.complete)
+      throw new AppError(
+        408,
+        "UPLOAD_INTERRUPTED",
+        "The upload was interrupted. Retry it.",
+        true,
+      );
+    return s;
+  };
   const id = (r: any) => z.uuid().parse(r.params.id);
   app.addHook("onRequest", async (req, reply) => {
     reply.header("Cache-Control", "private, no-store");
@@ -99,7 +157,7 @@ export async function buildApp(d: AppDependencies) {
       .type("audio/wav")
       .send(await readFile(resolve(fixtureRoot(), "audio", sampleId + ".wav")));
   });
-  registerConversationRoutes(app, d);
+  registerConversationRoutes(app, d, shutdown.signal);
   const reportPreview = new ReportPreviewService({
     ...d,
     previewProvider:
@@ -135,7 +193,11 @@ export async function buildApp(d: AppDependencies) {
     };
     reply.raw.on("close", disconnected);
     try {
-      return await reportPreview.run(s, input, controller.signal);
+      return await reportPreview.run(
+        s,
+        input,
+        AbortSignal.any([controller.signal, shutdown.signal]),
+      );
     } finally {
       reply.raw.off("close", disconnected);
     }
@@ -184,7 +246,7 @@ export async function buildApp(d: AppDependencies) {
     intake.history(await session(r), id(r)),
   );
   app.post("/api/incidents/:id/analyze", async (r) =>
-    analysis.run(await session(r), id(r)),
+    analysis.run(await session(r), id(r), shutdown.signal),
   );
   app.patch("/api/incidents/:id/review", async (r) => {
     const s = await session(r),

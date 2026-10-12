@@ -1,5 +1,5 @@
 {
-  "opening": "The caller reports a fall, but an exact address is missing. I suggest human review with medical routing based on the reported fall. Location and injury details remain important gaps in the handover.",
+  "opening": "The caller reports a person who fell beside a loading bay and remains unresponsive. No movement has been observed; breathing is unconfirmed. There is blood nearby, but its source is unknown. This requires urgent medical and ambulance review. The site address and injury details are still missing.",
   "question": "Which site is the caller at?",
   "followup": "Do you have any information about injuries?",
   "answers": [
@@ -7,15 +7,31 @@
     "Injuries reported",
     "Unknown"
   ],
-  "transcript": "Someone fell down and is not responding to me. I do not know the address. Please help.",
+  "transcript": "Someone fell down beside the loading bay and is not responding to me. I called out several times and did not see any movement. I cannot confirm whether the person is breathing. I can see a small patch of blood on the ground nearby, but I do not know where it came from. Another worker is waiting at the entrance. I do not know the address. Please help.",
   "assessment": {
-    "summary": "The caller reports a fall, but an exact address is missing. I suggest human review with medical routing based on the reported fall. Location and injury details remain important gaps in the handover.",
+    "summary": "The caller reports a person who fell beside a loading bay and remains unresponsive. No movement has been observed; breathing is unconfirmed. There is blood nearby, but its source is unknown. This requires urgent medical and ambulance review. The site address and injury details are still missing.",
     "facts": [
       {
         "text": "Person reportedly unresponsive",
         "source": {
           "source": "transcript",
           "quote": "is not responding to me"
+        },
+        "evidenceStatus": "unverified"
+      },
+      {
+        "text": "Breathing is unconfirmed",
+        "source": {
+          "source": "transcript",
+          "quote": "I cannot confirm whether the person is breathing"
+        },
+        "evidenceStatus": "unverified"
+      },
+      {
+        "text": "Blood is reported nearby; its source is unknown",
+        "source": {
+          "source": "transcript",
+          "quote": "a small patch of blood on the ground nearby"
         },
         "evidenceStatus": "unverified"
       }
@@ -26,7 +42,41 @@
     ],
     "urgency": "urgent_review",
     "routing": "medical",
-    "locationDescription": ""
+    "locationDescription": "",
+    "indicators": {
+      "emergency": {
+        "status": "yes",
+        "reason": "The caller reports an unresponsive person who needs immediate assistance."
+      },
+      "police": {
+        "status": "unknown",
+        "reason": "No assault or other criminal cause has been established."
+      },
+      "medical": {
+        "status": "yes",
+        "reason": "Reported unresponsiveness after a fall suggests urgent medical support."
+      },
+      "ambulance": {
+        "status": "yes",
+        "reason": "An unresponsive person with unconfirmed breathing suggests urgent ambulance review."
+      },
+      "fire": {
+        "status": "unknown",
+        "reason": "No information about a fire hazard was supplied."
+      },
+      "weapon": {
+        "status": "unknown",
+        "reason": "No information about a weapon was supplied."
+      },
+      "injuries": {
+        "status": "unknown",
+        "reason": "The source of nearby blood and the person's injuries are not confirmed."
+      },
+      "immediateDanger": {
+        "status": "yes",
+        "reason": "Reported unresponsiveness and unconfirmed breathing indicate an urgent ongoing concern."
+      }
+    }
   },
-  "summaryBase": "The caller reports a fall. Medical routing is suggested for human review."
+  "summaryBase": "The caller reports an unresponsive person after a fall beside a loading bay. Breathing and the source of nearby blood are unconfirmed. Urgent medical, ambulance and emergency review is suggested."
 }

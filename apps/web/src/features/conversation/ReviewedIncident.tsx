@@ -1,5 +1,9 @@
 import type { Incident } from "@copilot/contracts";
-import { selectedServices, serviceLabels } from "@copilot/contracts";
+import {
+  selectedServices,
+  serviceLabels,
+  reconcileUnknowns,
+} from "@copilot/contracts";
 import { IncidentOutbox } from "./ServiceMessages";
 import { CheckCircle2 } from "lucide-react";
 import { urgencyLabel } from "./IncidentContext";
@@ -13,6 +17,9 @@ export function ReviewedIncident({
   reason?: string;
 }) {
   const d = incident.reviewDraft;
+  const unknowns = incident.assessment
+    ? reconcileUnknowns(incident.assessment)
+    : [];
   return (
     <section className="final-incident">
       <span className="final-icon">
@@ -51,8 +58,14 @@ export function ReviewedIncident({
               <dd>{d.locationDescription || "Unknown"}</dd>
               {d.selectedLocation && (
                 <p>
-                  Map-selected point: {d.selectedLocation.latitude.toFixed(6)},{" "}
+                  {d.selectedLocation.source === "device"
+                    ? "Device GPS point"
+                    : "Map-selected point"}
+                  : {d.selectedLocation.latitude.toFixed(6)},{" "}
                   {d.selectedLocation.longitude.toFixed(6)}
+                  {d.selectedLocation.source === "device" &&
+                    d.selectedLocation.accuracyMeters !== undefined &&
+                    ` · GPS accuracy ±${Math.round(d.selectedLocation.accuracyMeters)} m`}
                 </p>
               )}
               <small>
@@ -79,11 +92,11 @@ export function ReviewedIncident({
           <p>{reason}</p>
         </>
       )}
-      {!!incident.assessment?.unknowns.length && (
+      {!!unknowns.length && (
         <div className="context-unknowns">
           <h3>Remaining unknowns</h3>
           <ul>
-            {incident.assessment.unknowns.map((u) => (
+            {unknowns.map((u) => (
               <li key={u}>{u}</li>
             ))}
           </ul>

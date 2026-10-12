@@ -1,4 +1,5 @@
 import { ensureUser } from "./firebase";
+import { apiUrl } from "./api-origin";
 export async function apiRequest<T>(
   path: string,
   init: RequestInit = {},
@@ -8,7 +9,7 @@ export async function apiRequest<T>(
   headers.set("Authorization", `Bearer ${await user.getIdToken()}`);
   if (init.body && !(init.body instanceof FormData))
     headers.set("Content-Type", "application/json");
-  const response = await fetch("/api" + path, { ...init, headers });
+  const response = await fetch(apiUrl(path), { ...init, headers });
   if (!response.ok) {
     let message = "Request failed. Please retry.";
     try {
@@ -21,7 +22,7 @@ export async function apiRequest<T>(
 }
 export async function audioUrl(id: string) {
   const user = await ensureUser();
-  const response = await fetch(`/api/incidents/${id}/audio`, {
+  const response = await fetch(apiUrl(`/incidents/${id}/audio`), {
     headers: { Authorization: `Bearer ${await user.getIdToken()}` },
   });
   if (!response.ok) throw new Error("Recording unavailable.");

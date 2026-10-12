@@ -17,7 +17,11 @@ export class AnalysisService {
       provider: AnalysisProvider;
     },
   ) {}
-  async run(session: Session, id: string): Promise<Incident> {
+  async run(
+    session: Session,
+    id: string,
+    signal?: AbortSignal,
+  ): Promise<Incident> {
     const key = incidentKey(id),
       sk = sessionKey(session.uid),
       gk = "quota:global",
@@ -93,17 +97,36 @@ export class AnalysisService {
     let brief: ReturnType<typeof parseModelBrief> | undefined;
     let failureCode: string | undefined;
     const controller = new AbortController();
+    const abort = () => controller.abort();
+    signal?.addEventListener("abort", abort, { once: true });
+    if (signal?.aborted) controller.abort();
     let timer: NodeJS.Timeout | undefined;
+    let rejectAbort: (() => void) | undefined;
     try {
       const operation = async () => {
         const wav = await this.d.audio.get(record.audioKey!);
+        controller.signal.throwIfAborted();
         return this.d.provider.analyze({ wav, signal: controller.signal });
       };
       const output = await Promise.race([
         operation(),
         new Promise<never>((_, reject) => {
+          rejectAbort = () =>
+            reject(
+              new AppError(
+                499,
+                "ANALYSIS_INTERRUPTED",
+                "Analysis interrupted.",
+                true,
+              ),
+            );
+          controller.signal.addEventListener("abort", rejectAbort, {
+            once: true,
+          });
+          if (controller.signal.aborted) rejectAbort();
+        }),
+        new Promise<never>((_, reject) => {
           timer = setTimeout(() => {
-            controller.abort();
             reject(
               new AppError(
                 504,
@@ -112,6 +135,7 @@ export class AnalysisService {
                 true,
               ),
             );
+            controller.abort();
           }, this.d.config.analysisTimeout);
         }),
       ]);
@@ -120,6 +144,9 @@ export class AnalysisService {
       failureCode = e instanceof AppError ? e.code : "ANALYSIS_FAILED";
     } finally {
       if (timer) clearTimeout(timer);
+      signal?.removeEventListener("abort", abort);
+      if (rejectAbort)
+        controller.signal.removeEventListener("abort", rejectAbort);
     }
     return this.d.db.transact([key, sk], (docs) => {
       const s = assertSession(docs[sk]),

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { urgencySchema, routingSchema } from "./analysis";
+import { reconcileUnknowns } from "./unknowns";
 const uuid = z.uuid();
 export const incidentIndicatorSchema = z.strictObject({
   status: z.enum(["yes", "no", "unknown"]),
@@ -86,6 +87,19 @@ export const conversationTurnSchema = z.strictObject({
     "interrupted",
   ]),
   attempts: z.number().int().min(0).max(3),
+  attemptHistory: z
+    .array(
+      z.strictObject({
+        attempt: z.number().int().min(1).max(3),
+        state: z.enum(["completed", "failed", "interrupted"]),
+        startedAt: z.iso.datetime().optional(),
+        finishedAt: z.iso.datetime(),
+        durationMs: z.number().int().nonnegative().optional(),
+        failureCode: z.string().optional(),
+      }),
+    )
+    .max(3)
+    .optional(),
   createdAt: z.iso.datetime(),
   updatedAt: z.iso.datetime(),
   reply: z.string().max(4000).optional(),
@@ -145,5 +159,34 @@ export function validateCoordinatorResponse(
             : "unverified",
       };
     });
+  const assessment = r.assessment;
+  const indicators = assessment?.indicators;
+  const errors: string[] = [];
+  if (assessment && indicators) {
+    if (
+      indicators.emergency.status === "yes" &&
+      assessment.urgency !== "urgent_review"
+    )
+      errors.push(
+        "Emergency Yes conflicts with standard or unclear priority. Use Unknown unless the source supports urgent assistance; only source-supported urgency can justify urgent_review.",
+      );
+    if (
+      indicators.ambulance.status === "yes" &&
+      indicators.medical.status !== "yes"
+    )
+      errors.push("Ambulance recommendation requires medical support");
+    const service =
+      assessment.routing === "other" ? "emergency" : assessment.routing;
+    if (service !== "unclear" && indicators[service].status === "no")
+      errors.push(
+        `Routing contradicts the service indicator: ${assessment.routing} routes to ${service}, whose response need is No. Use unclear when no emergency service is supported; other means Emergency, not maintenance or no dispatch.`,
+      );
+  }
+  if (assessment) {
+    assessment.unknowns = reconcileUnknowns(assessment);
+    if (assessment.unknowns.length > 20)
+      errors.push("Too many unresolved details for a reliable assessment");
+  }
+  if (errors.length) throw Error(errors.join("; "));
   return r;
 }

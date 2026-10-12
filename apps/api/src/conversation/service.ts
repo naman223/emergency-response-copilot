@@ -1,6 +1,8 @@
 import { randomUUID } from "node:crypto";
 import {
   conversationTurnSchema,
+  conversationDeadlines,
+  conversationFailureMessage,
   validateCoordinatorResponse,
   type ConversationEvent,
   type ConversationSnapshot,
@@ -18,6 +20,7 @@ import { reserveInference } from "../analysis/budget";
 import { recoverConversation, turnKey } from "./recovery";
 import type { ConversationProvider, ProviderInput } from "./provider";
 import { applyIntakePolicy } from "./intake-policy";
+import { conversationFailureCode } from "./failure";
 type StoredTurn = {
   turn: ConversationTurn;
   canonical: string;
@@ -81,7 +84,11 @@ export class ConversationService {
     const key = incidentKey(id),
       sk = sessionKey(session.uid),
       tk = turnKey(id, tid),
-      token = randomUUID();
+      token = randomUUID(),
+      generationTimeout = conversationDeadlines(
+        this.d.config.mode,
+        this.d.config.analysisTimeout,
+      ).generation;
     const reserved = await this.d.db.transact(
       [key, sk, tk, "quota:global"],
       (docs) => {
@@ -195,6 +202,26 @@ export class ConversationService {
             updatedAt: at,
           },
         };
+        // Existing failures predate attempt history. Retain their known terminal
+        // result without inventing a start time or duration for a past retry.
+        if (
+          retry &&
+          !stored.turn.attemptHistory?.some(
+            (h) => h.attempt === stored.turn.attempts,
+          )
+        ) {
+          stored.turn.attemptHistory = [
+            ...(stored.turn.attemptHistory ?? []),
+            {
+              attempt: stored.turn.attempts,
+              state: stored.turn.state as "failed" | "interrupted",
+              finishedAt: stored.turn.updatedAt,
+              ...(stored.turn.failureCode
+                ? { failureCode: stored.turn.failureCode }
+                : {}),
+            },
+          ];
+        }
         stored.turn = {
           ...stored.turn,
           state: "processing",
@@ -204,7 +231,7 @@ export class ConversationService {
         delete stored.turn.failureCode;
         if (retry) stored.attemptIds.push(retry.attemptId);
         const budget = reserveInference(docs, sk, now),
-          lease = { token, until: now + this.d.config.analysisTimeout + 5000 };
+          lease = { token, until: now + generationTimeout + 5000 };
         budget.session.activeLease = lease;
         r.turnIds = prior ? r.turnIds : [...(r.turnIds ?? []), tid];
         r.activeTurnId = tid;
@@ -251,6 +278,7 @@ export class ConversationService {
       await send({ type: "completed", snapshot });
       return snapshot;
     }
+    const startedAt = reserved.stored.turn.updatedAt;
     const controller = new AbortController();
     const disconnect = () => controller.abort();
     signal?.addEventListener("abort", disconnect, { once: true });
@@ -395,7 +423,9 @@ export class ConversationService {
               ),
             );
             controller.abort();
-          }, this.d.config.analysisTimeout);
+            // Live turns include a draft and consistency review, with any repair
+            // sharing this deadline. Each model request retains its own timeout.
+          }, generationTimeout);
         }),
       ]);
       // Only publish text after the stopping rule has accepted it. A discarded
@@ -406,9 +436,7 @@ export class ConversationService {
       if (!response)
         failure = signal?.aborted
           ? "CONVERSATION_INTERRUPTED"
-          : e instanceof AppError
-            ? e.code
-            : "CONVERSATION_FAILED";
+          : conversationFailureCode(e);
       controller.abort();
     } finally {
       if (timer) clearTimeout(timer);
@@ -466,14 +494,30 @@ export class ConversationService {
       }
       if (response?.transcript !== undefined)
         incident.sourceTranscript = response.transcript;
+      const finishedAt = new Date().toISOString();
+      const state = response
+        ? "completed"
+        : failure === "CONVERSATION_INTERRUPTED"
+          ? "interrupted"
+          : "failed";
       stored.turn = {
         ...stored.turn,
-        state: response
-          ? "completed"
-          : failure === "CONVERSATION_INTERRUPTED"
-            ? "interrupted"
-            : "failed",
-        updatedAt: new Date().toISOString(),
+        state,
+        updatedAt: finishedAt,
+        attemptHistory: [
+          ...(stored.turn.attemptHistory ?? []),
+          {
+            attempt: stored.turn.attempts,
+            state,
+            startedAt,
+            finishedAt,
+            durationMs: Math.max(
+              0,
+              Date.parse(finishedAt) - Date.parse(startedAt),
+            ),
+            ...(failure ? { failureCode: failure } : {}),
+          },
+        ],
         ...(response
           ? {
               reply: response.reply,
@@ -501,8 +545,7 @@ export class ConversationService {
         ? {
             type: "failure",
             code: failure,
-            message:
-              "The response did not complete. Your report is saved. Retry or review it manually.",
+            message: conversationFailureMessage(failure),
           }
         : { type: "completed", snapshot },
     );

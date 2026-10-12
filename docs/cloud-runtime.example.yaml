@@ -1,0 +1,8 @@
+# Copy to an ignored operator-only file and replace placeholders before deployment.
+ANALYSIS_MODE: live
+GOOGLE_CLOUD_PROJECT: YOUR_PROJECT_ID
+GOOGLE_CLOUD_LOCATION: global
+GEMINI_MODEL: YOUR_AUDIO_CAPABLE_MODEL
+FIRESTORE_DATABASE_ID: YOUR_DATABASE_ID
+STORAGE_BUCKET: YOUR_PRIVATE_BUCKET
+ALLOWED_ORIGIN: https://app.example.invalid

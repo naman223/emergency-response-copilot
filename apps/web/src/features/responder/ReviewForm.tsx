@@ -4,6 +4,7 @@ import { prefillReview } from "./review-draft";
 import { LocationPicker } from "./LocationPicker";
 import { ClarificationDetails } from "../conversation/ClarificationDetails";
 import { ServiceMessages } from "../conversation/ServiceMessages";
+import { urgencyLabel } from "../conversation/IncidentContext";
 import {
   buildSmsPreviews,
   responseServices,
@@ -11,7 +12,7 @@ import {
   selectedServices,
   primaryRouting,
 } from "@copilot/contracts";
-import { Save, Check, MessageSquare, X } from "lucide-react";
+import { Save, Check, MessageSquare, X, HeartPulse, Siren } from "lucide-react";
 import type {
   Incident,
   ReviewDraft,
@@ -51,6 +52,8 @@ export function ReviewForm({
     busy ||
     incident.analysisState === "processing" ||
     ["approved", "closed"].includes(incident.reviewState);
+  const medicalSelected = selectedServices(draft).includes("medical");
+  const PriorityIcon = medicalSelected ? HeartPulse : Siren;
   function change<K extends keyof ReviewDraft>(key: K, value: ReviewDraft[K]) {
     setDraft((d) => ({
       ...d,
@@ -81,10 +84,50 @@ export function ReviewForm({
     }));
   }
   return (
-    <section className="card review-card">
+    <section
+      className={`card review-card ${draft.urgency === "urgent_review" ? "urgent-review-card" : ""}`}
+    >
       <div className="card-heading">
         <h2>Human verification</h2>
         <span className="tag">REQUIRED</span>
+      </div>
+      <div
+        className="review-priority-note"
+        role="region"
+        aria-label="Review priority"
+      >
+        <PriorityIcon size={20} aria-hidden="true" />
+        <div>
+          <strong>
+            {draft.urgency === "urgent_review"
+              ? medicalSelected
+                ? "Urgent medical review"
+                : "Urgent emergency review"
+              : urgencyLabel(draft.urgency)}
+          </strong>
+          <span>
+            Review draft ·{" "}
+            {selectedServices(draft)
+              .map((service) => serviceLabels[service])
+              .join(" + ") || "No services selected"}
+          </span>
+          {incident.assessment?.indicators && (
+            <small>
+              AI medical need:{" "}
+              {incident.assessment.indicators.medical.status === "yes"
+                ? "Yes"
+                : incident.assessment.indicators.medical.status === "no"
+                  ? "No"
+                  : "Unknown"}{" "}
+              · AI ambulance need:{" "}
+              {incident.assessment.indicators.ambulance.status === "yes"
+                ? "Yes"
+                : incident.assessment.indicators.ambulance.status === "no"
+                  ? "No"
+                  : "Unknown"}
+            </small>
+          )}
+        </div>
       </div>
       <p className="hint">
         Details are filled from the report and clarifications. Check or edit
@@ -177,6 +220,7 @@ export function ReviewForm({
           description={draft.locationDescription}
           selectedLocation={draft.selectedLocation}
           deviceLocation={incident.sourceLocation}
+          verified={draft.confirmedFields.includes("locationDescription")}
           disabled={locked}
           onSelect={(description, selectedLocation) =>
             setDraft((d) => ({
@@ -220,7 +264,16 @@ export function ReviewForm({
             }
           />
           I verified this location description
+          {draft.selectedLocation ? " and the coordinates above" : ""}
         </label>
+        {draft.selectedLocation?.source === "device" && (
+          <p className="hint">
+            These coordinates come from the reporting device. Confirm that the
+            incident is at this point, even if the report names a different
+            site. Choose a point on the map or edit the description if it
+            happened elsewhere.
+          </p>
+        )}
         <div className="nearby-services">
           <h3>Nearby service handoff</h3>
           {draft.locationDescription.trim() &&
@@ -323,35 +376,47 @@ export function ReviewForm({
             placeholder="What did you verify, or what needs clarification?"
           />
         </label>
-        <div className="decision-actions">
-          <button
-            className="primary"
-            disabled={
-              !draft.summary.trim() ||
-              !reason.trim() ||
-              !selectedServices(draft).length
-            }
-            onClick={() => onDecide("approve", reason, draft)}
-          >
-            <Check size={16} />
-            Approve &amp; simulate dispatch
-          </button>
-          <button
-            className="secondary"
-            disabled={!reason.trim()}
-            onClick={() => onDecide("needs_clarification", reason)}
-          >
-            <MessageSquare size={15} />
-            Clarify
-          </button>
-          <button
-            className="text-button"
-            disabled={!reason.trim()}
-            onClick={() => onDecide("close", reason)}
-          >
-            <X size={15} />
-            Close report
-          </button>
+        <div className="decision-dock">
+          <div className="decision-dock-label">
+            <strong>Human decision</strong>
+            <span>
+              {urgencyLabel(draft.urgency)} · {selectedServices(draft).length}{" "}
+              services selected
+            </span>
+          </div>
+          <div className="decision-actions">
+            <button
+              className="primary"
+              disabled={
+                !draft.summary.trim() ||
+                !reason.trim() ||
+                !selectedServices(draft).length
+              }
+              onClick={() => onDecide("approve", reason, draft)}
+            >
+              <Check size={16} />
+              Approve &amp; simulate dispatch
+            </button>
+            <button
+              className="secondary"
+              disabled={!reason.trim()}
+              onClick={() => onDecide("needs_clarification", reason)}
+            >
+              <MessageSquare size={15} />
+              Clarify
+            </button>
+            <button
+              className="text-button"
+              disabled={!reason.trim()}
+              onClick={() => onDecide("close", reason)}
+            >
+              <X size={15} />
+              Close report
+            </button>
+          </div>
+          <small className="decision-dock-note">
+            Saves your review and records simulated notifications.
+          </small>
         </div>
         <p className="hint">
           Approval saves the current review and records simulated SMS

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowDown, Headphones } from "lucide-react";
+import { ArrowDown, Headphones, ClipboardList } from "lucide-react";
 import type { ConversationTurn, Incident } from "@copilot/contracts";
+import { conversationFailureMessage } from "@copilot/contracts";
 import { IncidentReport } from "./IncidentReport";
 import { MessageBubble } from "./MessageBubble";
 import { audioUrl } from "../../api";
@@ -48,6 +49,15 @@ export function ConversationThread({
       });
     } else setAway(true);
   }, [turns, partial, stage]);
+  useEffect(() => {
+    const element = scroller.current;
+    if (!element) return;
+    const observer = new ResizeObserver(() => {
+      if (nearBottom.current) element.scrollTop = element.scrollHeight;
+    });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
   const jump = () => {
     nearBottom.current = true;
     setAway(false);
@@ -98,8 +108,12 @@ export function ConversationThread({
             )}{" "}
             {["failed", "interrupted"].includes(t.state) && (
               <div className="turn-failure" role="status">
-                <strong>Response interrupted</strong>
-                <p>Your report is saved. Continue manually or retry.</p>
+                <strong>
+                  {t.state === "interrupted"
+                    ? "Response interrupted"
+                    : "Assessment not completed"}
+                </strong>
+                <p>{conversationFailureMessage(t.failureCode)}</p>
                 {index < turns.length - 1 ? (
                   <p>
                     A later message superseded this reply. Continue from the
@@ -131,7 +145,16 @@ export function ConversationThread({
             Recovering an interrupted response… Your report is saved.
           </p>
         )}
-        <IncidentReport incident={incident} />
+        {incident.assessment && (
+          <details className="thread-assessment-drawer">
+            <summary>
+              <ClipboardList size={16} aria-hidden="true" />
+              View detailed incident report
+              <span>Service needs · evidence gaps</span>
+            </summary>
+            <IncidentReport incident={incident} />
+          </details>
+        )}
       </div>
       {away && (
         <button className="new-messages" onClick={jump}>

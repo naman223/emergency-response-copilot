@@ -45,9 +45,12 @@ export class ReplyDecoder {
     this.emitted = reply;
     return delta;
   }
-  finish() {
+  finish({ replyRequired = true } = {}) {
     this.push("");
     const value = JSON.parse(this.buffer);
+    // Sparse review patches may accept the draft reply by omitting it. Still
+    // reject malformed or duplicate replies whenever a replacement is present.
+    if (!replyRequired && value.reply === undefined) return value;
     if (typeof value.reply !== "string" || value.reply !== this.emitted)
       throw Error("Invalid reply");
     return value;

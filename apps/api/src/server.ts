@@ -13,9 +13,21 @@ await app.listen({
   host: config.cloud ? "0.0.0.0" : "127.0.0.1",
 });
 console.log(`Copilot API listening on ${config.port} (${config.mode} mode)`);
-for (const signal of ["SIGINT", "SIGTERM"] as const)
-  process.once(signal, async () => {
+let stopping = false;
+function stop() {
+  if (stopping) return;
+  stopping = true;
+  void (async () => {
     await app.close();
     await firebase.close();
-    process.exit(0);
-  });
+  })().then(
+    () => process.exit(0),
+    () => {
+      console.error(
+        "Copilot API shutdown could not finish. Reload after restart to recover saved work.",
+      );
+      process.exit(1);
+    },
+  );
+}
+for (const signal of ["SIGINT", "SIGTERM"] as const) process.on(signal, stop);

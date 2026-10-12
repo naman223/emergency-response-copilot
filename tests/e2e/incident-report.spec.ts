@@ -16,11 +16,16 @@ test("urgent clarification retains a visible incident report and updates service
       exact: true,
     }),
   ).toBeVisible();
-  await expect(page.locator(".intake-progress")).toContainText("Urgent review");
+  await expect(
+    page.getByRole("region", { name: "Response priority" }),
+  ).toHaveAttribute("data-priority", "urgent");
   await expect(
     page.locator(".intake-progress .pending-question"),
   ).toContainText("Which site does the north gate refer to?");
   const report = page.locator(".conversation-thread .incident-report");
+  await page
+    .getByText("View detailed incident report", { exact: false })
+    .click();
   await expect(
     report.getByRole("heading", { name: "Incident report", exact: true }),
   ).toBeVisible();
@@ -52,7 +57,9 @@ test("urgent clarification retains a visible incident report and updates service
     .getByRole("button", { name: "Review handoff", exact: true })
     .click();
   await page.getByRole("button", { name: "Save draft", exact: true }).click();
-  await page.getByRole("button", { name: "Approve & simulate dispatch" }).click();
+  await page
+    .getByRole("button", { name: "Approve & simulate dispatch" })
+    .click();
   await page.reload();
   await expect(
     page.locator(".final-incident [data-indicator=injuries]"),

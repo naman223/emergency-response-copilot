@@ -48,7 +48,13 @@ test("preselects multiple services, previews each SMS, and preserves the approve
   await expect(
     review.getByRole("checkbox", { name: "Fire", exact: true }),
   ).toBeChecked();
-  await page.getByRole("button", { name: "Approve & simulate dispatch" }).click();
+  await page
+    .getByRole("button", { name: "Approve & simulate dispatch" })
+    .click();
+  await page
+    .getByRole("dialog", { name: "Service messages recorded" })
+    .getByRole("button", { name: "View incident", exact: true })
+    .click();
   const outbox = page.getByRole("region", { name: "Simulated SMS outbox" });
   await expect(outbox.locator(".sms-card")).toHaveCount(4);
   await expect(outbox).toContainText("No real SMS");

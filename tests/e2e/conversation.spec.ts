@@ -57,6 +57,10 @@ test("urgent intake allows immediate human completion and records a selected sim
   await page
     .getByRole("button", { name: "Approve & simulate dispatch" })
     .click();
+  await page
+    .getByRole("dialog", { name: "Service messages recorded" })
+    .getByRole("button", { name: "View incident", exact: true })
+    .click();
   await expect(
     page.getByRole("heading", { name: "Simulated dispatch complete" }),
   ).toBeVisible();
@@ -148,6 +152,10 @@ test("officer discusses the report, clarifies, reviews and approves a simulation
     );
   await page
     .getByRole("button", { name: "Approve & simulate dispatch" })
+    .click();
+  await page
+    .getByRole("dialog", { name: "Service messages recorded" })
+    .getByRole("button", { name: "View incident", exact: true })
     .click();
   await expect(
     page.getByRole("heading", { name: "Simulated dispatch complete" }),
@@ -256,6 +264,10 @@ test("new clarification preserves the saved review and requires rechecking", asy
   await page.getByLabel("Decision reason").fill("New context checked");
   await page
     .getByRole("button", { name: "Approve & simulate dispatch" })
+    .click();
+  await page
+    .getByRole("dialog", { name: "Service messages recorded" })
+    .getByRole("button", { name: "View incident", exact: true })
     .click();
   await expect(
     page.getByRole("heading", { name: "Simulated dispatch complete" }),

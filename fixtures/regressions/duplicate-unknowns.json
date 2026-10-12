@@ -1,0 +1,144 @@
+{
+  "note": "Captured fictional armed-robbery final assessment from assessment-consistency-live-results.json; eleven gaps repeat four accepted Unknown answers. Source text/quotes preserved.",
+  "response": {
+    "reply": "Assessment ready. An armed robbery occurred near the main parking area of the Bengaluru Operations Center. A suspect threatened a delivery employee with a knife, stole his wallet and mobile phone, and was last seen running toward the east entrance. The employee sustained a minor injury. It is currently unknown whether the suspect is inside or outside the facility perimeter, whether the injured employee requires an ambulance, whether other personnel on site are secure, and whether there are indications of current immediate danger.\n\nUrgent review. Suggested responder: police. Unresolved details remain listed in the incident brief. Review the assessment, confirm the incident location, and choose a service for the simulated handoff. No emergency service has been contacted.",
+    "question": null,
+    "suggestedReplies": [],
+    "assessment": {
+      "summary": "An armed robbery occurred near the main parking area of the Bengaluru Operations Center. A suspect threatened a delivery employee with a knife, stole his wallet and mobile phone, and was last seen running toward the east entrance. The employee sustained a minor injury. It is currently unknown whether the suspect is inside or outside the facility perimeter, whether the injured employee requires an ambulance, whether other personnel on site are secure, and whether there are indications of current immediate danger.",
+      "facts": [
+        {
+          "text": "A delivery employee was confronted and robbed near the main parking area at the Bengaluru Operations Center.",
+          "source": {
+            "source": "officer",
+            "messageId": "616c70fe-6bd2-4235-8b6c-6e292b2cc558",
+            "quote": "A delivery employee was confronted near the main parking area at the Bengaluru Operations Center."
+          },
+          "evidenceStatus": "matched"
+        },
+        {
+          "text": "The suspect threatened the employee with a knife and took his wallet and mobile phone.",
+          "source": {
+            "source": "officer",
+            "messageId": "616c70fe-6bd2-4235-8b6c-6e292b2cc558",
+            "quote": "The suspect threatened him with a knife and forcibly took his wallet and mobile phone."
+          },
+          "evidenceStatus": "matched"
+        },
+        {
+          "text": "The employee has a minor injury.",
+          "source": {
+            "source": "officer",
+            "messageId": "616c70fe-6bd2-4235-8b6c-6e292b2cc558",
+            "quote": "The employee has a minor injury"
+          },
+          "evidenceStatus": "matched"
+        },
+        {
+          "text": "The suspect was last seen running toward the east entrance approximately two minutes ago.",
+          "source": {
+            "source": "officer",
+            "messageId": "616c70fe-6bd2-4235-8b6c-6e292b2cc558",
+            "quote": "the suspect was last seen running toward the east entrance approximately two minutes ago."
+          },
+          "evidenceStatus": "matched"
+        },
+        {
+          "text": "It is unknown whether the suspect is inside or outside the facility perimeter.",
+          "source": {
+            "source": "officer",
+            "messageId": "476b707f-8cfc-4e80-9279-7dda661d0c8c",
+            "quote": "Unknown"
+          },
+          "evidenceStatus": "matched"
+        },
+        {
+          "text": "It is unknown whether the injured employee requires an ambulance or if first aid is sufficient.",
+          "source": {
+            "source": "officer",
+            "messageId": "84ef9746-35aa-41d6-bbe0-b8ec39a7209d",
+            "quote": "Unknown"
+          },
+          "evidenceStatus": "matched"
+        },
+        {
+          "text": "It is unknown whether other personnel at the facility are currently secure and safe.",
+          "source": {
+            "source": "officer",
+            "messageId": "fe775425-39e2-43d5-b25b-8088073eb89b",
+            "quote": "Unknown"
+          },
+          "evidenceStatus": "matched"
+        },
+        {
+          "text": "It is unknown whether there are any indications of current immediate danger to anyone at the facility.",
+          "source": {
+            "source": "officer",
+            "messageId": "35cc60a8-9e88-4169-ae97-bfffa12b38a6",
+            "quote": "Unknown"
+          },
+          "evidenceStatus": "matched"
+        }
+      ],
+      "unknowns": [
+        "Ambulance need: Unknown",
+        "Fire response need: Unknown",
+        "Current immediate danger: Unknown",
+        "It is unknown whether the suspect is inside or outside the facility perimeter.",
+        "It is unknown whether the injured employee requires an ambulance or if first aid is sufficient.",
+        "It is unknown whether other personnel at the facility are currently secure and safe.",
+        "It is unknown whether there are any indications of current immediate danger to anyone at the facility.",
+        "Whether the suspect is inside or outside the facility perimeter",
+        "Whether the injured employee requires an ambulance or if first aid is sufficient",
+        "Whether other personnel at the facility are currently secure and safe",
+        "Whether there are any indications of current immediate danger to anyone at the facility"
+      ],
+      "urgency": "urgent_review",
+      "routing": "police",
+      "locationDescription": "Bengaluru Operations Center, near the main parking area",
+      "indicators": {
+        "emergency": {
+          "status": "yes",
+          "reason": "An armed robbery occurred recently and immediate assistance is requested."
+        },
+        "police": {
+          "status": "yes",
+          "reason": "A suspect committed a robbery using a knife and fled the scene."
+        },
+        "medical": {
+          "status": "yes",
+          "reason": "The delivery employee is reported to have a minor injury."
+        },
+        "ambulance": {
+          "status": "unknown",
+          "reason": "The employee has a minor injury, but the need for ambulance transport is reported as unknown."
+        },
+        "fire": {
+          "status": "unknown",
+          "reason": "There is no mention of fire or fire hazards in the report."
+        },
+        "weapon": {
+          "status": "yes",
+          "reason": "The suspect threatened the employee with a knife."
+        },
+        "injuries": {
+          "status": "yes",
+          "reason": "The employee is reported to have a minor injury."
+        },
+        "immediateDanger": {
+          "status": "unknown",
+          "reason": "It is unknown whether there are any indications of current immediate danger to anyone at the facility."
+        }
+      }
+    }
+  },
+  "sources": {
+    "messages": {
+      "616c70fe-6bd2-4235-8b6c-6e292b2cc558": "A delivery employee was confronted near the main parking area at the Bengaluru Operations Center. The suspect threatened him with a knife and forcibly took his wallet and mobile phone. The employee has a minor injury, and the suspect was last seen running toward the east entrance approximately two minutes ago. Immediate assistance is required.",
+      "476b707f-8cfc-4e80-9279-7dda661d0c8c": "Unknown",
+      "84ef9746-35aa-41d6-bbe0-b8ec39a7209d": "Unknown",
+      "fe775425-39e2-43d5-b25b-8088073eb89b": "Unknown",
+      "35cc60a8-9e88-4169-ae97-bfffa12b38a6": "Unknown"
+    }
+  }
+}

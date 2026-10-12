@@ -11,7 +11,8 @@ import { ConversationThread } from "./ConversationThread";
 import { MessageComposer } from "./MessageComposer";
 import { IncidentContext } from "./IncidentContext";
 import { ReviewedIncident } from "./ReviewedIncident";
-import { urgencyLabel } from "./IncidentContext";
+import { ResponsePriority } from "./ResponsePriority";
+import { HandoffConfirmation, type HandoffView } from "./HandoffConfirmation";
 import { ReviewForm } from "../responder/ReviewForm";
 import { apiRequest } from "../../api";
 export function ConversationWorkspace({
@@ -32,6 +33,8 @@ export function ConversationWorkspace({
     [history, setHistory] = useState<
       Array<{ id: string; action: string; reason?: string; at: string }>
     >([]);
+  const [handoffIncident, setHandoffIncident] = useState<Incident>();
+  const [handoffView, setHandoffView] = useState<HandoffView>(null);
   const chat = useConversation(id, initial, (s) => onUpdate(s.incident));
   const i = chat.snapshot?.incident;
   const closed = i && ["approved", "closed"].includes(i.reviewState);
@@ -87,7 +90,7 @@ export function ConversationWorkspace({
     setSaving(true);
     chat.setError("");
     try {
-      await apiRequest(`/incidents/${id}/decision`, {
+      const result = await apiRequest<Incident>(`/incidents/${id}/decision`, {
         method: "POST",
         body: JSON.stringify({
           expectedRevision: i.revision,
@@ -97,6 +100,10 @@ export function ConversationWorkspace({
           idempotencyKey: crypto.randomUUID(),
         }),
       });
+      if (action === "approve" && result.dispatchReceipt?.smsMessages?.length) {
+        setHandoffIncident(result);
+        setHandoffView("confirmation");
+      }
       await chat.refresh();
       setPanel("review");
       setShowPanel(true);
@@ -107,11 +114,13 @@ export function ConversationWorkspace({
     }
   }
   const last = chat.snapshot?.turns.at(-1);
+  const confirmedHandoff =
+    handoffIncident ?? (i?.dispatchReceipt ? i : undefined);
   const replies =
     last?.state === "completed" ? (last.suggestedReplies ?? []) : [];
   return (
     <div
-      className={`coordinator-workspace ${showPanel ? "panel-visible" : ""}`}
+      className={`coordinator-workspace ${showPanel ? "panel-visible" : ""} ${!closed && i?.assessment?.urgency === "urgent_review" ? "priority-workspace" : ""}`}
     >
       <section className="chat-column">
         <header className="chat-header">
@@ -156,20 +165,23 @@ export function ConversationWorkspace({
             </button>
           </div>
         </div>
+        {i && <ResponsePriority incident={i} busy={chat.busy} />}
         {i && !closed && (
           <div
             className={`intake-progress ${intakeReady ? "ready" : ""}`}
             role="status"
           >
             <div>
-              <strong>
-                {intakeReady ? "Assessment ready" : "Essential clarification"}
-              </strong>
-              <p>
-                {intakeReady
-                  ? `${urgencyLabel(i.assessment?.urgency ?? "unclear")} · Suggested responder: ${i.assessment?.routing ?? "not determined"}. Review the handoff below; you can still add corrections.`
-                  : `${i.assessment ? `${urgencyLabel(i.assessment.urgency)} · Suggested responder: ${i.assessment.routing}. ` : ""}${i.clarificationCount ?? 0} of up to 10 questions · Target: 5 essential questions. Unknown is accepted.`}
-              </p>
+              <div className="intake-heading">
+                <strong>
+                  {intakeReady ? "Assessment ready" : "Essential clarification"}
+                </strong>
+                <span>
+                  {intakeReady
+                    ? "Corrections welcome"
+                    : `${i.clarificationCount ?? 0}/10 questions · Unknown accepted`}
+                </span>
+              </div>
               {!intakeReady && last?.state === "completed" && last.question && (
                 <p className="pending-question">
                   <strong>Coordinator asks:</strong> {last.question}
@@ -243,6 +255,13 @@ export function ConversationWorkspace({
               setSaved(false);
               await chat.send(text);
             }}
+          />
+        )}
+        {confirmedHandoff && (
+          <HandoffConfirmation
+            incident={confirmedHandoff}
+            view={handoffView}
+            onView={setHandoffView}
           />
         )}
       </section>

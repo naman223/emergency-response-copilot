@@ -1,6 +1,20 @@
 import type { Incident } from "@copilot/contracts";
-import { recommendedServices, serviceLabels } from "@copilot/contracts";
+import {
+  recommendedServices,
+  serviceLabels,
+  reconcileUnknowns,
+} from "@copilot/contracts";
 import { urgencyLabel } from "./IncidentContext";
+import {
+  Ambulance,
+  Flame,
+  HeartPulse,
+  HelpCircle,
+  ShieldAlert,
+  Siren,
+  Users,
+  Zap,
+} from "lucide-react";
 
 const labels = {
   emergency: "Emergency",
@@ -12,12 +26,26 @@ const labels = {
   injuries: "Injuries reported",
   immediateDanger: "Immediate danger now",
 } as const;
+const icons = {
+  emergency: Siren,
+  police: ShieldAlert,
+  medical: HeartPulse,
+  ambulance: Ambulance,
+  fire: Flame,
+  weapon: ShieldAlert,
+  injuries: Users,
+  immediateDanger: Zap,
+};
 
 export function IncidentReport({ incident }: { incident: Incident }) {
   const assessment = incident.assessment;
   if (!assessment) return null;
+  const unknowns = reconcileUnknowns(assessment);
   return (
-    <section className="incident-report" aria-label="AI incident report">
+    <section
+      className={`incident-report ${assessment.urgency === "urgent_review" ? "urgent-report" : ""}`}
+      aria-label="AI incident report"
+    >
       <span className="caps">AI ASSESSMENT · HUMAN REVIEW REQUIRED</span>
       <h3>Incident report</h3>
       <p className="hint">
@@ -48,10 +76,18 @@ export function IncidentReport({ incident }: { incident: Incident }) {
         {(Object.keys(labels) as Array<keyof typeof labels>).map((key) => {
           const indicator = assessment.indicators?.[key];
           const status = indicator?.status ?? "unknown";
+          const Icon = status === "unknown" ? HelpCircle : icons[key];
           return (
-            <div className="report-indicator" data-indicator={key} key={key}>
+            <div
+              className={`report-indicator need-${status}`}
+              data-indicator={key}
+              key={key}
+            >
               <div>
-                <strong>{labels[key]}</strong>
+                <strong>
+                  <Icon size={16} aria-hidden="true" />
+                  {labels[key]}
+                </strong>
                 <span className={`indicator-status ${status}`}>
                   {status === "yes"
                     ? "Yes"
@@ -65,11 +101,11 @@ export function IncidentReport({ incident }: { incident: Incident }) {
           );
         })}
       </div>
-      {!!assessment.unknowns.length && (
+      {!!unknowns.length && (
         <details className="report-gaps">
-          <summary>Remaining gaps ({assessment.unknowns.length})</summary>
+          <summary>Remaining gaps ({unknowns.length})</summary>
           <ul>
-            {assessment.unknowns.map((gap, index) => (
+            {unknowns.map((gap, index) => (
               <li key={index}>{gap}</li>
             ))}
           </ul>

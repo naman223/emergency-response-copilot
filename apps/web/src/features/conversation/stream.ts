@@ -1,5 +1,6 @@
 import type { ConversationEvent } from "@copilot/contracts";
 import { ensureUser } from "../../firebase";
+import { apiUrl } from "../../api-origin";
 export async function readEvents(
   body: ReadableStream<Uint8Array>,
   onEvent: (e: ConversationEvent) => void,
@@ -47,7 +48,7 @@ export async function streamConversation(
   signal: AbortSignal,
 ) {
   const user = await ensureUser();
-  const r = await fetch("/api" + path, {
+  const r = await fetch(apiUrl(path), {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

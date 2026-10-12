@@ -12,6 +12,10 @@ const fields = [
   "locationDescription",
 ] as const;
 export function prefillReview(incident: Incident): ReviewDraft {
+  const device =
+    incident.sourceLocation?.source === "device"
+      ? incident.sourceLocation
+      : undefined;
   const suggestions: ReviewDraft = {
     summary:
       incident.assessment?.summary ??
@@ -25,9 +29,24 @@ export function prefillReview(incident: Incident): ReviewDraft {
       incident.assessment?.routing ?? incident.brief?.routing ?? "unclear",
     services: recommendedServices(incident),
     locationDescription:
-      incident.assessment?.locationDescription ??
-      incident.locationDescription ??
-      "",
+      incident.assessment?.locationDescription?.trim() ||
+      incident.locationDescription?.trim() ||
+      (device
+        ? `${device.latitude.toFixed(6)}, ${device.longitude.toFixed(6)}`
+        : ""),
+    ...(device
+      ? {
+          selectedLocation: {
+            latitude: device.latitude,
+            longitude: device.longitude,
+            source: "device" as const,
+            selectedAt: device.capturedAt,
+            ...(device.accuracyMeters !== undefined
+              ? { accuracyMeters: device.accuracyMeters }
+              : {}),
+          },
+        }
+      : {}),
     confirmedFields: [],
     editedFields: [],
   };
@@ -52,6 +71,11 @@ export function prefillReview(incident: Incident): ReviewDraft {
     saved.selectedLocation
   )
     next.selectedLocation = saved.selectedLocation;
+  else if (edited.includes("locationDescription")) delete next.selectedLocation;
+  if (next.selectedLocation?.source === "device" && !saved.selectedLocation)
+    next.confirmedFields = next.confirmedFields.filter(
+      (field) => field !== "locationDescription",
+    );
   if (
     next.locationDescription === saved.locationDescription &&
     next.routing === saved.routing &&

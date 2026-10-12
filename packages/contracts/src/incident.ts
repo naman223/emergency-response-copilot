@@ -35,8 +35,9 @@ export const reviewDraftSchema = z.strictObject({
     .strictObject({
       latitude: z.number().min(-90).max(90),
       longitude: z.number().min(-180).max(180),
-      source: z.literal("map"),
+      source: z.enum(["map", "device"]),
       selectedAt: z.iso.datetime(),
+      accuracyMeters: z.number().nonnegative().optional(),
     })
     .optional(),
 });

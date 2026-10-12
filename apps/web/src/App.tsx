@@ -12,6 +12,7 @@ import { serviceSchema, type ResponseService } from "@copilot/contracts";
 import { ServiceIncidentView } from "./features/conversation/ServiceIncidentView";
 import { auth, clearUser } from "./firebase";
 import { apiRequest } from "./api";
+import { apiUrl } from "./api-origin";
 import type { Sample } from "./features/caller/CallerView";
 import { StartIncident } from "./features/conversation/StartIncident";
 import { ConversationWorkspace } from "./features/conversation/ConversationWorkspace";
@@ -25,9 +26,15 @@ export default function App() {
     [mode, setMode] = useState("fixture"),
     [samples, setSamples] = useState<Sample[]>([]),
     [incidents, setIncidents] = useState<Incident[]>([]),
+    [draftVersion, setDraftVersion] = useState(0),
     [selected, setSelected] = useState(""),
     [initial, setInitial] = useState("");
   function select(id: string) {
+    if (busy) return;
+    if (!id) {
+      setDraftVersion((version) => version + 1);
+      setError("");
+    }
     setRecipient(null);
     setNotificationUnavailable(false);
     if (window.location.search) window.history.replaceState(null, "", "/");
@@ -79,7 +86,7 @@ export default function App() {
   }
   useEffect(() => {
     let alive = true;
-    fetch("/api/samples")
+    fetch(apiUrl("/samples"))
       .then((r) => r.json())
       .then((v) => {
         if (alive) {
@@ -160,7 +167,7 @@ export default function App() {
         <div className="sidebar-caption">SECURITY OPERATIONS</div>
         <button
           className="new-incident"
-          disabled={!ready}
+          disabled={!ready || busy}
           onClick={() => select("")}
         >
           <Plus size={17} />
@@ -239,7 +246,9 @@ export default function App() {
           <strong>response copilot</strong>
           {ready && (
             <>
-              <button onClick={() => select("")}>New incident</button>
+              <button disabled={busy} onClick={() => select("")}>
+                New incident
+              </button>
               <select
                 aria-label="Choose incident conversation"
                 value={selected}
@@ -316,10 +325,12 @@ export default function App() {
           />
         ) : (
           <StartIncident
+            key={draftVersion}
             mode={mode}
             samples={samples}
             busy={busy}
             onStart={submit}
+            onReset={() => select("")}
           />
         )}
       </main>

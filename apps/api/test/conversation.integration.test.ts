@@ -110,6 +110,157 @@ it("streams a private sample conversation and saves officer clarification", asyn
     await firebase.db.get(`turn:${i.id}:${request.turnId}`),
   ).toBeUndefined();
 }, 30000);
+it("persists a deduplicated ledger and the full Unknown clarification across reload", async () => {
+  const controlled = await buildApp({
+    config,
+    ...firebase,
+    provider: new FixtureProvider(),
+    conversationProvider: {
+      async *generate(input) {
+        const latest = input.turns.at(-1)!;
+        const initial = latest.kind === "initial";
+        yield {
+          type: "result",
+          response: {
+            reply: initial
+              ? "Reported safety is unclear. Is the caller safe?"
+              : "The caller's safety remains unknown.",
+            question: initial ? "Is the caller safe?" : null,
+            suggestedReplies: initial ? ["Unknown"] : [],
+            assessment: {
+              summary: "Reported caller safety is unknown.",
+              facts: initial
+                ? []
+                : [
+                    {
+                      text: "It is unknown whether the caller is safe.",
+                      source: {
+                        source: "officer",
+                        messageId: latest.id,
+                        quote: "Unknown",
+                      },
+                      evidenceStatus: "unverified",
+                    },
+                  ],
+              unknowns: [
+                "Exact location",
+                " exact location. ",
+                "Whether the caller is safe",
+              ],
+              urgency: "unclear",
+              routing: "unclear",
+              locationDescription: "",
+            },
+          },
+        };
+      },
+    },
+  });
+  const h = await session();
+  try {
+    const incident = (
+      await controlled.inject({
+        method: "POST",
+        url: "/api/incidents",
+        headers: h,
+        payload: {
+          reportText: "Fictional report: caller safety is not established.",
+        },
+      })
+    ).json();
+    const url = `/api/incidents/${incident.id}`;
+    const initial = await controlled.inject({
+      method: "POST",
+      url: url + "/turns",
+      headers: h,
+      payload: { turnId: randomUUID(), expectedRevision: 1, kind: "initial" },
+    });
+    const first = JSON.parse(initial.body.trim().split("\n").at(-1)!);
+    expect(first.type).toBe("completed");
+    const turnId = randomUUID();
+    const answer = await controlled.inject({
+      method: "POST",
+      url: url + "/turns",
+      headers: h,
+      payload: {
+        turnId,
+        expectedRevision: first.snapshot.incident.revision,
+        kind: "message",
+        text: "Unknown",
+      },
+    });
+    const event = JSON.parse(answer.body.trim().split("\n").at(-1)!);
+    expect(event.type).toBe("completed");
+    const reloaded = (
+      await controlled.inject({ url: url + "/conversation", headers: h })
+    ).json();
+    expect(reloaded.incident.assessment.unknowns).toEqual([
+      "It is unknown whether the caller is safe.",
+      "Exact location",
+    ]);
+    expect(reloaded.turns.at(-1).assessment.unknowns).toEqual(
+      reloaded.incident.assessment.unknowns,
+    );
+    expect(reloaded.incident.assessment.facts[0]).toMatchObject({
+      text: "It is unknown whether the caller is safe.",
+      source: { messageId: turnId, quote: "Unknown" },
+      evidenceStatus: "matched",
+    });
+    expect(reloaded.incident.clarifications).toContainEqual(
+      expect.objectContaining({
+        turnId,
+        question: "Is the caller safe?",
+        answer: "Unknown",
+        assessmentState: "included",
+      }),
+    );
+    const stored = await firebase.db.get<any>(`incident:${incident.id}`);
+    expect(stored.incident.assessment.unknowns).toEqual(
+      reloaded.incident.assessment.unknowns,
+    );
+    expect(reloaded.incident.dispatchReceipt).toBeUndefined();
+  } finally {
+    await controlled.close();
+    await app.inject({ method: "DELETE", url: "/api/session", headers: h });
+  }
+}, 30000);
+
+it("reloads a failed attempt's safe diagnostics after a successful retry", async () => {
+  let calls = 0;
+  const controlled = await buildApp({ config, ...firebase, provider: new FixtureProvider(),
+    conversationProvider: { async *generate() {
+      if (calls++ === 0) throw new SyntaxError("private provider contents");
+      yield { type: "result" as const, response: {
+        reply: "Reported concern received. Which site?", question: "Which site?",
+        suggestedReplies: ["Unknown"], assessment: null,
+      } };
+    } },
+  });
+  const h = await session();
+  try {
+    const incident = (await controlled.inject({ method: "POST", url: "/api/incidents", headers: h,
+      payload: { reportText: "Fictional persistence check: a noise outside." } })).json();
+    const turnId = randomUUID(), url = `/api/incidents/${incident.id}`;
+    const failed = await controlled.inject({ method: "POST", url: url + "/turns", headers: h,
+      payload: { turnId, expectedRevision: 1, kind: "initial" } });
+    const failure = JSON.parse(failed.body.trim().split("\n").at(-1)!);
+    expect(failure).toMatchObject({ type: "failure", code: "INVALID_RESPONSE" });
+    expect(failed.body).not.toContain("private provider contents");
+    const before = (await controlled.inject({ url: url + "/conversation", headers: h })).json();
+    const retried = await controlled.inject({ method: "POST", url: `${url}/turns/${turnId}/retry`, headers: h,
+      payload: { attemptId: randomUUID(), expectedRevision: before.incident.revision } });
+    expect(JSON.parse(retried.body.trim().split("\n").at(-1)!).type).toBe("completed");
+    const after = (await controlled.inject({ url: url + "/conversation", headers: h })).json();
+    expect(after.turns[0].failureCode).toBeUndefined();
+    expect(after.turns[0].attemptHistory).toHaveLength(2);
+    expect(after.turns[0].attemptHistory[0]).toMatchObject({ attempt: 1, state: "failed", failureCode: "INVALID_RESPONSE" });
+    expect(after.turns[0].attemptHistory[1]).toMatchObject({ attempt: 2, state: "completed" });
+    expect(after.incident.dispatchReceipt).toBeUndefined();
+  } finally {
+    await controlled.close();
+    await app.inject({ method: "DELETE", url: "/api/session", headers: h });
+  }
+}, 30000);
 it("applies the last global quota slot atomically in Firestore", async () => {
   const a = await session(),
     b = await session();

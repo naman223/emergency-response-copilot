@@ -98,3 +98,119 @@ it("bounds messages and suggestions", () => {
     }).success,
   ).toBe(false);
 });
+
+const indicatorResponse = () => ({
+  ...response(),
+  assessment: {
+    ...response().assessment,
+    indicators: Object.fromEntries(
+      [
+        "emergency",
+        "police",
+        "medical",
+        "ambulance",
+        "fire",
+        "weapon",
+        "injuries",
+        "immediateDanger",
+      ].map((key) => [key, { status: "unknown", reason: "Not established." }]),
+    ),
+  },
+});
+it("keeps every Unknown indicator visible in the unknowns ledger", () => {
+  const r = parse(indicatorResponse());
+  expect(r.assessment.unknowns).toContain("Current immediate danger: Unknown");
+  expect(r.assessment.unknowns).toContain("Injuries reported: Unknown");
+  expect(r.assessment.unknowns).toContain("Ambulance need: Unknown");
+  expect(r.assessment.unknowns).toContain("Exact location");
+  expect(parse(r).assessment.unknowns).toEqual(r.assessment.unknowns);
+});
+it("rejects ambulance Yes while medical support is not Yes", () => {
+  for (const status of ["no", "unknown"]) {
+    const r = indicatorResponse();
+    r.assessment.indicators.ambulance.status = "yes";
+    r.assessment.indicators.medical.status = status;
+    expect(() => parse(r)).toThrow(/ambulance/i);
+  }
+});
+it("rejects Emergency Yes alongside standard or unclear priority", () => {
+  const r = indicatorResponse();
+  r.assessment.indicators.emergency.status = "yes";
+  for (const urgency of ["standard_review", "unclear"]) {
+    r.assessment.urgency = urgency;
+    expect(() => parse(r)).toThrow(/Emergency Yes conflicts/);
+  }
+  r.assessment.urgency = "urgent_review";
+  expect(() => parse(r)).not.toThrow();
+});
+it("reports independent indicator conflicts together for a bounded repair", () => {
+  const r = indicatorResponse();
+  r.assessment.urgency = "standard_review";
+  r.assessment.indicators.emergency.status = "yes";
+  r.assessment.indicators.ambulance.status = "yes";
+  let message = "";
+  try {
+    parse(r);
+  } catch (error) {
+    message = (error as Error).message;
+  }
+  expect(message).toMatch(/Emergency Yes conflicts/);
+  expect(message).toMatch(/Ambulance recommendation/);
+});
+it("rejects routing to a service whose indicator says No", () => {
+  for (const [routing, indicator] of [
+    ["police", "police"],
+    ["medical", "medical"],
+    ["fire", "fire"],
+    ["other", "emergency"],
+  ]) {
+    const r = indicatorResponse();
+    r.assessment.routing = routing;
+    r.assessment.indicators[indicator].status = "no";
+    expect(() => parse(r)).toThrow(/routing/i);
+  }
+});
+it("rejects overflow rather than silently discarding unresolved details", () => {
+  const r = indicatorResponse();
+  r.assessment.unknowns = Array.from(
+    { length: 20 },
+    (_, i) => `Additional gap ${i}`,
+  );
+  expect(() => parse(r)).toThrow(/unresolved details/i);
+});
+it("clears stale generated Unknown entries after a clarification establishes the status", () => {
+  const r = parse(indicatorResponse());
+  r.assessment.indicators.injuries = {
+    status: "yes",
+    reason: "An injury is now reported.",
+  };
+  const updated = parse(r);
+  expect(updated.assessment.unknowns).not.toContain(
+    "Injuries reported: Unknown",
+  );
+  expect(updated.assessment.unknowns).toContain(
+    "Current immediate danger: Unknown",
+  );
+});
+it("retains an accepted Unknown answer in the gaps ledger even when the model omits it", () => {
+  const r = indicatorResponse();
+  r.assessment.facts = [
+    {
+      text: "Current personnel safety is unknown.",
+      source: {
+        source: "officer",
+        messageId: "11111111-1111-4111-8111-111111111111",
+        quote: "Unknown",
+      },
+      evidenceStatus: "unverified",
+    },
+  ] as any;
+  const parsed = (contracts as any).validateCoordinatorResponse(
+    r,
+    { messages: { "11111111-1111-4111-8111-111111111111": "Unknown" } },
+    false,
+  );
+  expect(parsed.assessment.unknowns).toContain(
+    "Current personnel safety is unknown.",
+  );
+});

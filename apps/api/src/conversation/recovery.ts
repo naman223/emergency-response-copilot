@@ -32,9 +32,30 @@ export async function recoverConversation(
       revision: r.incident.revision + 1,
     };
     if (turn) {
+      const finishedAt = new Date().toISOString();
+      if (
+        !turn.turn.attemptHistory?.some(
+          (h: { attempt: number }) => h.attempt === turn.turn.attempts,
+        )
+      ) {
+        turn.turn.attemptHistory = [
+          ...(turn.turn.attemptHistory ?? []),
+          {
+            attempt: turn.turn.attempts,
+            state: "interrupted",
+            startedAt: turn.turn.updatedAt,
+            finishedAt,
+            durationMs: Math.max(
+              0,
+              Date.parse(finishedAt) - Date.parse(turn.turn.updatedAt),
+            ),
+            failureCode: "CONVERSATION_INTERRUPTED",
+          },
+        ];
+      }
       turn.turn.state = "interrupted";
       turn.turn.failureCode = "CONVERSATION_INTERRUPTED";
-      turn.turn.updatedAt = new Date().toISOString();
+      turn.turn.updatedAt = finishedAt;
     }
     return {
       result: null,

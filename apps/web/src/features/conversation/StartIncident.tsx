@@ -6,22 +6,26 @@ import {
   MapPin,
   MessageSquare,
   ShieldCheck,
+  RotateCcw,
 } from "lucide-react";
 import type { IntakeRequest, SourceLocation } from "@copilot/contracts";
 import { AudioInput } from "../caller/AudioInput";
 import type { Sample } from "../caller/CallerView";
 import { ensureUser } from "../../firebase";
+import { apiUrl } from "../../api-origin";
 import { useReportDraft } from "./useReportDraft";
 export function StartIncident({
   mode,
   samples,
   busy,
   onStart,
+  onReset,
 }: {
   mode: string;
   samples: Sample[];
   busy: boolean;
   onStart: (m: IntakeRequest, file?: File) => Promise<void>;
+  onReset: () => void;
 }) {
   const draft = useReportDraft(mode);
   const { text, file, description } = draft;
@@ -38,7 +42,7 @@ export function StartIncident({
   async function play(id: string) {
     try {
       const user = await ensureUser();
-      const r = await fetch(`/api/samples/${id}/audio`, {
+      const r = await fetch(apiUrl(`/samples/${id}/audio`), {
         headers: { Authorization: `Bearer ${await user.getIdToken()}` },
       });
       if (!r.ok) throw Error("Sample unavailable.");
@@ -61,7 +65,9 @@ export function StartIncident({
           accuracyMeters: p.coords.accuracy,
           capturedAt: new Date(p.timestamp).toISOString(),
         });
-        setNotice("Device location attached; verification is still required.");
+        setNotice(
+          "Device location attached. It will be the default handoff point; verify it during human review.",
+        );
       },
       () => setNotice("Location unavailable. You can continue without it."),
       { timeout: 10000 },
@@ -92,6 +98,15 @@ export function StartIncident({
           <div className="section-label">
             <MessageSquare size={18} />
             <h2>Report an incident</h2>
+            <button
+              type="button"
+              className="text-button report-reset"
+              disabled={busy}
+              onClick={onReset}
+              title="Clear text, audio and location; keep saved incidents"
+            >
+              <RotateCcw size={14} /> Reset report
+            </button>
           </div>
           <label className="field">
             What is happening?

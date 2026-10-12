@@ -1,3 +1,4 @@
+import { MODEL_REQUEST_TIMEOUT_MS } from "@copilot/contracts";
 export function createConfig(env: NodeJS.ProcessEnv = process.env) {
   const cloud = !!env.K_SERVICE || !!env.CLOUD_RUN_JOB;
   const mode = env.ANALYSIS_MODE ?? "fixture";
@@ -20,12 +21,13 @@ export function createConfig(env: NodeJS.ProcessEnv = process.env) {
     mode: mode as "fixture" | "live",
     projectId,
     geminiProjectId: env.GEMINI_PROJECT_ID ?? projectId,
+    databaseId: env.FIRESTORE_DATABASE_ID ?? "(default)",
     bucket: env.STORAGE_BUCKET ?? `${projectId}.appspot.com`,
     location: env.GOOGLE_CLOUD_LOCATION ?? "global",
     model: env.GEMINI_MODEL ?? "",
     origin: env.ALLOWED_ORIGIN ?? "http://127.0.0.1:5173",
     port: Number(env.PORT ?? 8181),
-    analysisTimeout: 45000,
+    analysisTimeout: MODEL_REQUEST_TIMEOUT_MS,
     sessionHours: 24,
   };
 }

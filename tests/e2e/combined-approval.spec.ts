@@ -46,6 +46,10 @@ test("one approval saves unsaved edits and selected services before simulating d
       .body,
   ).toContain(summary);
   expect(separateSaves).toBe(0);
+  await page
+    .getByRole("dialog", { name: "Service messages recorded" })
+    .getByRole("button", { name: "View incident", exact: true })
+    .click();
   await expect(
     page.getByRole("heading", { name: "Simulated dispatch complete" }),
   ).toBeVisible();

@@ -1,4 +1,5 @@
 import type { Incident } from "@copilot/contracts";
+import { reconcileUnknowns } from "@copilot/contracts";
 import { MapPin, ShieldCheck, HelpCircle } from "lucide-react";
 import { ClarificationDetails } from "./ClarificationDetails";
 export const urgencyLabel = (v?: string) =>
@@ -15,6 +16,7 @@ export function IncidentContext({
   onReview: () => void;
 }) {
   const a = incident.assessment;
+  const unknowns = a ? reconcileUnknowns(a) : [];
   return (
     <section className="context-content">
       <div className="context-title">
@@ -82,14 +84,14 @@ export function IncidentContext({
           </div>
         </>
       )}
-      {!!a?.unknowns.length && (
+      {!!unknowns.length && (
         <div className="context-unknowns">
           <h3>
             <HelpCircle size={16} />
             Still unknown
           </h3>
           <ul>
-            {a.unknowns.map((u, i) => (
+            {unknowns.map((u, i) => (
               <li key={i}>{u}</li>
             ))}
           </ul>

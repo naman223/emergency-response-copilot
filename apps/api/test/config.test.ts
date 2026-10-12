@@ -19,3 +19,9 @@ it("separates emulator storage from the live Gemini project", () => {
   expect(config.projectId).toBe("demo-emergency-copilot");
   expect(config.geminiProjectId).toBe("emergency-response-copilot");
 });
+it("isolates a cloud demo in a named database while preserving local defaults", () => {
+  expect(createConfig({}).databaseId).toBe("(default)");
+  expect(
+    createConfig({ FIRESTORE_DATABASE_ID: "emergency-copilot" }).databaseId,
+  ).toBe("emergency-copilot");
+});

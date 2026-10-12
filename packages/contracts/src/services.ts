@@ -94,7 +94,13 @@ export function buildSmsPreviews(
         `Location: ${location} (${verified ? "reviewer verified" : "not verified"})`,
         ...(draft.selectedLocation
           ? [
-              `Map pin: ${draft.selectedLocation.latitude.toFixed(6)}, ${draft.selectedLocation.longitude.toFixed(6)}`,
+              `${draft.selectedLocation.source === "device" ? "Device GPS" : "Map pin"}: ${draft.selectedLocation.latitude.toFixed(6)}, ${draft.selectedLocation.longitude.toFixed(6)}`,
+              ...(draft.selectedLocation.source === "device" &&
+              draft.selectedLocation.accuracyMeters !== undefined
+                ? [
+                    `GPS accuracy: ±${Math.round(draft.selectedLocation.accuracyMeters)} m`,
+                  ]
+                : []),
             ]
           : []),
         `Report: ${brief}`,
