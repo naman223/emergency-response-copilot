@@ -13,11 +13,11 @@ it("separates emulator storage from the live Gemini project", () => {
   const config = createConfig({
     ANALYSIS_MODE: "live",
     GOOGLE_CLOUD_PROJECT: "demo-emergency-copilot",
-    GEMINI_PROJECT_ID: "emergency-response-copilot",
+    GEMINI_PROJECT_ID: "live-inference-project",
     GEMINI_MODEL: "test-model",
   });
   expect(config.projectId).toBe("demo-emergency-copilot");
-  expect(config.geminiProjectId).toBe("emergency-response-copilot");
+  expect(config.geminiProjectId).toBe("live-inference-project");
 });
 it("isolates a cloud demo in a named database while preserving local defaults", () => {
   expect(createConfig({}).databaseId).toBe("(default)");

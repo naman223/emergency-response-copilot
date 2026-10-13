@@ -16,14 +16,14 @@ it("keeps the default demo offline despite inherited live settings", () => {
 it("routes live inference separately from emulator data", () => {
   const env = localEnvironment(
     {
-      GEMINI_PROJECT_ID: "emergency-response-copilot",
+      GEMINI_PROJECT_ID: "live-inference-project",
       GEMINI_MODEL: "test-model",
       STORAGE_BUCKET: "production-bucket",
     },
     true,
   );
   expect(env.ANALYSIS_MODE).toBe("live");
-  expect(env.GEMINI_PROJECT_ID).toBe("emergency-response-copilot");
+  expect(env.GEMINI_PROJECT_ID).toBe("live-inference-project");
   expect(env.GOOGLE_CLOUD_PROJECT).toBe("demo-emergency-copilot");
   expect(env.STORAGE_BUCKET).toBe("demo-emergency-copilot.appspot.com");
   expect(env.VITE_USE_EMULATORS).toBe("true");
