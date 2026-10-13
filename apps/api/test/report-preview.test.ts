@@ -234,3 +234,26 @@ it("rejects invalid audio before model inference and treats silence as an empty 
     await s.app.close();
   }
 });
+
+it("reports an upstream model timeout accurately, protects private errors and releases the lease", async () => {
+  const s = await setup();
+  s.deps.previewProvider.preview = async () => {
+    throw Object.assign(new Error("private report and provider details"), {
+      status: 504,
+    });
+  };
+  try {
+    const response = await s.app.inject({
+      method: "POST",
+      url: "/api/report-preview",
+      headers,
+      payload: { text: "Fictional report." },
+    });
+    expect(response.statusCode).toBe(504);
+    expect(response.json().error.code).toBe("PREVIEW_TIMEOUT");
+    expect(response.body).not.toContain("private report");
+    expect(s.docs[sessionKey("alice")].activeLease).toBeUndefined();
+  } finally {
+    await s.app.close();
+  }
+});

@@ -25,3 +25,18 @@ it("isolates a cloud demo in a named database while preserving local defaults", 
     createConfig({ FIRESTORE_DATABASE_ID: "emergency-copilot" }).databaseId,
   ).toBe("emergency-copilot");
 });
+
+it("selects a preview model independently and defaults to the assessment model", () => {
+  const base = {
+    ANALYSIS_MODE: "live",
+    GOOGLE_CLOUD_PROJECT: "local-test",
+    GEMINI_MODEL: "gemini-3.5-flash",
+  };
+  expect(createConfig(base).previewModel).toBe("gemini-3.5-flash");
+  const config = createConfig({
+    ...base,
+    GEMINI_PREVIEW_MODEL: "gemini-2.5-flash",
+  });
+  expect(config.previewModel).toBe("gemini-2.5-flash");
+  expect(config.model).toBe("gemini-3.5-flash");
+});

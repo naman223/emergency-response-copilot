@@ -3,6 +3,7 @@ import { ApiError } from "@google/genai";
 import { createRequire } from "node:module";
 import { createConfig } from "../src/config";
 import { GeminiConversationProvider } from "../src/conversation/gemini";
+import { GeminiReportPreviewProvider } from "../src/incidents/report-preview";
 import { conversationFailureCode } from "../src/conversation/failure";
 import type { ProviderChunk } from "../src/conversation/provider";
 
@@ -101,4 +102,125 @@ it("preserves a network failure category without retrying or publishing chunks",
   expect(conversationFailureCode(failure)).toBe("MODEL_CONNECTION_FAILED");
   expect(transport).toHaveBeenCalledTimes(1);
   expect(chunks).toEqual([]);
+});
+
+it("uses the separate transcription model and returns a real decoded transcript", async () => {
+  const transcript = "Fictional report near the north gate.";
+  let sent: any;
+  let url = "";
+  vi.stubGlobal("fetch", async (input: any, init: any) => {
+    url = String(input);
+    sent = JSON.parse(init.body);
+    return new Response(
+      JSON.stringify({
+        candidates: [
+          {
+            content: {
+              parts: [
+                {
+                  text: JSON.stringify({
+                    transcript,
+                    locationDescription: "the north gate",
+                  }),
+                },
+              ],
+            },
+            finishReason: "STOP",
+          },
+        ],
+      }),
+      { headers: { "Content-Type": "application/json" } },
+    );
+  });
+  const p = new GeminiReportPreviewProvider(
+    createConfig({
+      ANALYSIS_MODE: "live",
+      GOOGLE_CLOUD_PROJECT: "local-transport-test",
+      GEMINI_MODEL: "gemini-3.5-flash",
+      GEMINI_PREVIEW_MODEL: "gemini-2.5-flash",
+    }),
+  );
+  await expect(
+    p.preview({
+      wav: new Uint8Array([1, 2]),
+      signal: new AbortController().signal,
+    }),
+  ).resolves.toEqual({ transcript, locationDescription: "the north gate" });
+  expect(url).toContain("gemini-2.5-flash:generateContent");
+  expect(sent.generationConfig.thinkingConfig).toBeUndefined();
+});
+
+it("preserves an upstream transcription deadline without retrying", async () => {
+  const transport = vi.fn<typeof fetch>(
+    async () =>
+      new Response(
+        JSON.stringify({
+          error: { code: 504, message: "private provider response" },
+        }),
+        { status: 504, headers: { "Content-Type": "application/json" } },
+      ),
+  );
+  vi.stubGlobal("fetch", transport);
+  const p = new GeminiReportPreviewProvider(
+    createConfig({
+      ANALYSIS_MODE: "live",
+      GOOGLE_CLOUD_PROJECT: "local-transport-test",
+      GEMINI_MODEL: "gemini-3.5-flash",
+    }),
+  );
+  await expect(
+    p.preview({
+      text: "Fictional report.",
+      signal: new AbortController().signal,
+    }),
+  ).rejects.toMatchObject({ status: 504 });
+  expect(transport).toHaveBeenCalledTimes(1);
+});
+
+it("uses supported low thinking and room for transcript JSON with the latest Flash model", async () => {
+  let sent: any;
+  let url = "";
+  const transcript = "Fictional report near the north gate.";
+  vi.stubGlobal("fetch", async (input: any, init: any) => {
+    url = String(input);
+    sent = JSON.parse(init.body);
+    return new Response(
+      JSON.stringify({
+        candidates: [
+          {
+            content: {
+              parts: [
+                {
+                  text: JSON.stringify({
+                    transcript,
+                    locationDescription: "the north gate",
+                  }),
+                },
+              ],
+            },
+            finishReason: "STOP",
+          },
+        ],
+      }),
+      { headers: { "Content-Type": "application/json" } },
+    );
+  });
+  const p = new GeminiReportPreviewProvider(
+    createConfig({
+      ANALYSIS_MODE: "live",
+      GOOGLE_CLOUD_PROJECT: "local-transport-test",
+      GEMINI_MODEL: "gemini-3.8-flash",
+    }),
+  );
+  await expect(
+    p.preview({
+      wav: new Uint8Array([1, 2]),
+      signal: new AbortController().signal,
+    }),
+  ).resolves.toEqual({ transcript, locationDescription: "the north gate" });
+  expect(url).toContain("gemini-3.8-flash:generateContent");
+  expect(sent.generationConfig.thinkingConfig).toEqual({
+    thinkingLevel: "LOW",
+  });
+  expect(sent.generationConfig.maxOutputTokens).toBe(4096);
 });

@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, ThinkingLevel } from "@google/genai";
 import { z } from "zod";
 import { reportPreviewSchema } from "@copilot/contracts";
 import type { Config } from "../config";
@@ -31,13 +31,13 @@ export class GeminiReportPreviewProvider implements ReportPreviewProvider {
       location: config.location,
       httpOptions: {
         timeout: config.analysisTimeout,
-        retryOptions: { attempts: 1 },
+        // Preserve upstream HTTP status; the SDK retry wrapper hides it.
       },
     });
   }
   async preview(input: Parameters<ReportPreviewProvider["preview"]>[0]) {
     const response = await this.client.models.generateContent({
-      model: this.config.model,
+      model: this.config.previewModel,
       contents: [
         {
           role: "user",
@@ -59,7 +59,11 @@ export class GeminiReportPreviewProvider implements ReportPreviewProvider {
       config: {
         abortSignal: input.signal,
         temperature: 0,
-        maxOutputTokens: 2048,
+        // LOW is supported across Gemini 3 Flash models; newer releases reject MINIMAL.
+        ...(this.config.previewModel.startsWith("gemini-3")
+          ? { thinkingConfig: { thinkingLevel: ThinkingLevel.LOW } }
+          : {}),
+        maxOutputTokens: 4096,
         responseMimeType: "application/json",
         responseJsonSchema: z.toJSONSchema(reportPreviewSchema),
         systemInstruction:
@@ -190,6 +194,18 @@ export class ReportPreviewService {
       return result;
     } catch (e) {
       if (e instanceof AppError) throw e;
+      const status = (e as { status?: number } | null)?.status;
+      if (
+        status === 408 ||
+        status === 504 ||
+        (e instanceof Error && e.name === "AbortError")
+      )
+        throw new AppError(
+          504,
+          "PREVIEW_TIMEOUT",
+          "The AI transcription service timed out. Retry shortly or type your report; the recording remains attached.",
+          true,
+        );
       throw new AppError(
         502,
         "PREVIEW_FAILED",

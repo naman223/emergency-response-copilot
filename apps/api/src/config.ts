@@ -25,6 +25,7 @@ export function createConfig(env: NodeJS.ProcessEnv = process.env) {
     bucket: env.STORAGE_BUCKET ?? `${projectId}.appspot.com`,
     location: env.GOOGLE_CLOUD_LOCATION ?? "global",
     model: env.GEMINI_MODEL ?? "",
+    previewModel: env.GEMINI_PREVIEW_MODEL ?? env.GEMINI_MODEL ?? "",
     origin: env.ALLOWED_ORIGIN ?? "http://127.0.0.1:5173",
     port: Number(env.PORT ?? 8181),
     analysisTimeout: MODEL_REQUEST_TIMEOUT_MS,
