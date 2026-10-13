@@ -1545,6 +1545,7 @@ fieldset {
   overflow: auto;
 }
 .conversation-nav {
+  justify-content: flex-start;
   border: 1px solid transparent;
   color: #b8cac5;
   background: transparent;
@@ -1567,6 +1568,7 @@ fieldset {
   margin-top: 2px;
 }
 .conversation-nav div {
+  flex: 1;
   min-width: 0;
 }
 .conversation-nav strong {
