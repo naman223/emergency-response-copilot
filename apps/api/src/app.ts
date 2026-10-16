@@ -74,7 +74,10 @@ export async function buildApp(d: AppDependencies) {
     for (const cancelUpload of handlers.values()) cancelUpload();
     await Promise.all([...handlers.keys()]);
   });
-  await app.register(cors, { origin: d.config.origin });
+  await app.register(cors, {
+    origin: d.config.origin,
+    methods: ["GET", "HEAD", "POST", "PATCH", "DELETE"],
+  });
   await app.register(multipart, {
     limits: { fileSize: MAX_BYTES, files: 1, fields: 1, fieldSize: 16384 },
   });

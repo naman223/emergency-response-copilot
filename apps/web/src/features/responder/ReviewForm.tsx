@@ -48,6 +48,11 @@ export function ReviewForm({
     incident.sourceTranscript,
     incident.contextVersion,
   ]);
+  const assessmentPending =
+    !incident.assessment &&
+    !incident.brief &&
+    !incident.reviewDraft &&
+    (busy || ["pending", "processing"].includes(incident.analysisState));
   const locked =
     busy ||
     incident.analysisState === "processing" ||
@@ -99,17 +104,25 @@ export function ReviewForm({
         <PriorityIcon size={20} aria-hidden="true" />
         <div>
           <strong>
-            {draft.urgency === "urgent_review"
-              ? medicalSelected
-                ? "Urgent medical review"
-                : "Urgent emergency review"
-              : urgencyLabel(draft.urgency)}
+            {assessmentPending
+              ? "Assessment pending"
+              : draft.urgency === "urgent_review"
+                ? medicalSelected
+                  ? "Urgent medical review"
+                  : "Urgent emergency review"
+                : urgencyLabel(draft.urgency)}
           </strong>
           <span>
-            Review draft ·{" "}
-            {selectedServices(draft)
-              .map((service) => serviceLabels[service])
-              .join(" + ") || "No services selected"}
+            {assessmentPending ? (
+              "Recommendations pending"
+            ) : (
+              <>
+                Review draft ·{" "}
+                {selectedServices(draft)
+                  .map((service) => serviceLabels[service])
+                  .join(" + ") || "No services selected"}
+              </>
+            )}
           </span>
           {incident.assessment?.indicators && (
             <small>
@@ -130,9 +143,9 @@ export function ReviewForm({
         </div>
       </div>
       <p className="hint">
-        Details are filled from the report and clarifications. Check or edit
-        them, then approve to save and simulate dispatch in one step. Unknown
-        information can stay unknown.
+        {assessmentPending
+          ? "Your report is saved. Urgency and service recommendations will appear after the initial assessment."
+          : "Details are filled from the report and clarifications. Check or edit them, then approve to save and simulate dispatch in one step. Unknown information can stay unknown."}
       </p>
       <fieldset disabled={locked}>
         <button
@@ -165,15 +178,18 @@ export function ReviewForm({
             >
               <option value="urgent_review">Urgent review</option>
               <option value="standard_review">Standard review</option>
-              <option value="unclear">Unclear</option>
+              <option value="unclear">
+                {assessmentPending ? "Assessment pending" : "Unclear"}
+              </option>
             </select>
           </label>
         </div>
         <fieldset className="service-selection">
           <legend>Services to notify</legend>
           <p className="hint">
-            Selected from the AI assessment. Choose all services needed for this
-            incident.
+            {assessmentPending
+              ? "Service recommendations will appear after the initial assessment."
+              : "Selected from the AI assessment. Choose all services needed for this incident."}
           </p>
           <div className="service-options">
             {responseServices.map((service) => (
@@ -380,8 +396,14 @@ export function ReviewForm({
           <div className="decision-dock-label">
             <strong>Human decision</strong>
             <span>
-              {urgencyLabel(draft.urgency)} · {selectedServices(draft).length}{" "}
-              services selected
+              {assessmentPending ? (
+                "Awaiting initial assessment"
+              ) : (
+                <>
+                  {urgencyLabel(draft.urgency)} ·{" "}
+                  {selectedServices(draft).length} services selected
+                </>
+              )}
             </span>
           </div>
           <div className="decision-actions">
@@ -422,7 +444,7 @@ export function ReviewForm({
           Approval saves the current review and records simulated SMS
           notifications for the selected services. No real service is contacted.
         </p>
-        {!selectedServices(draft).length && (
+        {!assessmentPending && !selectedServices(draft).length && (
           <p className="hint">
             Select at least one service to approve, or close the report.
           </p>

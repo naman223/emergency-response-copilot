@@ -119,6 +119,53 @@ export function StartIncident({
               onChange={(e) => draft.editText(e.target.value)}
             />
           </label>
+          {(draft.processing || draft.message) && (
+            <div
+              className={`report-preview-status ${draft.failed ? "failed" : ""}`}
+              role={draft.failed ? "alert" : "status"}
+            >
+              <strong>
+                {draft.processing
+                  ? draft.processing === "audio"
+                    ? "Transcribing recording…"
+                    : "Finding the reported location…"
+                  : draft.failed
+                    ? "Report preview not completed"
+                    : "Report preview"}
+              </strong>
+              {draft.processing ? (
+                <>
+                  <span>{draft.elapsedSeconds} seconds elapsed</span>
+                  <p>
+                    {draft.elapsedSeconds >= 12
+                      ? "This is taking longer than expected. The request stops after 55 seconds. You can stop and retry without losing your input."
+                      : "Waiting for Gemini. Your report stays editable."}
+                  </p>
+                  <button
+                    type="button"
+                    className="secondary"
+                    onClick={draft.stopPreview}
+                  >
+                    {draft.processing === "audio"
+                      ? "Stop transcription"
+                      : "Stop location lookup"}
+                  </button>
+                </>
+              ) : (
+                <p>{draft.message}</p>
+              )}
+              {draft.failed === "audio" && file && (
+                <button
+                  type="button"
+                  className="secondary"
+                  disabled={!!draft.processing || busy || capturing}
+                  onClick={() => void draft.preview(file)}
+                >
+                  Retry transcription
+                </button>
+              )}
+            </div>
+          )}
           <AudioInput
             disabled={busy}
             onFile={draft.attach}
@@ -145,27 +192,6 @@ export function StartIncident({
                 Remove recording
               </button>
             </div>
-          )}
-          {draft.processing && (
-            <p className="inline-message" role="status">
-              {draft.processing === "audio"
-                ? "Transcribing recording…"
-                : "Finding the reported location…"}
-            </p>
-          )}
-          {draft.message && (
-            <p className="hint" role={draft.failed ? "alert" : "status"}>
-              {draft.message}
-            </p>
-          )}
-          {draft.failed === "audio" && file && (
-            <button
-              className="text-button"
-              disabled={!!draft.processing || busy || capturing}
-              onClick={() => void draft.preview(file)}
-            >
-              Retry transcription
-            </button>
           )}
           {draft.candidate && (
             <div className="transcript-preview">

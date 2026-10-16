@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Mic, Square, Upload, FileAudio } from "lucide-react";
+import { audioSelectionError } from "./audio-selection";
 export function AudioInput({
   onFile,
   disabled = false,
@@ -17,6 +18,17 @@ export function AudioInput({
   const [recording, setRecording] = useState(false);
   const [waiting, setWaiting] = useState(false);
   const [message, setMessage] = useState("");
+  const [invalid, setInvalid] = useState(false);
+  function selectFile(file: File, notice = file.name) {
+    const error = audioSelectionError(file);
+    setInvalid(!!error);
+    if (error) {
+      setMessage(error);
+      return;
+    }
+    onFile(file);
+    setMessage(notice);
+  }
   useEffect(() => {
     mounted.current = true;
     return () => {
@@ -31,6 +43,8 @@ export function AudioInput({
     if (disabled || pending.current || recorder.current?.state === "recording")
       return;
     pending.current = true;
+    setInvalid(false);
+    setMessage("");
     setWaiting(true);
     onCaptureChange?.(true);
     let stream: MediaStream | undefined;
@@ -59,16 +73,16 @@ export function AudioInput({
         activeStream.current = null;
         if (!mounted.current) return;
         const type = r.mimeType || "audio/webm";
-        onFile(
+        selectFile(
           new File(
             chunks,
             `recording.${type.includes("mp4") ? "mp4" : "webm"}`,
             { type },
           ),
+          "Recording captured.",
         );
         setRecording(false);
         onCaptureChange?.(false);
-        setMessage("Recording ready to submit.");
       };
       r.start();
       setRecording(true);
@@ -117,10 +131,8 @@ export function AudioInput({
             accept="audio/wav,audio/mpeg,audio/webm,audio/mp4,video/webm,video/mp4"
             onChange={(e) => {
               const f = e.target.files?.[0];
-              if (f) {
-                onFile(f);
-                setMessage(f.name);
-              }
+              if (f) selectFile(f);
+              e.target.value = "";
             }}
           />
         </label>
@@ -130,7 +142,12 @@ export function AudioInput({
         WAV, MP3, WebM or MP4 · up to 60 seconds · 10 MiB
       </p>
       {message && (
-        <p className="inline-message" role="status">
+        <p
+          className={
+            invalid ? "report-preview-status failed" : "inline-message"
+          }
+          role={invalid ? "alert" : "status"}
+        >
           {message}
         </p>
       )}

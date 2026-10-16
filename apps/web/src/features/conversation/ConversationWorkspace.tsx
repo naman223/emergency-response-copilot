@@ -114,6 +114,35 @@ export function ConversationWorkspace({
     }
   }
   const last = chat.snapshot?.turns.at(-1);
+  const hasAssessment = !!(i?.assessment || i?.brief);
+  const assessmentWorking = chat.busy || i?.analysisState === "processing";
+  const assessmentFailed =
+    !assessmentWorking &&
+    (i?.analysisState === "failed" || (!hasAssessment && !!chat.error));
+  const readyForReview = intakeReady && !assessmentWorking && !assessmentFailed;
+  const intakeHeading = assessmentFailed
+    ? "Assessment not completed"
+    : assessmentWorking
+      ? hasAssessment
+        ? "Updating assessment…"
+        : "Assessing your report…"
+      : readyForReview
+        ? "Ready for human review"
+        : hasAssessment
+          ? "Clarifying key details"
+          : "Report received";
+  const intakeDescription = assessmentFailed
+    ? "Your report is saved. Retry or review it manually."
+    : assessmentWorking
+      ? hasAssessment
+        ? "Reviewing your latest update. The previous assessment remains available."
+        : "Reviewing the details and preparing any essential follow-up questions."
+      : readyForReview
+        ? "Check the urgency, location and recommended services before approving."
+        : hasAssessment
+          ? `${i?.clarificationCount ? `Question ${i.clarificationCount} · ` : ""}Answer what you know; you can say “Unknown.”`
+          : "Start the AI assessment or review the report manually.";
+
   const confirmedHandoff =
     handoffIncident ?? (i?.dispatchReceipt ? i : undefined);
   const replies =
@@ -168,27 +197,25 @@ export function ConversationWorkspace({
         {i && <ResponsePriority incident={i} busy={chat.busy} />}
         {i && !closed && (
           <div
-            className={`intake-progress ${intakeReady ? "ready" : ""}`}
+            className={`intake-progress ${readyForReview ? "ready" : ""}`}
             role="status"
           >
             <div>
               <div className="intake-heading">
-                <strong>
-                  {intakeReady ? "Assessment ready" : "Essential clarification"}
-                </strong>
-                <span>
-                  {intakeReady
-                    ? "Corrections welcome"
-                    : `${i.clarificationCount ?? 0}/10 questions · Unknown accepted`}
-                </span>
+                <strong>{intakeHeading}</strong>
+                <span>{intakeDescription}</span>
               </div>
-              {!intakeReady && last?.state === "completed" && last.question && (
-                <p className="pending-question">
-                  <strong>Coordinator asks:</strong> {last.question}
-                </p>
-              )}
+              {!readyForReview &&
+                !assessmentWorking &&
+                !assessmentFailed &&
+                last?.state === "completed" &&
+                last.question && (
+                  <p className="pending-question">
+                    <strong>Coordinator asks:</strong> {last.question}
+                  </p>
+                )}
             </div>
-            {intakeReady ? (
+            {readyForReview ? (
               <button
                 className="secondary"
                 onClick={() => {
@@ -201,7 +228,9 @@ export function ConversationWorkspace({
             ) : (
               <button
                 className="secondary"
-                disabled={chat.busy || saving || !chat.snapshot?.turns.length}
+                disabled={
+                  assessmentWorking || saving || !chat.snapshot?.turns.length
+                }
                 onClick={() => void chat.finish()}
               >
                 Finish assessment now

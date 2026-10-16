@@ -4185,3 +4185,30 @@ fieldset {
     grid-template-columns: 1fr;
   }
 }
+
+.report-preview-status {
+  display: grid;
+  gap: 10px;
+  margin: 12px 0 20px;
+  padding: 16px;
+  border: 1px solid var(--line, #dce4df);
+  border-radius: 12px;
+  background: #edf4ef;
+  color: #345343;
+}
+.report-preview-status > p {
+  margin: 0;
+  line-height: 1.5;
+}
+.report-preview-status > span {
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+.report-preview-status > button {
+  justify-self: start;
+}
+.report-preview-status.failed {
+  background: #fff4ed;
+  border-color: #dca98b;
+  color: #793f25;
+}

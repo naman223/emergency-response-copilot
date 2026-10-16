@@ -8,6 +8,7 @@ export function useReportDraft(mode: string) {
   const [file, setFile] = useState<File>();
   const [processing, setProcessing] = useState<"audio" | "text" | null>(null);
   const [message, setMessage] = useState("");
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [failed, setFailed] = useState<"audio" | "text" | null>(null);
   const [candidate, setCandidate] = useState<ReportPreview>();
   const [recordingUrl, setRecordingUrl] = useState<string>();
@@ -60,6 +61,16 @@ export function useReportDraft(mode: string) {
     request.current.controller?.abort();
     setProcessing(null);
   }
+  function stopPreview() {
+    const kind = processing;
+    cancel();
+    setFailed(kind);
+    setMessage(
+      kind === "audio"
+        ? "Transcription stopped. Your recording is still attached. Retry or type your report."
+        : "Location lookup stopped. Your report is unchanged.",
+    );
+  }
   async function preview(audio?: File) {
     cancel();
     setCandidate(undefined);
@@ -76,6 +87,12 @@ export function useReportDraft(mode: string) {
     request.current.controller = controller;
     setProcessing(audio ? "audio" : "text");
     setMessage("");
+    setElapsedSeconds(0);
+    const startedAt = Date.now();
+    const progress = setInterval(() => {
+      if (sequence === request.current.sequence)
+        setElapsedSeconds(Math.floor((Date.now() - startedAt) / 1000));
+    }, 1000);
     const timeout = setTimeout(() => controller.abort(), 55000);
     try {
       let body: BodyInit;
@@ -136,6 +153,7 @@ export function useReportDraft(mode: string) {
       );
     } finally {
       clearTimeout(timeout);
+      clearInterval(progress);
       if (sequence === request.current.sequence) setProcessing(null);
     }
   }
@@ -176,6 +194,7 @@ export function useReportDraft(mode: string) {
     description,
     file,
     processing,
+    elapsedSeconds,
     message,
     failed,
     candidate,
@@ -185,6 +204,7 @@ export function useReportDraft(mode: string) {
     attach,
     preview,
     cancel,
+    stopPreview,
     remove,
     applyTranscript,
   };
