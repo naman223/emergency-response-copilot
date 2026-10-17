@@ -59,7 +59,7 @@ it.each([
   [403, "MODEL_CONFIGURATION"],
   [504, "MODEL_TIMEOUT"],
 ])(
-  "preserves and classifies HTTP %i from the configured Vertex SDK without retrying",
+  "preserves and classifies HTTP %i from the configured Vertex SDK with bounded recovery",
   async (status, code) => {
     const transport = vi.fn<typeof fetch>(
       async () =>
@@ -81,7 +81,7 @@ it.each([
     expect(failure).toBeInstanceOf(ApiError);
     expect(failure).toMatchObject({ status });
     expect(conversationFailureCode(failure)).toBe(code);
-    expect(transport).toHaveBeenCalledTimes(1);
+    expect(transport).toHaveBeenCalledTimes(status === 403 ? 1 : 2);
     expect(String(transport.mock.calls[0]?.[0])).toContain(
       "/projects/local-transport-test/locations/global/",
     );
@@ -89,7 +89,7 @@ it.each([
   },
 );
 
-it("preserves a network failure category without retrying or publishing chunks", async () => {
+it("preserves a network failure category after bounded recovery without publishing chunks", async () => {
   const failure = new TypeError("private network details", {
     cause: { code: "ECONNRESET" },
   });
@@ -100,7 +100,7 @@ it("preserves a network failure category without retrying or publishing chunks",
   const chunks: ProviderChunk[] = [];
   await expect(consume(chunks)).rejects.toBe(failure);
   expect(conversationFailureCode(failure)).toBe("MODEL_CONNECTION_FAILED");
-  expect(transport).toHaveBeenCalledTimes(1);
+  expect(transport).toHaveBeenCalledTimes(2);
   expect(chunks).toEqual([]);
 });
 

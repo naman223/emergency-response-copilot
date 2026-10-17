@@ -1,7 +1,9 @@
 import { beforeEach, expect, it, vi } from "vitest";
+import { ApiError } from "@google/genai";
 import { readFile } from "node:fs/promises";
 import { GeminiConversationProvider } from "../src/conversation/gemini";
 import { createConfig } from "../src/config";
+import { buildConversationContext } from "../src/conversation/context";
 import type {
   ProviderInput,
   ProviderChunk,
@@ -23,7 +25,9 @@ vi.mock("@google/genai", async (original) => ({
       generateContentStream: async (request: any) => {
         transport.requests.push(request);
         if (!transport.responses.length) throw Error("Review unavailable");
-        const text = JSON.stringify(transport.responses.shift());
+        const value = transport.responses.shift();
+        if (value instanceof Error) throw value;
+        const text = JSON.stringify(value);
         return (async function* () {
           yield { candidates: [{ content: { parts: [{ text }] } }] };
         })();
@@ -1653,4 +1657,186 @@ it("accepts the captured vehicle repair without undoing the earlier Emergency Un
       (fact: any) => fact.evidenceStatus === "matched",
     ),
   ).toBe(true);
+});
+
+it("keeps clarification instruction overhead bounded while preserving sources and full review", async () => {
+  const context = input();
+  const value = draft();
+  value.reply =
+    "The area is reported secured. Current personnel safety remains unknown.";
+  value.assessment.indicators.immediateDanger.status = "unknown";
+  context.turns[0] = {
+    ...context.turns[0],
+    state: "completed",
+    reply: value.reply,
+    question: value.question,
+  };
+  context.turns.push({
+    ...context.turns[0],
+    id: "22222222-2222-4222-8222-222222222222",
+    kind: "message",
+    officerText: "Unknown",
+    state: "processing",
+    reply: undefined,
+    question: undefined,
+  });
+  context.assessment = structuredClone(value.assessment) as any;
+  context.intake = { questionsAsked: 1, forceFinish: false };
+  transport.responses.push(value, { assessment: {} });
+  const chunks = await collect(context);
+  const contents = transport.requests[0].contents[0].parts
+    .map((part: any) => part.text)
+    .join("\n");
+  // The full report and message IDs remain available. Bound added instructions,
+  // not source length: duplicated audit rules stalled real clarification calls.
+  const source = buildConversationContext(context);
+  expect(contents).toContain(source);
+  expect(Buffer.byteLength(contents) - Buffer.byteLength(source)).toBeLessThan(
+    3000,
+  );
+  expect(transport.requests).toHaveLength(2);
+  const review = JSON.parse(transport.requests[1].contents[0].parts[0].text);
+  expect(review.sourceContext.messages.at(-1).officer).toBe("Unknown");
+  const response = (chunks.find((chunk) => chunk.type === "result") as any)
+    .response;
+  expect(response.assessment.facts[0].evidenceStatus).toBe("matched");
+  expect(response.assessment.indicators.immediateDanger.status).toBe("unknown");
+});
+
+it("withholds an unsafe clarification draft when the complete consistency review cannot repair it", async () => {
+  const context = input();
+  context.turns[0].state = "completed";
+  context.turns[0].question = "Is personnel safety known?";
+  context.turns.push({
+    ...context.turns[0],
+    id: "22222222-2222-4222-8222-222222222222",
+    kind: "message",
+    officerText: "Unknown",
+    state: "processing",
+  });
+  context.assessment = draft().assessment as any;
+  transport.responses.push(draft(), { assessment: {} }, { assessment: {} });
+  const chunks: ProviderChunk[] = [];
+  await expect(
+    (async () => {
+      for await (const chunk of provider().generate(context))
+        chunks.push(chunk);
+    })(),
+  ).rejects.toThrow(/Unsupported immediateDanger absence/);
+  expect(chunks).toEqual([]);
+  expect(transport.requests).toHaveLength(3);
+});
+
+function acceptedDraft() {
+  const value = draft();
+  value.reply =
+    "The area is reported secured. Current personnel safety remains unknown.";
+  value.assessment.indicators.immediateDanger.status = "unknown";
+  return value;
+}
+
+it.each([429, 503, 504])(
+  "recovers one transient draft failure (%i) before publishing a reviewed response",
+  async (status) => {
+    vi.useFakeTimers();
+    try {
+      transport.responses.push(
+        new ApiError({ status, message: "private upstream failure" }),
+        acceptedDraft(),
+        { assessment: {} },
+      );
+      const pending = collect();
+      const outcome = pending.then(
+        (value) => ({ value, error: undefined }),
+        (error) => ({ value: undefined, error }),
+      );
+      await vi.runAllTimersAsync();
+      const result = await outcome;
+      expect(result.error).toBeUndefined();
+      expect(result.value).toEqual(
+        expect.arrayContaining([expect.objectContaining({ type: "result" })]),
+      );
+      expect(transport.requests).toHaveLength(3);
+    } finally {
+      vi.useRealTimers();
+    }
+  },
+);
+
+it("retries a failed review without regenerating the completed draft", async () => {
+  vi.useFakeTimers();
+  try {
+    transport.responses.push(
+      acceptedDraft(),
+      new ApiError({ status: 504, message: "private upstream failure" }),
+      { assessment: {} },
+    );
+    const pending = collect();
+    const outcome = pending.then(
+      (value) => ({ value, error: undefined }),
+      (error) => ({ value: undefined, error }),
+    );
+    await vi.runAllTimersAsync();
+    const result = await outcome;
+    expect(result.error).toBeUndefined();
+    expect(result.value).toEqual(
+      expect.arrayContaining([expect.objectContaining({ type: "result" })]),
+    );
+    expect(transport.requests).toHaveLength(3);
+    expect(transport.requests[2].contents).toEqual(
+      transport.requests[1].contents,
+    );
+    expect(
+      JSON.parse(transport.requests[2].contents[0].parts[0].text).draft.reply,
+    ).toBe(acceptedDraft().reply);
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+it("allows only one transient recovery across draft and review and publishes no incomplete result", async () => {
+  vi.useFakeTimers();
+  try {
+    const failure = new ApiError({
+      status: 503,
+      message: "private upstream failure",
+    });
+    transport.responses.push(failure, acceptedDraft(), failure, {
+      assessment: {},
+    });
+    const chunks: ProviderChunk[] = [];
+    const pending = (async () => {
+      for await (const chunk of provider().generate(input()))
+        chunks.push(chunk);
+    })();
+    const verified = expect(pending).rejects.toBe(failure);
+    await vi.runAllTimersAsync();
+    await verified;
+    expect(transport.requests).toHaveLength(3);
+    expect(chunks).toEqual([]);
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
+it("cancels transient recovery before issuing another model request", async () => {
+  vi.useFakeTimers();
+  try {
+    const controller = new AbortController();
+    const context = { ...input(), signal: controller.signal };
+    transport.responses.push(
+      new ApiError({ status: 503, message: "private upstream failure" }),
+      acceptedDraft(),
+      { assessment: {} },
+    );
+    const pending = collect(context);
+    const failed = pending.catch((error) => error);
+    await vi.advanceTimersByTimeAsync(0);
+    controller.abort();
+    await vi.runAllTimersAsync();
+    expect(await failed).toMatchObject({ name: "AbortError" });
+    expect(transport.requests).toHaveLength(1);
+  } finally {
+    vi.useRealTimers();
+  }
 });
